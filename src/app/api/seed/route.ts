@@ -131,58 +131,80 @@ export async function GET() {
     });
 
     // ═══════════════════════════════════════
-    // 6. CONTESTS (MATCHDAYS)
+    // 6. CONTESTS (ROOKIES vs PROS)
     // ═══════════════════════════════════════
+    
+    // ARGENTINA - SEASON LONG
     await prisma.contest.upsert({
-      where: { slug: 'afa-matchday-14' },
-      update: { phaseId: phaseArg.id, tournamentId: tournamentArg.id },
+      where: { slug: 'lpf-2026-season-rookie' },
+      update: { tournamentId: tournamentArg.id },
       create: {
-        name: 'AFA - Matchday 14 Battle',
-        slug: 'afa-matchday-14',
-        description: 'Predict all matches of Matchday 14 in the Argenine First Div.',
-        type: 'MATCH_DAY',
-        tier: 'FREE',
-        entryFeeSOL: 0,
-        prizePool: BigInt(0), 
-        distribution: { "1": 1.0 },
-        tournamentId: tournamentArg.id,
-        phaseId: phaseArg.id,
-        startDate: new Date('2026-04-01T00:00:00Z'),
-        endDate: new Date('2026-04-07T23:59:59Z'),
-        registrationEnd: new Date('2026-04-05T20:50:00Z'), // 10 min before first match
-        status: 'ACTIVE'
+        name: 'LPF Season - Rookie Arena',
+        slug: 'lpf-2026-season-rookie',
+        description: 'Predict all matchdays. Free entry, bragging rights and badges.',
+        type: 'GRAND_TOURNAMENT', tier: 'FREE', entryFeeSOL: 0, prizePool: 0n, distribution: { "1": 1.0 },
+        tournamentId: tournamentArg.id, startDate: new Date('2026-01-01'), endDate: new Date('2026-12-31'), registrationEnd: new Date('2026-12-31'), status: 'ACTIVE'
       }
     });
 
     await prisma.contest.upsert({
-      where: { slug: 'champions-qf-midweek' },
-      update: { phaseId: phaseUefa.id, tournamentId: tournamentChampions.id },
+      where: { slug: 'lpf-2026-season-pro' },
+      update: { tournamentId: tournamentArg.id },
       create: {
-        name: 'European Cup Midweek Clashes',
-        slug: 'champions-qf-midweek',
-        description: 'The road to the final continues. Predict the Quarter Finals.',
-        type: 'MATCH_DAY',
-        tier: 'PREMIUM',
-        entryFeeSOL: 0.5,
-        prizePool: BigInt(25000000000), 
-        distribution: { "1": 1.0 },
-        tournamentId: tournamentChampions.id,
-        phaseId: phaseUefa.id,
-        startDate: new Date('2026-04-01T00:00:00Z'),
-        endDate: new Date('2026-04-15T23:59:59Z'),
-        registrationEnd: new Date('2026-04-09T19:35:00Z'),
-        status: 'UPCOMING'
+        name: 'LPF Season - Pro Glory',
+        slug: 'lpf-2026-season-pro',
+        description: 'The ultimate survival course. 1 SOL entry for the massive season pot.',
+        type: 'GRAND_TOURNAMENT', tier: 'PREMIUM', entryFeeSOL: 1.0, prizePool: BigInt(100000000000), distribution: { "1": 0.5, "2": 0.3, "3": 0.2 },
+        tournamentId: tournamentArg.id, startDate: new Date('2026-01-01'), endDate: new Date('2026-12-31'), registrationEnd: new Date('2026-12-31'), status: 'ACTIVE'
+      }
+    });
+
+    // ARGENTINA - MATCHDAY 14
+    await prisma.contest.upsert({
+      where: { slug: 'afa-md14-rookie' },
+      update: { phaseId: phaseArg.id },
+      create: {
+        name: 'Matchday 14 - Rookie Box',
+        slug: 'afa-md14-rookie',
+        description: 'Quick weekend fun. No entry fee.',
+        type: 'PHASE', tier: 'FREE', entryFeeSOL: 0, prizePool: BigInt(0), distribution: { "1": 1.0 },
+        tournamentId: tournamentArg.id, phaseId: phaseArg.id, startDate: new Date('2026-04-01'), endDate: new Date('2026-04-10'), registrationEnd: new Date('2026-04-05'), status: 'ACTIVE'
+      }
+    });
+
+    await prisma.contest.upsert({
+      where: { slug: 'afa-md14-pro' },
+      update: { phaseId: phaseArg.id },
+      create: {
+        name: 'Matchday 14 - Pro Battle',
+        slug: 'afa-md14-pro',
+        description: '0.1 SOL entry for the matchday pool.',
+        type: 'PHASE', tier: 'STANDARD', entryFeeSOL: 0.1, prizePool: 10000000000n, distribution: { "1": 0.7, "2": 0.3 },
+        tournamentId: tournamentArg.id, phaseId: phaseArg.id, startDate: new Date('2026-04-01'), endDate: new Date('2026-04-10'), registrationEnd: new Date('2026-04-05'), status: 'ACTIVE'
+      }
+    });
+
+    // UEFA - MATCHDAY (QUARTERS)
+    await prisma.contest.upsert({
+      where: { slug: 'uefa-qf-pro' },
+      update: { phaseId: phaseUefa.id },
+      create: {
+        name: 'UEFA Quarters - Pro Midweek',
+        slug: 'uefa-qf-pro',
+        description: 'The path to Paris. Predict the first legs.',
+        type: 'PHASE', tier: 'PREMIUM', entryFeeSOL: 0.5, prizePool: 50000000000n, distribution: { "1": 1.0 },
+        tournamentId: tournamentChampions.id, phaseId: phaseUefa.id, startDate: new Date('2026-04-01'), endDate: new Date('2026-04-15'), registrationEnd: new Date('2026-04-09'), status: 'UPCOMING'
       }
     });
 
     // ═══════════════════════════════════════
-    // 5. GRANT ADMIN PRIVILEGES (DEV ONLY)
+    // 7. GRANT ADMIN PRIVILEGES (DEV ONLY)
     // ═══════════════════════════════════════
     await prisma.user.updateMany({
       data: { isAdmin: true }
     });
 
-    return NextResponse.json({ success: true, message: 'Seeded hierarchical Matchdays & Granted Admin access successfully' });
+    return NextResponse.json({ success: true, message: 'Seeded Multi-Tier League Hierarchy & Granted Admin access successfully' });
 
   } catch (error) {
     console.error(error);

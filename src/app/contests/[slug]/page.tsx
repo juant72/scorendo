@@ -185,6 +185,8 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
             matches={matches} 
             existingPredictions={existingPredictions}
             isLive={isLocked}
+            isEntered={!!userEntry}
+            entryFeeSOL={contest.entryFeeSOL}
           />
         )}
       </div>

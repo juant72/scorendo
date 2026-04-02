@@ -1,208 +1,181 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
-import { locales } from '@/lib/locales';
-import { Loader2, Shield, Share2, PlusCircle, Key } from 'lucide-react';
-import { ContestCard } from '@/components/contests/ContestCard';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Trophy, ChevronRight, Users, Sparkles, Key, Lock, ArrowLeft, PlusCircle } from 'lucide-react';
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
 
-export default function ContestsLobbyPage() {
-  const { locale } = useAuthStore();
+export default function ContestsLobbyPage({ params: paramsPromise }: { params: Promise<{ locale: string }> }) {
+  const router = useRouter();
   const [competitions, setCompetitions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [inviteCode, setInviteCode] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [joining, setJoining] = useState(false);
-  const [joinError, setJoinError] = useState('');
-  const t = locales[locale].lobby;
+  const [locale, setLocale] = useState('en');
 
   useEffect(() => {
+    paramsPromise.then(p => setLocale(p.locale || 'en'));
     fetch('/api/contests')
       .then(res => res.json())
-      .then(data => {
-        setCompetitions(data.competitions || []);
-      })
-      .catch(err => console.error('Failed to fetch contests:', err))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-     return (
-       <div className="flex items-center justify-center min-h-[60vh]">
-         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-       </div>
-     );
-  }
-
-  const handleJoinPrivate = async () => {
-    if (!inviteCode || joining) return;
-    setJoining(true);
-    setJoinError('');
-    try {
-      const res = await fetch('/api/contests/join-private', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() })
+      .then(json => {
+        if (json.success) setCompetitions(json.competitions);
       });
-      const data = await res.json();
-      if (data.success) {
-        window.location.href = `/contests/${data.contestSlug}`;
-      } else {
-        setJoinError(data.error || 'Failed to join');
-      }
-    } catch (err) {
-      setJoinError('Connection error');
-    } finally {
-      setJoining(false);
-    }
-  };
+  }, [paramsPromise]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 lg:py-20 font-sans">
+    <div className="relative min-h-screen bg-midnight selection:bg-primary/30 overflow-x-hidden">
+      {/* Stadium Environment Layers */}
+      <div className="fixed inset-0 bg-net opacity-20 pointer-events-none" />
+      <div className="fixed inset-0 bg-pitch-lines opacity-10 pointer-events-none" />
       
-      {/* Create Modal */}
-      <CreatePrivateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
-      {/* Header */}
-      <div className="mb-20 text-center max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6">
-           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-           <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{t.liveNetwork}</span>
-        </div>
-        <h1 className="text-5xl sm:text-7xl font-black mb-6 tracking-tighter leading-[0.85] text-white">
-          {t.title.split('World')[0]} <span className="text-primary italic">World</span> <br/>
-          <span className="text-white opacity-90">{t.title.split('World')[1]?.trim() || 'Competitions'}</span>
-        </h1>
-        <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed">
-          {t.subtitle}
-        </p>
-      </div>
-
-      {/* Discovery Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-12 lg:py-20">
         
-        {/* Left: Global Pro Leagues */}
-        <div className="lg:col-span-8 space-y-12">
-           <h2 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground mb-8 flex items-center gap-4">
-              <span className="h-[2px] w-8 bg-primary/30" /> {locale === 'en' ? 'Professional Leagues' : 'Ligas Profesionales'}
-           </h2>
-           
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-             {competitions.length > 0 ? competitions.map((comp: any) => (
-               <div key={comp.id} className="group relative glass-strong rounded-[2.5rem] overflow-hidden border border-white/5 hover:border-primary/40 transition-all hover:-translate-y-2 shadow-2xl">
-                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                 
-                 <div className="p-8 pb-10 h-full flex flex-col justify-between">
-                    <div>
-                      <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 mb-8 flex items-center justify-center group-hover:scale-110 transition-transform shadow-inner">
-                         <Shield className="w-8 h-8 text-primary opacity-80" />
-                      </div>
-                      <h3 className="text-3xl font-black text-white mb-2 leading-tight tracking-tight">{comp.name}</h3>
-                      <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                         <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {comp.category || 'International'}
-                      </p>
+        {/* Lobby Header */}
+        <div className="mb-24 text-center md:text-left">
+           <div className="inline-block px-4 py-1 rounded-full bg-primary/10 border border-primary/20 mb-8 backdrop-blur-md">
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Global Discovery Arena</span>
+           </div>
+           <h1 className="text-6xl md:text-9xl font-black text-white uppercase tracking-tighter leading-[0.8] mb-10 drop-shadow-2xl">
+              {locale === 'en' ? 'Choose Your' : 'Elige Tu'} <br/>
+              <span className="text-primary italic">Battlefield.</span>
+           </h1>
+           <p className="max-w-2xl text-muted-foreground text-xl md:text-2xl font-medium leading-relaxed opacity-80">
+              Enter professional arenas or challenge private corporate rivalries. 
+              Secure your place in the hall of fame.
+           </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+          
+          {/* Section 1: Professional Global Hub */}
+          <div className="lg:col-span-8">
+            <div className="flex items-center justify-between mb-12 pb-8 border-b border-white/5">
+               <h2 className="text-3xl font-black text-white uppercase italic tracking-wider flex items-center gap-4">
+                  <Trophy className="text-yellow-500 w-8 h-8" /> Pro Arenas
+               </h2>
+               <div className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{competitions.length} Global Leagues Active</div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {competitions.length > 0 ? competitions.map((comp) => (
+                 <div 
+                   key={comp.id} 
+                   onClick={() => router.push(`/contests/league/${comp.slug}`)}
+                   className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10 hover:border-primary/50 transition-all hover:scale-[1.02] cursor-pointer stadium-shadow"
+                 >
+                    {/* Full-bleed Background */}
+                    <div className="absolute inset-0 z-0">
+                       <img 
+                          src="/stadium_hero.png" 
+                          alt={comp.name} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 grayscale-[0.3] group-hover:grayscale-0" 
+                       />
+                       <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent z-10" />
                     </div>
 
-                    <div className="mt-12 space-y-3">
-                      {comp.tournaments?.flatMap((t: any) => t.contests || []).map((contest: any) => (
-                         <div 
-                           key={contest.id} 
-                           onClick={() => window.location.href = `/contests/${contest.slug}`}
-                           className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group/contest cursor-pointer"
-                         >
-                            <div className="flex items-center gap-3">
-                               <div className="text-primary"><PlusCircle className="w-4 h-4" /></div>
-                               <div>
-                                 <div className="text-xs font-black text-white group-hover/contest:text-primary transition-colors">{contest.name}</div>
-                                 <div className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">{contest.status}</div>
-                               </div>
-                            </div>
-                            <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover/contest:bg-primary group-hover/contest:text-white transition-all">
-                               <span className="text-[10px] font-black">→</span>
-                            </div>
-                         </div>
-                      ))}
+                    {/* Content Overlay */}
+                    <div className="relative z-20 h-full p-10 flex flex-col justify-between">
+                       <div className="flex justify-between items-start">
+                          <div className="h-16 w-16 rounded-2xl bg-midnight/80 backdrop-blur-xl border border-white/20 p-3 stadium-shadow flex items-center justify-center">
+                             {comp.logoUrl ? (
+                                <img src={comp.logoUrl} className="w-full h-full object-contain" alt="Lg" />
+                             ) : (
+                                <Shield className="w-8 h-8 text-primary/40" />
+                             )}
+                          </div>
+                          <div className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md">
+                             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">{comp.category || 'Major League'}</span>
+                          </div>
+                       </div>
 
-                      {(!comp.tournaments || comp.tournaments.length === 0) && (
-                        <p className="text-xs text-muted-foreground italic px-4 py-8 border border-dashed border-white/10 rounded-2xl text-center">
-                          No active matchdays discovered.
-                        </p>
-                      )}
+                       <div className="space-y-6">
+                          <h3 className="text-5xl font-black text-white uppercase tracking-tighter leading-[0.85] italic drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
+                             {comp.name}
+                          </h3>
+                          
+                          <div className="flex items-center justify-between">
+                             <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                <span className="text-xs font-black text-white/60 uppercase tracking-widest">{comp.country || 'International'} Arena</span>
+                             </div>
+                             <div className="h-14 px-8 rounded-2xl bg-primary text-midnight font-black text-xs uppercase tracking-widest flex items-center justify-center shadow-[0_10px_30px_rgba(0,230,118,0.3)] group-hover:scale-105 transition-transform">
+                                Enter Arena
+                             </div>
+                          </div>
+                       </div>
                     </div>
+
+                    {/* Shimmer overlay for premium feel */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
                  </div>
-               </div>
-             )) : (
-                <div className="sm:col-span-2 text-center py-20 glass rounded-[2.5rem] border-dashed border-white/10">
-                   <p className="text-muted-foreground">Initializing world databases...</p>
+              )) : (
+                <div className="col-span-full py-24 glass rounded-[4rem] text-center border-dashed border-white/10">
+                   <div className="text-primary/20 mb-6 flex justify-center"><Sparkles className="w-12 h-12" /></div>
+                   <p className="text-xl font-black text-white/20 uppercase tracking-widest italic leading-none">Scanning World Leagues</p>
                 </div>
-             )}
-           </div>
+              )}
+            </div>
+          </div>
+
+          {/* Section 2: Private & Corporate Entry */}
+          <div className="lg:col-span-4">
+            <div className="flex items-center justify-between mb-12 pb-8 border-b border-white/5">
+               <h2 className="text-3xl font-black text-white uppercase italic tracking-wider flex items-center gap-4">
+                  <Lock className="text-primary w-8 h-8" /> Private Battle
+               </h2>
+            </div>
+            
+            <div className="space-y-10">
+               {/* Join Private Card */}
+               <div className="glass-strong p-12 rounded-[4rem] border-primary/20 stadium-shadow group relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-[80px]" />
+                  <div className="h-16 w-16 rounded-[1.5rem] bg-primary/10 border border-primary/30 flex items-center justify-center text-primary mb-10 group-hover:rotate-12 transition-transform">
+                     <Key className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4 leading-none">Got a Code?</h3>
+                  <p className="text-muted-foreground text-sm font-medium mb-10 opacity-70">Enter your private invite key to join your team or company's custom battleground.</p>
+                  
+                  {/* Simplified Input for now or use component */}
+                  <div className="flex gap-4">
+                     <input 
+                        type="text" 
+                        placeholder="ENTER CODE" 
+                        className="flex-1 h-14 bg-midnight/80 border-2 border-white/10 rounded-2xl px-6 text-white font-black tracking-widest focus:border-primary outline-none transition-all stadium-shadow uppercase"
+                     />
+                     <button className="h-14 w-14 bg-primary rounded-2xl flex items-center justify-center text-midnight shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:scale-105 transition-transform active:scale-95">
+                        <ChevronRight className="w-6 h-6" />
+                     </button>
+                  </div>
+               </div>
+
+               {/* Create Private Tool */}
+               <div 
+                 onClick={() => setIsModalOpen(true)}
+                 className="relative group glass-strong rounded-[4rem] p-12 border-dashed border-white/10 cursor-pointer overflow-hidden hover:border-gold/30 transition-all stadium-shadow"
+               >
+                  <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-center justify-between mb-10">
+                     <div className="p-4 bg-gold/10 rounded-2xl border border-gold/20 text-gold group-hover:scale-110 transition-transform">
+                        <Sparkles className="w-10 h-10" />
+                     </div>
+                     <ChevronRight className="w-8 h-8 text-gold/20 group-hover:translate-x-3 transition-transform group-hover:text-gold" />
+                  </div>
+                  <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-2 italic leading-none">Clone a Arena</h3>
+                  <p className="text-[10px] text-gold font-black uppercase tracking-[0.4em] mb-4">Managers Tool</p>
+                  <p className="text-xs text-muted-foreground font-medium opacity-60">Host your own private league by cloning any active professional tournament.</p>
+                  
+                  <img 
+                    src="/corporate_league_branding_hero_1775133754640.png" 
+                    className="absolute -bottom-20 -right-20 w-64 h-64 opacity-5 group-hover:opacity-20 grayscale transition-all duration-1000" 
+                    alt="Stadium Backdrop"
+                  />
+               </div>
+            </div>
+          </div>
+
         </div>
+      </main>
 
-        {/* Right: Private Corporate Leagues */}
-        <div className="lg:col-span-4 lg:border-l border-white/5 lg:pl-12 space-y-12">
-           <h2 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground mb-8 flex items-center gap-4">
-              <span className="h-[2px] w-8 bg-primary/50" /> {locale === 'en' ? 'Private Battles' : 'Batallas Privadas'}
-           </h2>
-
-           <div className="space-y-8">
-              {/* Join via Code */}
-              <div className="glass-strong rounded-[2.5rem] p-10 border border-primary/20 relative overflow-hidden group shadow-2xl">
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
-                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                    <Key className="w-6 h-6 text-primary" />
-                 </div>
-                 <h4 className="text-2xl font-black text-white mb-2">{locale === 'en' ? 'Got an Invite?' : '¿Tienes Invitación?'}</h4>
-                 <p className="text-sm text-muted-foreground mb-8 leading-relaxed">Enter the league code to join your company or team battle.</p>
-                 
-                 <div className="space-y-4">
-                   <input 
-                     type="text" 
-                     value={inviteCode}
-                     onChange={(e) => {
-                       setInviteCode(e.target.value);
-                       setJoinError('');
-                     }}
-                     placeholder="CODE-123-ABC"
-                     className={`w-full h-14 bg-black/40 border rounded-2xl px-4 text-center font-mono text-lg font-bold tracking-[0.2em] focus:border-primary outline-none transition-all placeholder:text-white/10 ${joinError ? 'border-red-500/50' : 'border-white/10'}`}
-                   />
-                   {joinError && <p className="text-[10px] text-red-400 font-bold text-center animate-pulse">{joinError}</p>}
-                   <button 
-                     onClick={handleJoinPrivate}
-                     disabled={joining || !inviteCode}
-                     className="w-full h-14 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest hover:glow-green transition-all shadow-lg active:scale-95 disabled:opacity-50"
-                   >
-                      {joining ? <Loader2 className="animate-spin mx-auto w-5 h-5" /> : (locale === 'en' ? 'Join League' : 'Unirse a la Liga')}
-                   </button>
-                 </div>
-              </div>
-
-              {/* Create Private League */}
-              <div 
-                onClick={() => setIsModalOpen(true)}
-                className="glass-strong rounded-[2.5rem] p-10 border border-white/5 hover:border-primary/40 transition-all group cursor-pointer relative overflow-hidden"
-              >
-                 <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 mb-6 flex items-center justify-center group-hover:bg-primary/20 transition-all shadow-inner">
-                    <PlusCircle className="w-7 h-7 text-primary" />
-                 </div>
-                 <h4 className="text-xl font-black text-white mb-2 leading-tight">{locale === 'en' ? 'Sponsor a League' : 'Patrocinar una Liga'}</h4>
-                 <p className="text-xs text-muted-foreground leading-relaxed">Clone a pro tournament for your company and lead the private scoreboard.</p>
-                 
-                 <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase text-primary opacity-50 group-hover:opacity-100 transition-opacity">
-                    <span>{locale === 'en' ? 'Click to Start' : 'Click para Empezar'}</span>
-                    <span>→</span>
-                 </div>
-              </div>
-
-              {/* Information / Disclaimer */}
-              <div className="p-8 rounded-3xl bg-white/5 border border-white/5 text-[10px] text-muted-foreground/60 leading-relaxed italic">
-                 Private leagues are isolated pools. Results are cloned from professional matchdays but scores and prizes are independent.
-              </div>
-           </div>
-        </div>
-      </div>
-
+      <CreatePrivateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

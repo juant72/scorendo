@@ -8,8 +8,9 @@ const SECRET_KEY = new TextEncoder().encode(
 
 // We define our payload shape
 export interface JWTPayload {
-  sub: string; // the wallet address
+  sub: string;
   wallet: string;
+  isAdmin?: boolean;
   iat?: number;
   exp?: number;
 }
@@ -55,11 +56,13 @@ export function verifySignature(message: string, signature: string | Buffer | Ui
  * Creates a JWT token for the authenticated user.
  * 
  * @param walletAddress The authenticated wallet address
+ * @param isAdmin Whether the user is an admin
  */
-export async function createSessionToken(walletAddress: string): Promise<string> {
+export async function createSessionToken(walletAddress: string, isAdmin: boolean = false): Promise<string> {
   const token = await new SignJWT({
     sub: walletAddress,
     wallet: walletAddress,
+    isAdmin,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()

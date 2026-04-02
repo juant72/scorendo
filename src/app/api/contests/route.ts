@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       typeof value === 'bigint' ? value.toString() : value
     ));
 
-    return NextResponse.json({ competitions: serializedCompetitions });
+    return NextResponse.json({ success: true, competitions: serializedCompetitions });
 
   } catch (error) {
     console.error('Fetch Contests Error:', error);

@@ -36,14 +36,14 @@ export async function POST(req: NextRequest) {
 
     // 2. TIMELOCK CHECK: Multi-level safety
     // We prevent submission if the earliest match in the contest starts in < 10 mins.
-    const allMatches = contest.phase?.matches || contest.tournament?.phases.flatMap(p => p.matches) || [];
-    const validMatchesForThisContest = allMatches.filter(m => {
-       // Filtering logic depends on contest type if needed, but for now we look at all matches in scope
+    const allMatches = contest.phase?.matches || (contest.tournament?.phases?.flatMap((p: any) => p.matches) || []);
+    const validMatchesForThisContest = allMatches.filter((m: any) => {
        return true; 
     });
 
     if (validMatchesForThisContest.length > 0) {
-      const earliestKickoff = Math.min(...validMatchesForThisContest.map(m => m.kickoff.getTime()));
+      const kickoffTimes = validMatchesForThisContest.map((m: any) => m.kickoff instanceof Date ? m.kickoff.getTime() : new Date(m.kickoff).getTime());
+      const earliestKickoff = Math.min(...kickoffTimes);
       const now = Date.now();
       const BUFFER_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -56,14 +56,13 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. We use a Prisma transaction to ensure all predictions are saved atomically
-    const savedPredictions = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const savedPredictions = await prisma.$transaction(async (tx: any) => {
       // Check if user already has an entry
       let userEntry = await tx.userContestEntry.findUnique({
         where: { userWallet_contestId: { userWallet, contestId } }
       });
 
-      // If it's a PAID contest, they must have a pre-existing paid entry (Payment flow happens separately)
-      // DEV-MODE: Allow Admins to bypass payment check
+      // If it's a PAID contest, they must have a pre-existing paid entry
       if (contest.entryFeeSOL > 0 && !session.isAdmin) {
         if (!userEntry || !userEntry.entryPaid) {
           throw new Error('PAYMENT_REQUIRED');
@@ -83,9 +82,10 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // 3. Upsert predictions
-      const ops = predictions.map(p => {
-        return tx.prediction.upsert({
+      // 3. Upsert predictions (sequentially to avoid race conditions in Prisma transactions)
+      const results = [];
+      for (const p of (predictions as any[])) {
+        const res = await tx.prediction.upsert({
           where: { userWallet_matchId_contestId: { userWallet, matchId: p.matchId, contestId } },
           update: {
             predictedHome: p.predictedHome,
@@ -101,12 +101,13 @@ export async function POST(req: NextRequest) {
             predictedWinner: p.predictedWinner as PredictionOutcome,
           }
         });
-      });
+        results.push(res);
+      }
 
-      return Promise.all(ops);
-    });
+      return results;
+    }, { timeout: 15000 });
 
-    // Also update Contest entry counts if it's their first time
+    // Update entry count
     const count = await prisma.userContestEntry.count({ where: { contestId } });
     await prisma.contest.update({
       where: { id: contestId },
@@ -115,8 +116,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, count: savedPredictions.length });
 
-  } catch (error) {
-    console.error('Prediction Submission Error:', error);
-    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('CRITICAL: Prediction Submission Failed:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' ? (error.message || String(error)) : 'Internal Server Error' 
+    }, { status: 500 });
   }
 }
+

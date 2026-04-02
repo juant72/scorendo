@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. Generate JWT Token
-    const token = await createSessionToken(user.walletAddress);
+    const token = await createSessionToken(user.walletAddress, user.isAdmin);
 
     // 4. Set HttpOnly Cookie for Session
     // Next.js 15 requires awaiting the cookies function
