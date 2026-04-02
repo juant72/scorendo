@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: scorendo-db
+    restart: always
+    environment:
+      POSTGRES_USER: scorendouser
+      POSTGRES_PASSWORD: scorendopassword
+      POSTGRES_DB: scorendodb
+    ports:
+      # Exponemos en el 5433 por si ya tenés el 5432 ocupado por otro motor.
+      - "5433:5432"
+    volumes:
+      - scorendo-pgdata:/var/lib/postgresql/data
+
+volumes:
+  scorendo-pgdata:
