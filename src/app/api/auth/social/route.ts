@@ -26,11 +26,12 @@ export async function POST(req: NextRequest) {
     );
 
     try {
-      const { payload } = await jose.jwtVerify(accessToken, JWKS);
-
-      if (payload.app_id !== PRIVY_APP_ID) {
-        throw new Error(`Invalid App ID claim. Expected ${PRIVY_APP_ID}, got ${payload.app_id}`);
-      }
+      // The cryptographic signature inherently validates against our unique App JWKS.
+      // We pass audience to ensure the JWT contains the correct aud claim natively.
+      const { payload } = await jose.jwtVerify(accessToken, JWKS, {
+        audience: PRIVY_APP_ID
+      });
+      console.log('Frictionless Auth Successful for:', payload.sub);
     } catch (e: any) {
       console.error('Privy token verification failed:', e);
       let errorDetail = e.message;

@@ -5,6 +5,8 @@ import { Trophy, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { useAuthStore } from '@/store/useAuthStore';
+import { LanguageSelector } from './LanguageSelector';
+import { locales } from '@/lib/locales';
 
 const NAV_LINKS = [
   { href: '/matches', label: 'Matches' },
@@ -15,7 +17,15 @@ const NAV_LINKS = [
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { isAuthenticated, locale } = useAuthStore();
+  const t = locales[locale].nav;
+
+  const navLinks = [
+    { href: '/matches', label: t.matches },
+    { href: '/contests', label: t.contests },
+    { href: '/ranking', label: t.rankings },
+    { href: '/how-it-works', label: t.howItWorks },
+  ];
 
   return (
     <header className="sticky top-0 z-50 glass-strong">
@@ -34,7 +44,7 @@ export function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -48,13 +58,16 @@ export function Header() {
                 href="/dashboard"
                 className="px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors rounded-md hover:bg-primary/5"
               >
-                Dashboard
+                {t.dashboard}
               </Link>
             )}
           </nav>
 
           {/* Wallet + Mobile Toggle */}
           <div className="flex items-center gap-3">
+            <div className="hidden sm:block">
+              <LanguageSelector />
+            </div>
             <AuthButton />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -69,7 +82,10 @@ export function Header() {
         {/* Mobile Nav */}
         {mobileOpen && (
           <nav className="md:hidden pb-4 border-t border-border/50 mt-2 pt-4 space-y-1">
-            {NAV_LINKS.map((link) => (
+            <div className="px-3 pb-3 sm:hidden">
+              <LanguageSelector />
+            </div>
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -85,7 +101,7 @@ export function Header() {
                 onClick={() => setMobileOpen(false)}
                 className="block px-3 py-2 text-sm font-medium text-primary rounded-md hover:bg-primary/5"
               >
-                Dashboard
+                {t.dashboard}
               </Link>
             )}
           </nav>

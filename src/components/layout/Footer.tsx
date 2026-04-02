@@ -38,20 +38,34 @@ export function Footer() {
         </div>
 
         {/* Legals */}
-        <div>
+        <div className="col-span-1 md:col-span-1">
           <h4 className="font-bold mb-4 text-foreground">Legal & Help</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link href="/how-it-works" className="hover:text-primary transition-colors">How It Works</Link></li>
             <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
             <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-            <li><a href="#" className="hover:text-primary transition-colors">Support</a></li>
           </ul>
         </div>
         
       </div>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-border/10 flex flex-col md:flex-row items-center justify-between text-xs text-muted-foreground">
+
+      {/* Mandatory Option A Legal Disclaimer */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-12 py-8 border-t border-border/10">
+        <p className="text-[10px] leading-relaxed text-muted-foreground/60 italic text-center max-w-4xl mx-auto">
+          <strong>LEGAL NOTICE:</strong> Scorendo is an independent, skill-based sports prediction platform. This application is 
+          <strong> NOT affiliated with, sponsored by, nor endorsed by </strong> 
+          any official sports league (including but not limited to FIFA, UEFA, AFA, or La Liga), 
+          nor any individual professional sports club or athlete. 
+          All team names, competition names, and match data displayed are used for 
+          <strong> informational and identification purposes only </strong> (Nominative Fair Use). 
+          No official logos or protected trademarks are used to imply a commercial relationship. 
+          Users must be of legal age and reside in a jurisdiction where skill-based gaming is permitted.
+        </p>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 border-t border-border/5 flex flex-col md:flex-row items-center justify-between text-xs text-muted-foreground">
         <p>© {new Date().getFullYear()} Scorendo Inc. All rights reserved.</p>
-        <p className="mt-2 md:mt-0">Built on Solana ⚡</p>
+        <p className="mt-2 md:mt-0 italic font-medium">Built on Solana ⚡</p>
       </div>
     </footer>
   );

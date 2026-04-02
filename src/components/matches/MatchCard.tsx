@@ -1,5 +1,5 @@
 import { MatchStatus, PredictionOutcome } from '@prisma/client';
-import { formatDateShort, getStatusColor, getFlagUrl } from '@/lib/utils';
+import { formatDateShort, getStatusColor, getTeamLogoUrl } from '@/lib/utils';
 import { Clock, MapPin, Trophy } from 'lucide-react';
 
 interface TeamProps {
@@ -21,6 +21,7 @@ interface MatchCardProps {
   predictedWinner?: PredictionOutcome | null;
   // Visual variations
   variant?: 'default' | 'prediction' | 'compact';
+  renderCenter?: React.ReactNode;
 }
 
 export function MatchCard({
@@ -36,6 +37,7 @@ export function MatchCard({
   onClick,
   predictedWinner,
   variant = 'default',
+  renderCenter,
 }: MatchCardProps) {
   const isFinished = status === MatchStatus.FINISHED;
   const isLive = status === MatchStatus.LIVE;
@@ -94,7 +96,7 @@ export function MatchCard({
            <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent shadow-inner
              ${predictedWinner === PredictionOutcome.HOME ? 'border-primary glow-green' : 'border-white/10'}  
            `}>
-             <img src={getFlagUrl(homeTeam.code)} alt={homeTeam.name} className="h-full w-full object-cover" />
+             <img src={getTeamLogoUrl(homeTeam.code, homeTeam.name)} alt={homeTeam.name} className="h-full w-full object-cover" />
            </div>
            <div className="mt-2 sm:mt-0 text-center sm:text-left">
              <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{homeTeam.name}</div>
@@ -104,7 +106,9 @@ export function MatchCard({
 
         {/* Score / VS Divider */}
         <div className="flex flex-col items-center justify-center w-[20%] z-10">
-          {(isLive || isFinished) ? (
+          {renderCenter ? (
+            renderCenter
+          ) : (isLive || isFinished) ? (
             <div className="flex items-center gap-2 sm:gap-3 bg-black/40 px-3 sm:px-4 py-2 rounded-lg border border-white/5">
               <span className="text-2xl sm:text-3xl font-black text-white tabular-nums drop-shadow-md">{homeScore ?? 0}</span>
               <span className="text-sm font-bold text-muted-foreground/50">-</span>
@@ -120,7 +124,7 @@ export function MatchCard({
            <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent shadow-inner
              ${predictedWinner === PredictionOutcome.AWAY ? 'border-primary glow-green' : 'border-white/10'}
            `}>
-             <img src={getFlagUrl(awayTeam.code)} alt={awayTeam.name} className="h-full w-full object-cover" />
+             <img src={getTeamLogoUrl(awayTeam.code, awayTeam.name)} alt={awayTeam.name} className="h-full w-full object-cover" />
            </div>
            <div className="mt-2 sm:mt-0 text-center sm:text-right">
              <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{awayTeam.name}</div>

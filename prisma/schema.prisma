@@ -26,6 +26,7 @@ model User {
   totalPredictions Int      @default(0)
   accuracy         Float    @default(0)
   isAdmin          Boolean  @default(false)
+  language         String   @default("en")
 
   predictions      Prediction[]
   contestEntries   UserContestEntry[]
@@ -50,13 +51,26 @@ model Session {
 // TOURNAMENT STRUCTURE
 // ═══════════════════════════════════════
 
+model Competition {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  category    String?      // e.g., 'Domestic League', 'International Cup'
+  country     String?
+  logoUrl     String?
+  tournaments Tournament[]
+  createdAt   DateTime     @default(now())
+}
+
 model Tournament {
-  id        String           @id @default(cuid())
-  name      String
-  slug      String           @unique
-  startDate DateTime
-  endDate   DateTime
-  status    TournamentStatus @default(UPCOMING)
+  id            String           @id @default(cuid())
+  competitionId String?
+  competition   Competition?     @relation(fields: [competitionId], references: [id])
+  name          String
+  slug          String           @unique
+  startDate     DateTime
+  endDate       DateTime
+  status        TournamentStatus @default(UPCOMING)
 
   phases    Phase[]
   teams     TournamentTeam[]
@@ -232,6 +246,10 @@ model Contest {
   description      String?
   type             ContestType
   tier             ContestTier   @default(FREE)
+  isPrivate        Boolean       @default(false)
+  inviteCode       String?       @unique
+  customLogoUrl    String?
+  customBrandName  String?
 
   // Prize pool — non-custodial architecture
   // Phase 1: treasuryWallet (multisig via Squads)

@@ -76,9 +76,10 @@ export function AuthButton() {
         }
         console.warn('Social silent auth failed, falling back to Web3 signature', data.error);
         
-        // If the user does not have an external Web3 wallet, falling back to a signature modal is bad UX.
-        // We abort here so the developer knows the Social Auth route is broken, rather than forcing a Web2 user to sign.
-        if (wallets.length === 0) {
+        // If the user is using an internal Privy embedded wallet (from Google/Email), falling back to a manual Signature is bad UX and might crash.
+        const isExternalWallet = wallets.length > 0 && (wallets[0] as any).walletClientType !== 'privy';
+        
+        if (!isExternalWallet) {
            setIsSigning(false);
            setAuthError(`Verification Error: ${data.error}`);
            return;

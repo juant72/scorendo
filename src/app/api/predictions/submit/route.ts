@@ -23,13 +23,39 @@ export async function POST(req: NextRequest) {
 
     const userWallet = session.wallet as string;
 
-    // 1. Fetch the Contest to evaluate the entry fee
-    const contest = await prisma.contest.findUnique({ where: { id: contestId } });
+    const contest = await prisma.contest.findUnique({ 
+      where: { id: contestId },
+      include: {
+        tournament: { include: { phases: { include: { matches: true } } } },
+        phase: { include: { matches: true } }
+      }
+    });
     if (!contest) {
       return NextResponse.json({ success: false, error: 'Contest not found' }, { status: 404 });
     }
 
-    // 2. We use a Prisma transaction to ensure all predictions are saved atomically
+    // 2. TIMELOCK CHECK: Multi-level safety
+    // We prevent submission if the earliest match in the contest starts in < 10 mins.
+    const allMatches = contest.phase?.matches || contest.tournament?.phases.flatMap(p => p.matches) || [];
+    const validMatchesForThisContest = allMatches.filter(m => {
+       // Filtering logic depends on contest type if needed, but for now we look at all matches in scope
+       return true; 
+    });
+
+    if (validMatchesForThisContest.length > 0) {
+      const earliestKickoff = Math.min(...validMatchesForThisContest.map(m => m.kickoff.getTime()));
+      const now = Date.now();
+      const BUFFER_MS = 10 * 60 * 1000; // 10 minutes
+
+      if (now > (earliestKickoff - BUFFER_MS)) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'LOCKED: Submission window closed 10 mins before kickoff.' 
+        }, { status: 403 });
+      }
+    }
+
+    // 3. We use a Prisma transaction to ensure all predictions are saved atomically
     const savedPredictions = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Check if user already has an entry
       let userEntry = await tx.userContestEntry.findUnique({
@@ -37,7 +63,8 @@ export async function POST(req: NextRequest) {
       });
 
       // If it's a PAID contest, they must have a pre-existing paid entry (Payment flow happens separately)
-      if (contest.entryFeeSOL > 0) {
+      // DEV-MODE: Allow Admins to bypass payment check
+      if (contest.entryFeeSOL > 0 && !session.isAdmin) {
         if (!userEntry || !userEntry.entryPaid) {
           throw new Error('PAYMENT_REQUIRED');
         }

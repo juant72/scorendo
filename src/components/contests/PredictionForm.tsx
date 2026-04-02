@@ -54,16 +54,22 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   };
 
   const handleScoreChange = (matchId: string, team: 'home' | 'away', val: string) => {
-    // Only allow numbers
-    if (val && !/^\\d+$/.test(val)) return;
+    // We remove aggressive regex checks because some OS keyboards append zero-width spaces or behave weirdly.
+    // Allow raw state entry, and sanitize at submission.
     
-    setPredictions(prev => ({
-      ...prev,
-      [matchId]: {
-        ...prev[matchId],
-        [team]: val
-      }
-    }));
+    // Optional: Just strip alphabetical characters safely without aborting
+    const safeVal = val.replace(/[^0-9]/g, '').slice(0, 2);
+
+    setPredictions(prev => {
+      const currentMatch = prev[matchId] || { home: '', away: '' };
+      return {
+        ...prev,
+        [matchId]: {
+          ...currentMatch,
+          [team]: safeVal
+        }
+      };
+    });
     setSaveStatus(null);
   };
 
@@ -156,32 +162,32 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                  status={match.status as MatchStatus}
                  phaseName="Group Stage" // Dummy fallback or derived
                  predictedWinner={winner}
+                 renderCenter={
+                   <div className="flex items-center justify-center gap-4 sm:gap-6">
+                     <input 
+                       type="text"
+                       inputMode="numeric"
+                       maxLength={2}
+                       value={pred.home}
+                       onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                       disabled={isLive || saving}
+                       className="w-14 h-14 sm:w-16 sm:h-16 bg-black/80 border-2 border-white/20 rounded-xl text-center text-2xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.5)] focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all focus:glow-green outline-none disabled:opacity-50"
+                       placeholder="-"
+                     />
+                     <span className="text-muted-foreground/50 font-bold">:</span>
+                     <input 
+                       type="text"
+                       inputMode="numeric"
+                       maxLength={2}
+                       value={pred.away}
+                       onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                       disabled={isLive || saving}
+                       className="w-14 h-14 sm:w-16 sm:h-16 bg-black/80 border-2 border-white/20 rounded-xl text-center text-2xl font-black text-white shadow-[0_0_20px_rgba(0,0,0,0.5)] focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all focus:glow-green outline-none disabled:opacity-50"
+                       placeholder="-"
+                     />
+                   </div>
+                 }
                />
-               
-               {/* Overlay Inputs */}
-               <div className="absolute inset-0 z-20 flex items-center justify-center gap-6 sm:gap-14 pointer-events-none">
-                 <input 
-                   type="text"
-                   maxLength={2}
-                   value={pred.home}
-                   onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                   disabled={isLive || saving}
-                   className="w-16 h-16 sm:w-20 sm:h-20 bg-black/60 border-2 border-white/10 rounded-2xl text-center text-3xl font-black text-white pointer-events-auto shadow-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all focus:glow-green outline-none disabled:opacity-50"
-                   placeholder="-"
-                 />
-                 
-                 <div className="w-12" /> {/* Space over VS */}
-                 
-                 <input 
-                   type="text"
-                   maxLength={2}
-                   value={pred.away}
-                   onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                   disabled={isLive || saving}
-                   className="w-16 h-16 sm:w-20 sm:h-20 bg-black/60 border-2 border-white/10 rounded-2xl text-center text-3xl font-black text-white pointer-events-auto shadow-2xl focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all focus:glow-green outline-none disabled:opacity-50"
-                   placeholder="-"
-                 />
-               </div>
             </div>
           );
         })}
