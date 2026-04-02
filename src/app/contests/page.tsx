@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trophy, ChevronRight, Users, Sparkles, Key, Lock, ArrowLeft, PlusCircle } from 'lucide-react';
+import { Trophy, ChevronRight, Users, Sparkles, Key, Lock, ArrowLeft, PlusCircle, Shield } from 'lucide-react';
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
 
 export default function ContestsLobbyPage({ params: paramsPromise }: { params: Promise<{ locale: string }> }) {
@@ -164,7 +164,7 @@ export default function ContestsLobbyPage({ params: paramsPromise }: { params: P
                   <p className="text-xs text-muted-foreground font-medium opacity-60">Host your own private league by cloning any active professional tournament.</p>
                   
                   <img 
-                    src="/corporate_league_branding_hero_1775133754640.png" 
+                    src="/corporate_hero.png" 
                     className="absolute -bottom-20 -right-20 w-64 h-64 opacity-5 group-hover:opacity-20 grayscale transition-all duration-1000" 
                     alt="Stadium Backdrop"
                   />

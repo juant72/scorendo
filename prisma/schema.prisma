@@ -7,99 +7,78 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ═══════════════════════════════════════
-// USERS & AUTH
-// ═══════════════════════════════════════
-
 model User {
-  walletAddress    String   @id
+  walletAddress    String             @id
   displayName      String?
-  email            String?  @unique
-  avatarUrl        String?
   avatarSeed       String?
-
-  totalPoints      Int      @default(0)
-  currentStreak    Int      @default(0)
-  bestStreak       Int      @default(0)
-  totalCorrect     Int      @default(0)
-  totalExact       Int      @default(0)
-  totalPredictions Int      @default(0)
-  accuracy         Float    @default(0)
-  isAdmin          Boolean  @default(false)
-  language         String   @default("en")
-
+  totalPoints      Int                @default(0)
+  currentStreak    Int                @default(0)
+  bestStreak       Int                @default(0)
+  totalCorrect     Int                @default(0)
+  totalExact       Int                @default(0)
+  totalPredictions Int                @default(0)
+  accuracy         Float              @default(0)
+  isAdmin          Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  avatarUrl        String?
+  email            String?            @unique
+  language         String             @default("en")
   predictions      Prediction[]
-  contestEntries   UserContestEntry[]
   transactions     Transaction[]
   achievements     UserAchievement[]
-
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  contestEntries   UserContestEntry[]
 }
 
 model Session {
-  id          String   @id @default(cuid())
-  userWallet  String
-  token       String   @unique
-  expiresAt   DateTime
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userWallet String
+  token      String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
 
   @@index([token])
 }
-
-// ═══════════════════════════════════════
-// TOURNAMENT STRUCTURE
-// ═══════════════════════════════════════
 
 model Competition {
   id          String       @id @default(cuid())
   name        String
   slug        String       @unique
-  category    String?      // e.g., 'Domestic League', 'International Cup'
+  category    String?
   country     String?
   logoUrl     String?
-  tournaments Tournament[]
   createdAt   DateTime     @default(now())
+  tournaments Tournament[]
 }
 
 model Tournament {
   id            String           @id @default(cuid())
-  competitionId String?
-  competition   Competition?     @relation(fields: [competitionId], references: [id])
   name          String
   slug          String           @unique
   startDate     DateTime
   endDate       DateTime
   status        TournamentStatus @default(UPCOMING)
-
-  phases    Phase[]
-  teams     TournamentTeam[]
-  contests  Contest[]
-
-  createdAt DateTime @default(now())
-}
-
-enum TournamentStatus {
-  UPCOMING
-  GROUP_STAGE
-  KNOCKOUT
-  FINISHED
+  createdAt     DateTime         @default(now())
+  competitionId String?
+  contests      Contest[]
+  phases        Phase[]
+  competition   Competition?     @relation(fields: [competitionId], references: [id])
+  teams         TournamentTeam[]
 }
 
 model Phase {
   id           String     @id @default(cuid())
   tournamentId String
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
   name         String
   slug         String
   order        Int
   startDate    DateTime
   endDate      DateTime
   multiplier   Float      @default(1.0)
-
-  matches      Match[]
-  groups       Group[]
   contests     Contest[]
+  groups       Group[]
+  matches      Match[]
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
 
   @@unique([tournamentId, slug])
 }
@@ -107,9 +86,8 @@ model Phase {
 model Group {
   id      String           @id @default(cuid())
   phaseId String
-  phase   Phase            @relation(fields: [phaseId], references: [id])
   name    String
-
+  phase   Phase            @relation(fields: [phaseId], references: [id])
   teams   TournamentTeam[]
 
   @@unique([phaseId, name])
@@ -121,21 +99,20 @@ model Team {
   code          String           @unique
   flagUrl       String?
   confederation String
-
-  homeMatches   Match[]          @relation("HomeTeam")
   awayMatches   Match[]          @relation("AwayTeam")
+  homeMatches   Match[]          @relation("HomeTeam")
   tournaments   TournamentTeam[]
 }
 
 model TournamentTeam {
   id           String     @id @default(cuid())
   teamId       String
-  team         Team       @relation(fields: [teamId], references: [id])
   tournamentId String
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
   groupId      String?
-  group        Group?     @relation(fields: [groupId], references: [id])
   seed         Int?
+  group        Group?     @relation(fields: [groupId], references: [id])
+  team         Team       @relation(fields: [teamId], references: [id])
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
 
   @@unique([teamId, tournamentId])
 }
@@ -147,8 +124,174 @@ model Venue {
   country  String
   zone     VenueZone
   capacity Int?
-
   matches  Match[]
+}
+
+model Match {
+  id          String       @id @default(cuid())
+  phaseId     String
+  matchNumber Int
+  homeTeamId  String
+  awayTeamId  String
+  venueId     String?
+  kickoff     DateTime
+  status      MatchStatus  @default(SCHEDULED)
+  homeScore   Int?
+  awayScore   Int?
+  extraTime   Boolean      @default(false)
+  penalties   Boolean      @default(false)
+  updatedAt   DateTime     @updatedAt
+  awayTeam    Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  homeTeam    Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  phase       Phase        @relation(fields: [phaseId], references: [id])
+  venue       Venue?       @relation(fields: [venueId], references: [id])
+  predictions Prediction[]
+
+  @@index([phaseId])
+  @@index([kickoff])
+  @@index([status])
+}
+
+model Prediction {
+  id              String            @id @default(cuid())
+  userWallet      String
+  matchId         String
+  contestId       String
+  predictedWinner PredictionOutcome
+  predictedHome   Int?
+  predictedAway   Int?
+  pointsEarned    Int               @default(0)
+  isCorrectWinner Boolean           @default(false)
+  isExactScore    Boolean           @default(false)
+  scored          Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  contest         Contest           @relation(fields: [contestId], references: [id])
+  match           Match             @relation(fields: [matchId], references: [id])
+  user            User              @relation(fields: [userWallet], references: [walletAddress])
+
+  @@unique([userWallet, matchId, contestId])
+  @@index([matchId])
+  @@index([userWallet])
+  @@index([contestId])
+}
+
+model Contest {
+  id               String             @id @default(cuid())
+  name             String
+  slug             String             @unique
+  description      String?
+  type             ContestType
+  tier             ContestTier        @default(FREE)
+  entryFeeLamports BigInt             @default(0)
+  entryFeeSOL      Float              @default(0)
+  prizePool        BigInt             @default(0)
+  treasuryWallet   String?
+  vaultPDA         String?
+  vaultBump        Int?
+  distribution     Json
+  orgCutPercent    Float              @default(15)
+  tournamentId     String?
+  phaseId          String?
+  zone             VenueZone?
+  matchDay         DateTime?
+  startDate        DateTime
+  endDate          DateTime
+  registrationEnd  DateTime
+  status           ContestStatus      @default(UPCOMING)
+  minParticipants  Int                @default(2)
+  maxParticipants  Int?
+  currentEntries   Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  customBrandName  String?
+  customLogoUrl    String?
+  inviteCode       String?            @unique
+  isPrivate        Boolean            @default(false)
+  phase            Phase?             @relation(fields: [phaseId], references: [id])
+  tournament       Tournament?        @relation(fields: [tournamentId], references: [id])
+  predictions      Prediction[]
+  transactions     Transaction[]
+  entries          UserContestEntry[]
+
+  @@index([status])
+  @@index([type])
+  @@index([startDate])
+}
+
+model UserContestEntry {
+  id               String    @id @default(cuid())
+  userWallet       String
+  contestId        String
+  entryTxSignature String?
+  entryPaid        Boolean   @default(false)
+  entryPaidAt      DateTime?
+  isFreeEntry      Boolean   @default(false)
+  finalRank        Int?
+  finalPoints      Int       @default(0)
+  prizeAmount      BigInt?
+  prizeClaimed     Boolean   @default(false)
+  claimTxSignature String?
+  createdAt        DateTime  @default(now())
+  contest          Contest   @relation(fields: [contestId], references: [id])
+  user             User      @relation(fields: [userWallet], references: [walletAddress])
+
+  @@unique([userWallet, contestId])
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  type        TransactionType
+  userWallet  String?
+  contestId   String?
+  amount      BigInt
+  txSignature String          @unique
+  status      TxStatus        @default(PENDING)
+  createdAt   DateTime        @default(now())
+  contest     Contest?        @relation(fields: [contestId], references: [id])
+  user        User?           @relation(fields: [userWallet], references: [walletAddress])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  name        String
+  description String
+  icon        String
+  rarity      AchievementRarity
+  condition   Json
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userWallet    String
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  user          User        @relation(fields: [userWallet], references: [walletAddress])
+
+  @@unique([userWallet, achievementId])
+}
+
+model AdminLog {
+  id          String   @id @default(cuid())
+  adminWallet String
+  action      String
+  entityType  String
+  entityId    String
+  data        Json
+  createdAt   DateTime @default(now())
+
+  @@index([adminWallet])
+  @@index([entityType, entityId])
+}
+
+enum TournamentStatus {
+  UPCOMING
+  GROUP_STAGE
+  KNOCKOUT
+  FINISHED
 }
 
 enum VenueZone {
@@ -159,37 +302,6 @@ enum VenueZone {
   CANADA
 }
 
-// ═══════════════════════════════════════
-// MATCHES
-// ═══════════════════════════════════════
-
-model Match {
-  id          String      @id @default(cuid())
-  phaseId     String
-  phase       Phase       @relation(fields: [phaseId], references: [id])
-  matchNumber Int
-  homeTeamId  String
-  homeTeam    Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
-  awayTeamId  String
-  awayTeam    Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
-  venueId     String?
-  venue       Venue?      @relation(fields: [venueId], references: [id])
-  kickoff     DateTime
-  status      MatchStatus @default(SCHEDULED)
-  homeScore   Int?
-  awayScore   Int?
-  extraTime   Boolean     @default(false)
-  penalties   Boolean     @default(false)
-
-  predictions Prediction[]
-
-  updatedAt   DateTime    @updatedAt
-
-  @@index([phaseId])
-  @@index([kickoff])
-  @@index([status])
-}
-
 enum MatchStatus {
   SCHEDULED
   LIVE
@@ -198,100 +310,10 @@ enum MatchStatus {
   CANCELLED
 }
 
-// ═══════════════════════════════════════
-// PREDICTIONS
-// ═══════════════════════════════════════
-
-model Prediction {
-  id              String            @id @default(cuid())
-  userWallet      String
-  user            User              @relation(fields: [userWallet], references: [walletAddress])
-  matchId         String
-  match           Match             @relation(fields: [matchId], references: [id])
-  contestId       String
-  contest         Contest           @relation(fields: [contestId], references: [id])
-
-  predictedWinner PredictionOutcome
-  predictedHome   Int?
-  predictedAway   Int?
-
-  pointsEarned    Int               @default(0)
-  isCorrectWinner Boolean           @default(false)
-  isExactScore    Boolean           @default(false)
-  scored          Boolean           @default(false)
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  @@unique([userWallet, matchId, contestId])
-  @@index([matchId])
-  @@index([userWallet])
-  @@index([contestId])
-}
-
 enum PredictionOutcome {
   HOME
   AWAY
   DRAW
-}
-
-// ═══════════════════════════════════════
-// CONTESTS (PRIZE POOLS)
-// ═══════════════════════════════════════
-
-model Contest {
-  id               String        @id @default(cuid())
-  name             String
-  slug             String        @unique
-  description      String?
-  type             ContestType
-  tier             ContestTier   @default(FREE)
-  isPrivate        Boolean       @default(false)
-  inviteCode       String?       @unique
-  customLogoUrl    String?
-  customBrandName  String?
-
-  // Prize pool — non-custodial architecture
-  // Phase 1: treasuryWallet (multisig via Squads)
-  // Phase 2: vaultPDA (Anchor smart contract)
-  entryFeeLamports BigInt        @default(0)
-  entryFeeSOL      Float         @default(0)
-  prizePool        BigInt        @default(0)
-  treasuryWallet   String?
-  vaultPDA         String?
-  vaultBump        Int?
-  distribution     Json
-  orgCutPercent    Float         @default(15)
-
-  // Scope
-  tournamentId     String?
-  tournament       Tournament?   @relation(fields: [tournamentId], references: [id])
-  phaseId          String?
-  phase            Phase?        @relation(fields: [phaseId], references: [id])
-  zone             VenueZone?
-  matchDay         DateTime?
-
-  // Timing
-  startDate        DateTime
-  endDate          DateTime
-  registrationEnd  DateTime
-  status           ContestStatus @default(UPCOMING)
-
-  // Participants
-  minParticipants  Int           @default(2)
-  maxParticipants  Int?
-  currentEntries   Int           @default(0)
-
-  entries          UserContestEntry[]
-  predictions      Prediction[]
-  transactions     Transaction[]
-
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-
-  @@index([status])
-  @@index([type])
-  @@index([startDate])
 }
 
 enum ContestType {
@@ -323,43 +345,6 @@ enum ContestStatus {
   REFUNDED
 }
 
-model UserContestEntry {
-  id               String    @id @default(cuid())
-  userWallet       String
-  user             User      @relation(fields: [userWallet], references: [walletAddress])
-  contestId        String
-  contest          Contest   @relation(fields: [contestId], references: [id])
-
-  entryTxSignature String?
-  entryPaid        Boolean   @default(false)
-  entryPaidAt      DateTime?
-  isFreeEntry      Boolean   @default(false)
-
-  finalRank        Int?
-  finalPoints      Int       @default(0)
-  prizeAmount      BigInt?
-  prizeClaimed     Boolean   @default(false)
-  claimTxSignature String?
-
-  createdAt        DateTime  @default(now())
-
-  @@unique([userWallet, contestId])
-}
-
-model Transaction {
-  id          String          @id @default(cuid())
-  type        TransactionType
-  userWallet  String?
-  user        User?           @relation(fields: [userWallet], references: [walletAddress])
-  contestId   String?
-  contest     Contest?        @relation(fields: [contestId], references: [id])
-  amount      BigInt
-  txSignature String          @unique
-  status      TxStatus        @default(PENDING)
-
-  createdAt   DateTime        @default(now())
-}
-
 enum TransactionType {
   ENTRY_FEE
   PRIZE_PAYOUT
@@ -373,54 +358,10 @@ enum TxStatus {
   FAILED
 }
 
-// ═══════════════════════════════════════
-// GAMIFICATION
-// ═══════════════════════════════════════
-
-model Achievement {
-  id          String            @id @default(cuid())
-  slug        String            @unique
-  name        String
-  description String
-  icon        String
-  rarity      AchievementRarity
-  condition   Json
-
-  users       UserAchievement[]
-}
-
 enum AchievementRarity {
   COMMON
   UNCOMMON
   RARE
   EPIC
   LEGENDARY
-}
-
-model UserAchievement {
-  id            String      @id @default(cuid())
-  userWallet    String
-  user          User        @relation(fields: [userWallet], references: [walletAddress])
-  achievementId String
-  achievement   Achievement @relation(fields: [achievementId], references: [id])
-  unlockedAt    DateTime    @default(now())
-
-  @@unique([userWallet, achievementId])
-}
-
-// ═══════════════════════════════════════
-// ADMIN AUDIT LOG
-// ═══════════════════════════════════════
-
-model AdminLog {
-  id          String   @id @default(cuid())
-  adminWallet String
-  action      String
-  entityType  String
-  entityId    String
-  data        Json
-  createdAt   DateTime @default(now())
-
-  @@index([adminWallet])
-  @@index([entityType, entityId])
 }

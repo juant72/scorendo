@@ -1,5 +1,6 @@
 import { MatchStatus, PredictionOutcome } from '@prisma/client';
-import { formatDateShort, getStatusColor, getTeamLogoUrl } from '@/lib/utils';
+import { TeamBadge } from '@/components/contests/TeamBadge';
+import { formatDateShort, getStatusColor } from '@/lib/utils';
 import { Clock, MapPin, Trophy } from 'lucide-react';
 
 interface TeamProps {
@@ -79,11 +80,24 @@ export function MatchCard({
               LIVE
             </span>
           ) : (
-            <span className={`text-xs font-medium ${getStatusColor(status)}`}>
+            <div className={`text-[10px] font-black uppercase tracking-wider ${getStatusColor(status)}`}>
               {status === MatchStatus.SCHEDULED ? (
-                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {formatDateShort(kickoff)}</span>
-              ) : status}
-            </span>
+                kickoff ? (
+                  <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex items-center gap-1 text-primary opacity-80">
+                       <Clock className="h-3 w-3" /> {new Date(kickoff).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })}
+                    </div>
+                    <div className="text-[9px] text-muted-foreground font-mono leading-none">
+                       {new Date(kickoff).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground italic opacity-50 px-2 py-0.5 bg-white/5 rounded-md">Schedule TBD</span>
+                )
+              ) : (
+                <span className="px-2 py-0.5 bg-white/5 rounded-md">{status}</span>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -93,14 +107,10 @@ export function MatchCard({
         
         {/* Home Team */}
         <div className={`flex flex-col items-center sm:flex-row sm:gap-4 w-[40%] ${predictedWinner === PredictionOutcome.HOME ? 'scale-105 transition-transform' : ''}`}>
-           <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent shadow-inner
-             ${predictedWinner === PredictionOutcome.HOME ? 'border-primary glow-green' : 'border-white/10'}  
-           `}>
-             <img src={getTeamLogoUrl(homeTeam.code, homeTeam.name)} alt={homeTeam.name} className="h-full w-full object-cover" />
-           </div>
+           <TeamBadge name={homeTeam.name} code={homeTeam.code} size="sm" />
            <div className="mt-2 sm:mt-0 text-center sm:text-left">
              <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{homeTeam.name}</div>
-             <div className="text-[10px] font-bold tracking-widest text-muted-foreground">{homeTeam.code}</div>
+             <div className="text-[10px] font-bold tracking-widest text-muted-foreground italic">{homeTeam.code}</div>
            </div>
         </div>
 
@@ -115,20 +125,16 @@ export function MatchCard({
               <span className="text-2xl sm:text-3xl font-black text-white tabular-nums drop-shadow-md">{awayScore ?? 0}</span>
             </div>
           ) : (
-             <div className="text-sm font-black text-muted-foreground/30 italic">VS</div>
+             <div className="text-sm font-black text-primary/40 italic">VS</div>
           )}
         </div>
 
         {/* Away Team */}
         <div className={`flex flex-col items-center sm:flex-row-reverse sm:gap-4 w-[40%] ${predictedWinner === PredictionOutcome.AWAY ? 'scale-105 transition-transform' : ''}`}>
-           <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full border-2 overflow-hidden flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent shadow-inner
-             ${predictedWinner === PredictionOutcome.AWAY ? 'border-primary glow-green' : 'border-white/10'}
-           `}>
-             <img src={getTeamLogoUrl(awayTeam.code, awayTeam.name)} alt={awayTeam.name} className="h-full w-full object-cover" />
-           </div>
+           <TeamBadge name={awayTeam.name} code={awayTeam.code} size="sm" />
            <div className="mt-2 sm:mt-0 text-center sm:text-right">
              <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{awayTeam.name}</div>
-             <div className="text-[10px] font-bold tracking-widest text-muted-foreground">{awayTeam.code}</div>
+             <div className="text-[10px] font-bold tracking-widest text-muted-foreground italic">{awayTeam.code}</div>
            </div>
         </div>
       </div>

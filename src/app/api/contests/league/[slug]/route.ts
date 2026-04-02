@@ -22,7 +22,7 @@ export async function GET(
                 matches: {
                    include: { homeTeam: true, awayTeam: true },
                    orderBy: { kickoff: 'asc' },
-                   take: 10
+                   take: 20
                 }
               },
               orderBy: { order: 'asc' }

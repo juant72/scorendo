@@ -67,6 +67,21 @@ export default function RootLayout({
           </main>
           <Footer />
         </AppProviders>
+
+        {/* Global SVG Assets for Jersey Engine */}
+        <svg className="hidden">
+           <defs>
+              <pattern id="jersey-mesh" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+                 <circle cx="1" cy="1" r="0.5" fill="white" opacity="0.1" />
+                 <circle cx="3" cy="3" r="0.5" fill="white" opacity="0.1" />
+              </pattern>
+              <linearGradient id="glass-shine" x1="0%" y1="0%" x2="100%" y2="100%">
+                 <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+                 <stop offset="50%" stopColor="white" stopOpacity="0" />
+                 <stop offset="100%" stopColor="white" stopOpacity="0.2" />
+              </linearGradient>
+           </defs>
+        </svg>
       </body>
     </html>
   );
