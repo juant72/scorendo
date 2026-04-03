@@ -35,12 +35,57 @@ const TEAM_CONFIG: Record<string, { main: string, accent: string, third?: string
   'IRV': { main: '#0F2050', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'SOLID' },
   
   // NATIONAL TEAMS
-  'ARG': { main: '#7DD3FC', accent: '#FFFFFF', third: '#3B82F6', pattern: 'STRIPES_FINE' }, 
-  'BRA': { main: '#FACC15', accent: '#15803D', third: '#166534', pattern: 'SOLID' },
-  'MEX': { main: '#15803D', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' },
-  'USA': { main: '#FFFFFF', accent: '#1E3A8A', third: '#B91C1C', pattern: 'SOLID' },
+  'ARG': { main: '#7DD3FC', accent: '#FFFFFF', third: '#3B82F6', pattern: 'STRIPES' }, // 5 stripes as requested earlier
+  'BRA': { main: '#FACC15', accent: '#15803D', third: '#1D4ED8', pattern: 'SOLID' },
+  'MEX': { main: '#064E3B', accent: '#FFFFFF', third: '#DC2626', pattern: 'SOLID' },
+  'USA': { main: '#FFFFFF', accent: '#1E3A8A', third: '#DC2626', pattern: 'SOLID' },
   'CAN': { main: '#DC2626', accent: '#FFFFFF', third: '#991B1B', pattern: 'SOLID' },
-  'ENG': { main: '#FFFFFF', accent: '#0F2050', third: '#94A3B8', pattern: 'SOLID' },
+  'ENG': { main: '#FFFFFF', accent: '#0B1121', third: '#94A3B8', pattern: 'SOLID' },
+  
+  // FWC 2026 GROUPS
+  'RSA': { main: '#FACC15', accent: '#166534', third: '#000000', pattern: 'BANDS' }, // South Africa
+  'KOR': { main: '#DC2626', accent: '#1E40AF', third: '#FFFFFF', pattern: 'SOLID' }, // South Korea
+  'CZE': { main: '#FFFFFF', accent: '#DC2626', third: '#1E40AF', pattern: 'SOLID' }, // Czechia
+  'SUI': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' }, // Switzerland
+  'QAT': { main: '#701A10', accent: '#FFFFFF', third: '#701A10', pattern: 'SOLID' }, // Qatar (Maroon)
+  'BIH': { main: '#1E40AF', accent: '#FACC15', third: '#FFFFFF', pattern: 'SOLID' }, // Bosnia
+  'MAR': { main: '#DC2626', accent: '#166534', third: '#FACC15', pattern: 'SOLID' }, // Morocco
+  'HAI': { main: '#1E40AF', accent: '#DC2626', third: '#FFFFFF', pattern: 'SOLID' }, // Haiti
+  'SCO': { main: '#0F172A', accent: '#FFFFFF', third: '#0F172A', pattern: 'SOLID' }, // Scotland
+  'PAR': { main: '#FFFFFF', accent: '#DC2626', third: '#1E3A8A', pattern: 'STRIPES_FINE' }, // Paraguay
+  'AUS': { main: '#FACC15', accent: '#166534', third: '#FFFFFF', pattern: 'SOLID' }, // Australia
+  'TUR': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' }, // Türkiye
+  'GER': { main: '#FFFFFF', accent: '#000000', third: '#DC2626', pattern: 'SOLID' }, // Germany
+  'ECU': { main: '#FACC15', accent: '#1E40AF', third: '#DC2626', pattern: 'SOLID' }, // Ecuador
+  'CIV': { main: '#F97316', accent: '#15803D', third: '#FFFFFF', pattern: 'SOLID' }, // Ivory Coast
+  'CUR': { main: '#1E40AF', accent: '#FACC15', third: '#FFFFFF', pattern: 'SOLID' }, // Curaçao
+  'NED': { main: '#F97316', accent: '#FFFFFF', third: '#22C55E', pattern: 'SOLID' }, // Netherlands
+  'JPN': { main: '#1E3A8A', accent: '#FFFFFF', third: '#EF4444', pattern: 'SOLID' }, // Japan
+  'TUN': { main: '#FFFFFF', accent: '#DC2626', third: '#DC2626', pattern: 'SOLID' }, // Tunisia
+  'SWE': { main: '#FACC15', accent: '#1E40AF', third: '#FFFFFF', pattern: 'SOLID' }, // Sweden
+  'BEL': { main: '#B91C1C', accent: '#000000', third: '#FACC15', pattern: 'SOLID' }, // Belgium
+  'IRN': { main: '#FFFFFF', accent: '#15803D', third: '#DC2626', pattern: 'SOLID' }, // Iran
+  'EGY': { main: '#DC2626', accent: '#FFFFFF', third: '#000000', pattern: 'SOLID' }, // Egypt
+  'NZL': { main: '#000000', accent: '#FFFFFF', third: '#94A3B8', pattern: 'SOLID' }, // New Zealand
+  'ESP': { main: '#DC2626', accent: '#FACC15', third: '#1E3A8A', pattern: 'SOLID' }, // Spain
+  'URU': { main: '#7DD3FC', accent: '#000000', third: '#FFFFFF', pattern: 'SOLID' }, // Uruguay
+  'KSA': { main: '#FFFFFF', accent: '#166534', third: '#166534', pattern: 'SOLID' }, // Saudi Arabia
+  'CPV': { main: '#1E40AF', accent: '#DC2626', third: '#FACC15', pattern: 'SOLID' }, // Cape Verde
+  'FRA': { main: '#1E3A8A', accent: '#FFFFFF', third: '#DC2626', pattern: 'SOLID' }, // France
+  'SEN': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' }, // Senegal
+  'NOR': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' }, // Norway
+  'IRQ': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' }, // Iraq
+  'ALG': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' }, // Algeria
+  'AUT': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' }, // Austria
+  'JOR': { main: '#FFFFFF', accent: '#DC2626', third: '#166534', pattern: 'SOLID' }, // Jordan
+  'POR': { main: '#B91C1C', accent: '#166534', third: '#FACC15', pattern: 'SOLID' }, // Portugal
+  'COL': { main: '#FACC15', accent: '#1E3A8A', third: '#DC2626', pattern: 'SOLID' }, // Colombia
+  'UZB': { main: '#FFFFFF', accent: '#1E40AF', third: '#1E40AF', pattern: 'SOLID' }, // Uzbekistan
+  'COD': { main: '#3B82F6', accent: '#DC2626', third: '#FACC15', pattern: 'SASH' },    // DR Congo
+  'CRO': { main: '#FFFFFF', accent: '#DC2626', third: '#1E40AF', pattern: 'SOLID' }, // Croatia (Will use checker if I add it, but solid for now)
+  'GHA': { main: '#FFFFFF', accent: '#000000', third: '#DC2626', pattern: 'SOLID' }, // Ghana
+  'PAN': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' }, // Panama
+
   
   // EUROPEAN CLUBS
   'RMA': { main: '#FFFFFF', accent: '#F3F4F6', third: '#FEF08A', pattern: 'SOLID' },   
@@ -71,12 +116,16 @@ const getFallbackConfig = (code: string) => {
 interface TeamBadgeProps {
   name: string;
   code: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  hideName?: boolean;
 }
 
-export function TeamBadge({ name, code, size = 'md' }: TeamBadgeProps) {
+export function TeamBadge({ name, code, size = 'md', hideName = false }: TeamBadgeProps) {
   const config = getFallbackConfig(code);
-  const dimensions = size === 'sm' ? { width: 52, height: 52 } : size === 'lg' ? { width: 130, height: 130 } : { width: 90, height: 90 };
+  const dimensions = size === 'sm' ? { width: 52, height: 52 } : 
+                    size === 'lg' ? { width: 130, height: 130 } : 
+                    size === 'xl' ? { width: 180, height: 180 } :
+                    { width: 90, height: 90 };
 
   return (
     <div className="flex flex-col items-center gap-1.5" title={name}>
@@ -84,6 +133,7 @@ export function TeamBadge({ name, code, size = 'md' }: TeamBadgeProps) {
         className="relative flex items-center justify-center transition-transform hover:scale-110 duration-500"
         style={{ width: dimensions.width, height: dimensions.height }}
       >
+        {/* ... existing SVG content ... */}
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl overflow-visible">
           {/* Main Jersey Shape - Athletic Athlete Fit Contour */}
           <defs>
@@ -122,7 +172,6 @@ export function TeamBadge({ name, code, size = 'md' }: TeamBadgeProps) {
              {config.pattern === 'BANDS' && (
                 <g>
                   <rect x="0" y="42" width="100" height="18" fill={config.accent} />
-                  {/* Premium Sleeve Cuffs */}
                   <path d="M84,52 L94,48 L96,52 L86,56 Z" fill={config.accent} />
                   <path d="M16,52 L6,48 L4,52 L14,56 Z" fill={config.accent} />
                 </g>
@@ -137,11 +186,9 @@ export function TeamBadge({ name, code, size = 'md' }: TeamBadgeProps) {
              <rect width="100" height="100" fill="url(#jersey-mesh)" className="mix-blend-overlay opacity-50" />
           </g>
 
-          {/* Depth Detail: Side Gussets */}
           <path d="M78,40 L78,85" stroke="black" strokeWidth="1.5" opacity="0.15" />
           <path d="M22,40 L22,85" stroke="black" strokeWidth="1.5" opacity="0.15" />
           
-          {/* Collar Detail: Enhanced Shadow */}
           <path 
              d="M35,15 C35,15 42,21 50,21 C58,21 65,15 65,15 L62,13 C62,13 56,18 50,18 C44,18 38,13 38,13 Z" 
              fill={config.third || '#000'} 
@@ -152,7 +199,7 @@ export function TeamBadge({ name, code, size = 'md' }: TeamBadgeProps) {
         </svg>
       </div>
       
-      {size !== 'sm' && (
+      {!hideName && size !== 'sm' && (
         <div className="mt-4 text-center">
            <h4 className="text-xl sm:text-2xl font-black text-white uppercase italic tracking-tighter leading-none group-hover:text-primary transition-all duration-300 drop-shadow-md">
               {name}
@@ -167,3 +214,4 @@ export function TeamBadge({ name, code, size = 'md' }: TeamBadgeProps) {
     </div>
   );
 }
+

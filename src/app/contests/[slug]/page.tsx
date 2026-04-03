@@ -7,6 +7,7 @@ import { verifySessionToken } from '@/lib/auth';
 import { Trophy, Clock, Users, ArrowLeft, Key } from 'lucide-react';
 import Link from 'next/link';
 import { ShareButton } from '@/components/contests/ShareButton';
+import { ContestPredictionHub } from '@/components/contests/ContestPredictionHub';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -180,13 +181,15 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
             </p>
           </div>
         ) : (
-          <PredictionForm 
+          <ContestPredictionHub 
             contestId={contest.id}
             matches={matches} 
             existingPredictions={existingPredictions}
-            isLive={isLocked}
+            isLocked={isLocked}
             isEntered={!!userEntry}
             entryFeeSOL={contest.entryFeeSOL}
+            userWallet={userWallet}
+            userName={session?.displayName || userWallet}
           />
         )}
       </div>

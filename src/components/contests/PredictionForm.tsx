@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MatchStatus, PredictionOutcome } from '@prisma/client';
 import { TeamBadge } from './TeamBadge';
-import { Loader2, Shield, ChevronRight, Sparkles } from 'lucide-react';
+import { Loader2, Shield, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PageTransition, StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
+import { calculateMatchPoints } from '@/lib/scoring';
 
 interface TeamProps { name: string; code: string; }
 interface MatchProps { 
@@ -30,9 +33,11 @@ interface PredictionFormProps {
   isLive: boolean; 
   isEntered: boolean; 
   entryFeeSOL?: number;
+  onPredictionsChange?: (points: number) => void;
 }
 
-export function PredictionForm({ contestId, matches, existingPredictions, isLive, isEntered, entryFeeSOL = 0 }: PredictionFormProps) {
+export function PredictionForm({ contestId, matches, existingPredictions, isLive, isEntered, entryFeeSOL = 0, onPredictionsChange }: PredictionFormProps) {
+  const [mounted, setMounted] = useState(false);
   const [predictions, setPredictions] = useState<Record<string, { home: string, away: string }>>(
     existingPredictions.reduce((acc, pred) => {
       if (pred.predictedHome !== null && pred.predictedAway !== null) {
@@ -45,19 +50,41 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', msg: string, lastSaved?: string } | null>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Auto-save logic with debounce
   useEffect(() => {
+    if (!mounted) return;
+    const formattedPredictions = Object.entries(predictions).map(([matchId, scores]) => {
+      const homeScore = parseInt(scores.home);
+      const awayScore = parseInt(scores.away);
+      if (isNaN(homeScore) || isNaN(awayScore)) return null;
+      
+      let winner = 'DRAW';
+      if (homeScore > awayScore) winner = 'HOME';
+      else if (awayScore > homeScore) winner = 'AWAY';
+      return { matchId, predictedHome: homeScore, predictedAway: awayScore, predictedWinner: winner };
+    }).filter(Boolean);
+
+    // Calculate simulated points
+    if (onPredictionsChange) {
+       let total = 0;
+       matches.forEach(m => {
+          const scores = predictions[m.id];
+          if (!scores || scores.home === '' || scores.away === '') return;
+          const pred = { home: parseInt(scores.home), away: parseInt(scores.away) };
+          if (isNaN(pred.home) || isNaN(pred.away)) return;
+          // For simulation, we assume PREDICTION matches ACTUAL in the user's mind
+          // (Actually, a true simulation needs actual scores, but if they are TBD, 
+          // we use the user's picks to show what they WOULD get if they hit)
+          total += calculateMatchPoints(pred, pred); 
+       });
+       onPredictionsChange(total);
+    }
+
     const timer = setTimeout(async () => {
-      const formattedPredictions = Object.entries(predictions).map(([matchId, scores]) => {
-        const homeScore = parseInt(scores.home);
-        const awayScore = parseInt(scores.away);
-        if (isNaN(homeScore) || isNaN(awayScore)) return null;
-        
-        let winner = 'DRAW';
-        if (homeScore > awayScore) winner = 'HOME';
-        else if (awayScore > homeScore) winner = 'AWAY';
-        return { matchId, predictedHome: homeScore, predictedAway: awayScore, predictedWinner: winner };
-      }).filter(Boolean);
 
       if (formattedPredictions.length > 0) {
         savePredictions(formattedPredictions);
@@ -65,7 +92,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [predictions]);
+  }, [predictions, mounted]);
 
   const savePredictions = async (formattedPredictions: any) => {
     try {
@@ -93,124 +120,185 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
 
   const handleScoreChange = (matchId: string, team: 'home' | 'away', val: string) => {
     const safeVal = val.replace(/[^0-9]/g, '').slice(0, 2);
-    setPredictions(prev => ({
-      ...prev,
-      [matchId]: {
-        ...(prev[matchId] || { home: '', away: '' }),
-        [team]: safeVal
-      }
-    }));
+    setPredictions(prev => {
+      const current = prev[matchId] || { home: '', away: '' };
+      return {
+        ...prev,
+        [matchId]: {
+          ...current,
+          [team]: safeVal
+        }
+      };
+    });
   };
 
+  if (!mounted) return <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
+
   return (
-    <div className="space-y-12 sm:space-y-20 relative">
-      <div className="flex items-center justify-between gap-6 mb-8 sm:mb-12">
-         <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-         <div className="flex items-center gap-4 px-6 py-2 rounded-full border border-white/5 bg-white/5 backdrop-blur-md">
-            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Live Vault</div>
+    <PageTransition>
+      <div className="space-y-12 sm:space-y-20 relative pb-16">
+        {/* ═ TOP SECURE STATUS BAR ═ */}
+        <div className="sticky top-0 z-50 flex items-center justify-between gap-4 mb-8 py-4 bg-midnight/80 backdrop-blur-xl border-b border-white/5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:bg-transparent sm:backdrop-blur-none sm:border-none">
+          <div className="hidden sm:block flex-1 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+          <div className="flex items-center gap-4 px-6 py-2 rounded-xl border border-white/10 bg-black/40 backdrop-blur-2xl shadow-xl">
+            <div className="flex items-center gap-2">
+              <div className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">ARENA_LOCKED</div>
+              <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+            </div>
+            <div className="h-3 w-[1px] bg-white/10" />
             {saving ? (
-               <Loader2 className="w-3 h-3 animate-spin text-primary" />
+              <div className="flex items-center gap-2">
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                  <Loader2 className="w-3 h-3 text-primary" />
+                </motion.div>
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest italic">Syncing</span>
+              </div>
             ) : saveStatus?.lastSaved ? (
-               <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span className="text-[9px] font-bold text-muted-foreground tabular-nums">Saved {saveStatus.lastSaved}</span>
-               </div>
+              <div className="flex items-center gap-2 relative">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -inset-1 bg-primary/20 blur-md rounded-full" />
+                <CheckCircle2 className="w-3 h-3 text-primary relative z-10" />
+                <span className="text-[9px] font-black text-primary italic uppercase tracking-widest relative z-10">Secured</span>
+              </div>
             ) : (
-               <div className="text-[9px] font-bold text-muted-foreground italic">Ready for predictions</div>
+              <div className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 italic">Standby</div>
             )}
-         </div>
-         <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-      </div>
-
-      <div className="grid grid-cols-1 gap-10 sm:gap-16">
-        {matches.map((match) => {
-          const pred = predictions[match.id] || { home: '', away: '' };
-
-          return (
-            <div key={match.id} className="group relative stadium-shadow bg-midnight/30 rounded-[3rem] sm:rounded-[4rem] overflow-hidden border border-white/5 hover:border-primary/20 transition-all">
-               <div className="absolute inset-0 bg-net opacity-5 pointer-events-none" />
-               <div className="absolute inset-0 stadium-flare opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-               
-               <div className="relative z-10 p-8 sm:p-16 flex flex-col items-center">
-                  <div className="w-full flex flex-col md:flex-row items-center justify-between gap-10 sm:gap-14">
-                     
-                     <div className="flex flex-col items-center gap-4 sm:gap-6">
-                        <TeamBadge name={match.homeTeam.name} code={match.homeTeam.code} />
-                        <span className="text-[11px] font-black text-white/50 uppercase tracking-widest">{match.homeTeam.name}</span>
-                     </div>
-
-                     {/* Scoreboard Inputs - Optimized for Mobile Thumb Use */}
-                     <div className="flex items-center gap-4 sm:gap-8 px-6 sm:px-10 py-5 sm:py-8 bg-black/40 rounded-[2.5rem] sm:rounded-[3.5rem] border border-white/10 backdrop-blur-xl stadium-shadow">
-                        <div className="flex flex-col items-center gap-2">
-                           <input 
-                              type="text"
-                              inputMode="numeric"
-                              value={pred.home}
-                              onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                              disabled={isLive}
-                              placeholder="0"
-                              className="w-20 h-28 sm:w-28 sm:h-40 bg-white/5 border-2 border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] text-center text-5xl sm:text-7xl font-black text-white focus:border-primary focus:bg-primary/10 transition-all outline-none shadow-inner placeholder:opacity-5"
-                           />
-                           <span className="text-[9px] font-black uppercase tracking-widest text-white/20 italic">Home</span>
-                        </div>
-
-                        <div className="text-3xl sm:text-5xl font-black text-primary italic transform rotate-[-10deg] drop-shadow-[0_0_15px_#00E676]">VS</div>
-
-                        <div className="flex flex-col items-center gap-2">
-                           <input 
-                              type="text"
-                              inputMode="numeric"
-                              value={pred.away}
-                              onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                              disabled={isLive}
-                              placeholder="0"
-                              className="w-20 h-28 sm:w-28 sm:h-40 bg-white/5 border-2 border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] text-center text-5xl sm:text-7xl font-black text-white focus:border-primary focus:bg-primary/10 transition-all outline-none shadow-inner placeholder:opacity-5"
-                           />
-                           <span className="text-[9px] font-black uppercase tracking-widest text-white/20 italic">Away</span>
-                        </div>
-                     </div>
-
-                     <div className="flex flex-col items-center gap-4 sm:gap-6">
-                        <TeamBadge name={match.awayTeam.name} code={match.awayTeam.code} />
-                        <span className="text-[11px] font-black text-white/50 uppercase tracking-widest">{match.awayTeam.name}</span>
-                     </div>
-
-                  </div>
-
-                  <div className="w-full mt-10 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12">
-                     <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#00E676]" />
-                        <span className="text-[9px] font-black text-white/50 uppercase tracking-[0.2em]">Match Analytics Ready</span>
-                     </div>
-                     <span className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/10" />
-                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40 italic">Kickoff {match.kickoff ? new Date(match.kickoff).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'TBD'}</span>
-                  </div>
-               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {!isLive && (!isEntered && entryFeeSOL > 0) && (
-        <div className="pt-12 flex flex-col items-center gap-10">
-            <div className="w-full glass-strong p-8 rounded-[3rem] border-gold/30 flex flex-col md:flex-row items-center justify-between gap-8 stadium-shadow relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-[80px] -mr-32 -mt-32" />
-               <div className="relative z-10 text-center md:text-left">
-                  <h5 className="text-2xl font-black text-white uppercase italic leading-none mb-2">Pro Battle Required</h5>
-                  <p className="text-xs text-muted-foreground font-medium">Predictions will only be valid after entering the arena with {entryFeeSOL} SOL.</p>
-               </div>
-               <button className="relative z-10 h-16 px-10 rounded-2xl bg-gold text-midnight font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform shadow-xl shadow-gold/20 active:scale-95 leading-none">
-                  Enter Pro Arena
-               </button>
-            </div>
-            
-            {saveStatus?.type === 'error' && (
-               <div className="flex items-center gap-4 px-8 py-4 rounded-2xl border-2 bg-red-500/10 border-red-500/40 text-red-400 animate-in fade-in slide-in-from-top-4 duration-500">
-                  <span className="text-xs font-black uppercase tracking-widest">{saveStatus.msg}</span>
-               </div>
-            )}
+          </div>
+          <div className="hidden sm:block flex-1 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         </div>
-      )}
-    </div>
+
+        {/* ═ MATCH GRID ═ */}
+        <StaggerChildren delay={0.1}>
+          <div className="grid grid-cols-1 gap-12 sm:gap-16">
+            {matches.map((match, index) => {
+              const pred = predictions[match.id] || { home: '', away: '' };
+
+              return (
+                <FadeInItem key={match.id}>
+                  <motion.div 
+                    whileHover={{ scale: 1.01, rotateY: 2 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="group relative"
+                  >
+                    {/* ══ STADIUM WATERMARK ══ */}
+                    <div className="hidden sm:block absolute -top-14 left-8 text-8xl font-black text-white/5 uppercase italic pointer-events-none select-none tracking-tighter mix-blend-overlay">
+                      {index + 1 < 10 ? `MATCH 0${index + 1}` : `MATCH ${index + 1}`}
+                    </div>
+
+                    <div className="relative glass-premium-thick rounded-[2rem] sm:rounded-[3rem] overflow-hidden group-hover:border-primary/20 transition-all duration-700">
+                      <div className="absolute inset-0 bg-net opacity-[0.1] pointer-events-none" />
+                      
+                      <div className="relative z-10 p-4 sm:p-14 flex flex-col items-center">
+                        <div className="w-full flex flex-row lg:flex-row items-center justify-between gap-2 sm:gap-14">
+                          
+                          {/* ══ TEAM HOME ══ */}
+                          <div className="flex flex-col items-center gap-3 sm:gap-6 w-1/3 relative">
+                            <div className="hidden sm:block stadium-aura-glow w-48 h-48 bg-primary rounded-full group-hover:opacity-20 transition-opacity" />
+                            <div className="relative z-10 scale-75 sm:scale-100">
+                              <TeamBadge name={match.homeTeam.name} code={match.homeTeam.code} size="lg" hideName />
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center gap-0.5">
+                              <h3 className="text-xs sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none text-center">
+                                {match.homeTeam.name}
+                              </h3>
+                              <span className="hidden sm:block text-[9px] font-black text-primary/40 uppercase tracking-[0.4em]">{match.homeTeam.code} UNIT</span>
+                            </div>
+                          </div>
+
+                          {/* ══ TACTICAL SCOREBOARD ══ */}
+                          <div className="relative z-20 flex-shrink-0">
+                            <div className="stadium-tactical-display px-4 sm:px-12 py-4 sm:py-10 rounded-2xl sm:rounded-[3.5rem] flex items-center gap-3 sm:gap-10 relative z-30 stadium-shadow">
+                              <div className="flex flex-col items-center gap-2">
+                                <input 
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={pred.home}
+                                  onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                                  disabled={isLive}
+                                  placeholder="-"
+                                  className="w-12 h-16 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-2xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
+                                />
+                                <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">ATK</div>
+                              </div>
+
+                              <div className="text-xl sm:text-6xl font-black text-primary italic drop-shadow-[0_0_15px_#00E676] opacity-90">VS</div>
+
+                              <div className="flex flex-col items-center gap-2">
+                                <input 
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={pred.away}
+                                  onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                                  disabled={isLive}
+                                  placeholder="-"
+                                  className="w-12 h-16 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-2xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
+                                />
+                                <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">DEF</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* ══ TEAM AWAY ══ */}
+                          <div className="flex flex-col items-center gap-3 sm:gap-6 w-1/3 relative">
+                            <div className="hidden sm:block stadium-aura-glow w-48 h-48 bg-primary/40 rounded-full group-hover:opacity-20 transition-opacity" />
+                            <div className="relative z-10 scale-75 sm:scale-100">
+                              <TeamBadge name={match.awayTeam.name} code={match.awayTeam.code} size="lg" hideName />
+                            </div>
+                            <div className="relative z-10 flex flex-col items-center gap-0.5">
+                              <h3 className="text-xs sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none text-center">
+                                {match.awayTeam.name}
+                              </h3>
+                              <span className="hidden sm:block text-[9px] font-black text-primary/40 uppercase tracking-[0.4em]">{match.awayTeam.code} UNIT</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* ══ BROADCAST FOOTER ══ */}
+                        <div className="w-full mt-4 sm:mt-12 pt-4 sm:pt-10 border-t border-white/[0.05] flex flex-row items-center justify-between gap-4 px-2">
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/[0.02] border border-white/5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">LIVE_LINK</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 sm:gap-10">
+                            <div className="flex flex-col items-end">
+                              <span className="hidden sm:block text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 text-right">KICKOFF</span>
+                              <span className="text-[10px] sm:text-xs font-black text-white uppercase italic tracking-widest text-right">
+                                {match.kickoff ? new Date(match.kickoff).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : 'TBD'}
+                              </span>
+                            </div>
+                            <div className="h-4 sm:h-8 w-[1px] bg-white/10" />
+                            <div className="flex flex-col items-end">
+                              <span className="hidden sm:block text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 text-right">LOC</span>
+                              <span className="text-[9px] sm:text-xs font-black text-primary uppercase italic tracking-widest text-right">ARENA A</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </FadeInItem>
+              );
+            })}
+          </div>
+        </StaggerChildren>
+
+        {/* ══ PREMIUM ARENA ENTRY ══ */}
+        {!isLive && (!isEntered && entryFeeSOL > 0) && (
+          <div className="pt-20">
+            <div className="w-full glass-premium-thick p-10 rounded-[2.5rem] border-gold/40 flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-[100px] -mr-32 -mt-32" />
+              <div className="relative z-10 text-center md:text-left">
+                <div className="inline-block px-3 py-1 bg-gold/20 rounded-full text-[9px] font-black text-gold uppercase tracking-widest mb-4 border border-gold/20">Pro Battle Required</div>
+                <h5 className="text-3xl font-black text-white uppercase italic leading-tight mb-4 tracking-tighter">Initialize Predictions</h5>
+                <p className="text-sm text-muted-foreground italic max-w-md opacity-80 underline-offset-4">Allocation of {entryFeeSOL} SOL mandatory for full Arena authorization.</p>
+              </div>
+              <button className="relative z-10 h-16 px-12 rounded-2xl bg-gold text-midnight font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl">
+                Authorize Entry
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </PageTransition>
   );
 }
