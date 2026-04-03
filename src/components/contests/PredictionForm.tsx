@@ -187,27 +187,27 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                     <div className="relative glass-premium-thick rounded-[2rem] sm:rounded-[3rem] overflow-hidden group-hover:border-primary/20 transition-all duration-700">
                       <div className="absolute inset-0 bg-net opacity-[0.1] pointer-events-none" />
                       
-                      <div className="relative z-10 p-4 sm:p-14 flex flex-col items-center">
-                        <div className="w-full flex flex-row lg:flex-row items-center justify-between gap-2 sm:gap-14">
+                      <div className="relative z-10 p-4 sm:p-14 w-full">
+                        <div className="flex flex-row items-center justify-between gap-2 sm:gap-14 w-full">
                           
                           {/* ══ TEAM HOME ══ */}
-                          <div className="flex flex-col items-center gap-3 sm:gap-6 w-1/3 relative">
-                            <div className="hidden sm:block stadium-aura-glow w-48 h-48 bg-primary rounded-full group-hover:opacity-20 transition-opacity" />
-                            <div className="relative z-10 scale-75 sm:scale-100">
+                          <div className="flex-1 flex flex-col items-center gap-2 sm:gap-6 min-w-0">
+                            <div className="hidden sm:block stadium-aura-glow w-24 h-24 lg:w-48 lg:h-48 bg-primary rounded-full group-hover:opacity-20 transition-opacity" />
+                            <div className="relative z-10 scale-[0.6] sm:scale-100">
                               <TeamBadge name={match.homeTeam.name} code={match.homeTeam.code} size="lg" hideName />
                             </div>
-                            <div className="relative z-10 flex flex-col items-center gap-0.5">
-                              <h3 className="text-xs sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none text-center">
+                            <div className="relative z-10 w-full text-center">
+                              <h3 className="text-[10px] sm:text-2xl lg:text-4xl font-black text-white uppercase italic tracking-tighter leading-none truncate block">
                                 {match.homeTeam.name}
                               </h3>
-                              <span className="hidden sm:block text-[9px] font-black text-primary/40 uppercase tracking-[0.4em]">{match.homeTeam.code} UNIT</span>
+                              <span className="hidden sm:block text-[8px] font-black text-primary/40 uppercase tracking-[0.4em] mt-1">{match.homeTeam.code} UNIT</span>
                             </div>
                           </div>
 
                           {/* ══ TACTICAL SCOREBOARD ══ */}
                           <div className="relative z-20 flex-shrink-0">
-                            <div className="stadium-tactical-display px-4 sm:px-12 py-4 sm:py-10 rounded-2xl sm:rounded-[3.5rem] flex items-center gap-3 sm:gap-10 relative z-30 stadium-shadow">
-                              <div className="flex flex-col items-center gap-2">
+                            <div className="stadium-tactical-display px-3 sm:px-12 py-3 sm:py-10 rounded-2xl sm:rounded-[3.5rem] flex items-center gap-2 sm:gap-10 relative z-30 stadium-shadow border border-white/5">
+                              <div className="flex flex-col items-center gap-1 sm:gap-2">
                                 <input 
                                   type="text"
                                   inputMode="numeric"
@@ -215,14 +215,14 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                                   onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
                                   disabled={isLive}
                                   placeholder="-"
-                                  className="w-12 h-16 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-2xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
+                                  className="w-10 h-12 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
                                 />
                                 <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">ATK</div>
                               </div>
 
-                              <div className="text-xl sm:text-6xl font-black text-primary italic drop-shadow-[0_0_15px_#00E676] opacity-90">VS</div>
+                              <div className="text-lg sm:text-6xl font-black text-primary italic drop-shadow-[0_0_15px_#00E676] opacity-90">VS</div>
 
-                              <div className="flex flex-col items-center gap-2">
+                              <div className="flex flex-col items-center gap-1 sm:gap-2">
                                 <input 
                                   type="text"
                                   inputMode="numeric"
@@ -230,7 +230,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                                   onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
                                   disabled={isLive}
                                   placeholder="-"
-                                  className="w-12 h-16 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-2xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
+                                  className="w-10 h-12 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
                                 />
                                 <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">DEF</div>
                               </div>
@@ -238,16 +238,16 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                           </div>
 
                           {/* ══ TEAM AWAY ══ */}
-                          <div className="flex flex-col items-center gap-3 sm:gap-6 w-1/3 relative">
-                            <div className="hidden sm:block stadium-aura-glow w-48 h-48 bg-primary/40 rounded-full group-hover:opacity-20 transition-opacity" />
-                            <div className="relative z-10 scale-75 sm:scale-100">
+                          <div className="flex-1 flex flex-col items-center gap-2 sm:gap-6 min-w-0">
+                            <div className="hidden sm:block stadium-aura-glow w-24 h-24 lg:w-48 lg:h-48 bg-primary/40 rounded-full group-hover:opacity-20 transition-opacity" />
+                            <div className="relative z-10 scale-[0.6] sm:scale-100">
                               <TeamBadge name={match.awayTeam.name} code={match.awayTeam.code} size="lg" hideName />
                             </div>
-                            <div className="relative z-10 flex flex-col items-center gap-0.5">
-                              <h3 className="text-xs sm:text-4xl font-black text-white uppercase italic tracking-tighter leading-none text-center">
+                            <div className="relative z-10 w-full text-center">
+                              <h3 className="text-[10px] sm:text-2xl lg:text-4xl font-black text-white uppercase italic tracking-tighter leading-none truncate block">
                                 {match.awayTeam.name}
                               </h3>
-                              <span className="hidden sm:block text-[9px] font-black text-primary/40 uppercase tracking-[0.4em]">{match.awayTeam.code} UNIT</span>
+                              <span className="hidden sm:block text-[8px] font-black text-primary/40 uppercase tracking-[0.4em] mt-1">{match.awayTeam.code} UNIT</span>
                             </div>
                           </div>
                         </div>

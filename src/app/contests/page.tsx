@@ -55,8 +55,13 @@ export default function ContestsLobbyPage() {
                          {/* Full-bleed Background */}
                          <div className="absolute inset-0 z-0">
                             <img 
-                              src={`/arena_${comp.slug}.png`}
-                              onError={(e) => { e.currentTarget.src = '/stadium_hero_default.png'; }}
+                              src={
+                                comp.slug === 'argentine-football-first-div' ? '/arena_argentina.png' :
+                                comp.slug === 'european-champions-cup' ? '/arena_eurocup.png' :
+                                comp.slug === 'fifa-world-cup-2026' ? '/arena_worldcup.png' :
+                                `/arena_${comp.slug}.png`
+                              }
+                              onError={(e) => { e.currentTarget.src = '/stadium_hero.png'; }}
                               alt="Arena Backdrop"
                               className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity group-hover:scale-110 duration-1000"
                             />
@@ -68,8 +73,13 @@ export default function ContestsLobbyPage() {
                             <div className="flex justify-between items-start">
                                <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl">
                                   <img 
-                                    src={`/badge_${comp.slug}.png`}
-                                    onError={(e) => { e.currentTarget.src = '/badge_default.png'; }}
+                                    src={
+                                      comp.slug === 'argentine-football-first-div' ? '/badge_afa.png' :
+                                      comp.slug === 'european-champions-cup' ? '/badge_euro.png' :
+                                      comp.slug === 'fifa-world-cup-2026' ? '/badge_worldcup.png' :
+                                      `/badge_${comp.slug}.png`
+                                    }
+                                    onError={(e) => { e.currentTarget.src = '/badge_worldcup.png'; }}
                                     alt="Comp Badge"
                                     className="w-16 h-16 object-contain filter invert opacity-80"
                                     style={{ mixBlendMode: 'screen' }}

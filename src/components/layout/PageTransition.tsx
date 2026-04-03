@@ -14,9 +14,18 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function StaggerChildren({ children, delay = 0.1 }: { children: React.ReactNode, delay?: number }) {
+export function StaggerChildren({ 
+  children, 
+  delay = 0.1, 
+  className = "" 
+}: { 
+  children: React.ReactNode, 
+  delay?: number,
+  className?: string
+}) {
   return (
     <motion.div
+      className={className}
       initial="hidden"
       animate="show"
       variants={{
@@ -34,9 +43,10 @@ export function StaggerChildren({ children, delay = 0.1 }: { children: React.Rea
   );
 }
 
-export function FadeInItem({ children }: { children: React.ReactNode }) {
+export function FadeInItem({ children, className = "" }: { children: React.ReactNode, className?: string }) {
   return (
     <motion.div
+      className={className}
       variants={{
         hidden: { opacity: 0, scale: 0.95, y: 10 },
         show: { opacity: 1, scale: 1, y: 0 }
@@ -45,5 +55,24 @@ export function FadeInItem({ children }: { children: React.ReactNode }) {
     >
       {children}
     </motion.div>
+  );
+}
+
+/**
+ * Specialized version for Table Rows to avoid hydration errors 
+ * (div cannot be child of tbody)
+ */
+export function FadeInRow({ children, className = "" }: { children: React.ReactNode, className?: string }) {
+  return (
+    <motion.tr
+      className={className}
+      variants={{
+        hidden: { opacity: 0, y: 10 },
+        show: { opacity: 1, y: 0 }
+      }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      {children}
+    </motion.tr>
   );
 }

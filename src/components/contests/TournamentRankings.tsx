@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Trophy, Medal, Crown, Loader2, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
+import { FadeInRow } from '@/components/layout/PageTransition';
 
 interface RankUser {
   walletAddress: string;
@@ -33,19 +33,20 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
       .finally(() => setLoading(false));
   }, [contestId]);
 
-  }, [contestId]);
-
   useEffect(() => {
     let updatedRanks = [...ranks];
     if (simulatedPoints !== undefined && userWallet) {
-       // Find or Add user
        const userIdx = updatedRanks.findIndex(r => r.walletAddress === userWallet);
        if (userIdx > -1) {
           updatedRanks[userIdx] = { ...updatedRanks[userIdx], points: simulatedPoints, isSimulated: true };
        } else {
-          updatedRanks.push({ walletAddress: userWallet, displayName: userName || 'Me (Simulated)', points: simulatedPoints, isSimulated: true });
+          updatedRanks.push({ 
+            walletAddress: userWallet, 
+            displayName: userName || 'Me (Simulated)', 
+            points: simulatedPoints, 
+            isSimulated: true 
+          });
        }
-       // Re-sort
        updatedRanks.sort((a, b) => b.points - a.points);
     }
     setDisplayRanks(updatedRanks);
@@ -72,70 +73,82 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
             <th className="px-6 sm:px-10 py-6 text-right">Points</th>
           </tr>
         </thead>
-        <StaggerChildren delay={0.08}>
-          <tbody className="divide-y divide-white/[0.05]">
-            {displayRanks.map((row, index) => (
-              <FadeInItem key={row.walletAddress}>
-                <tr className={`transition-all group cursor-default ${row.isSimulated ? 'bg-gold/5 border-l-2 border-l-gold relative' : 'hover:bg-white/[0.03]'}`}>
-                  <td className="px-6 sm:px-10 py-5 sm:py-7">
-                    <div className="flex items-center gap-3 sm:gap-5">
-                       <span className={`font-black italic text-lg sm:text-2xl ${
-                         index === 0 ? 'text-gold drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]' : 
-                         index === 1 ? 'text-zinc-300' : 
-                         index === 2 ? 'text-amber-700' : 
-                         'text-white/20'
-                       }`}>
-                          {index + 1 < 10 ? `0${index + 1}` : index + 1}
-                       </span>
-                       {index === 0 && <Crown className="w-4 h-4 text-gold animate-bounce" />}
-                    </div>
-                  </td>
-                  <td className="px-6 sm:px-10 py-5 sm:py-7">
-                    <div className="flex items-center gap-4">
-                       <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border border-white/10 bg-gradient-to-br ${
-                         index === 0 ? 'from-gold/20 to-gold/5 border-gold/30' : 
-                         'from-white/10 to-transparent'
-                       }`}>
-                          <User className={`w-4 h-4 ${index === 0 ? 'text-gold' : 'text-white/40'}`} />
-                       </div>
-                       <div className="flex flex-col">
-                          <span className="font-black text-xs sm:text-base text-white/90 group-hover:text-primary transition-colors italic uppercase tracking-tight">
-                             {row.displayName || `${row.walletAddress.slice(0, 6)}...${row.walletAddress.slice(-4)}`}
-                          </span>
-                          {index < 3 && (
-                            <span className="text-[8px] font-black text-primary/40 uppercase tracking-widest leading-none mt-1">Podium Qualifier</span>
-                          )}
-                          {row.isSimulated && (
-                            <span className="text-[8px] font-black text-gold uppercase tracking-widest leading-none mt-1 italic animate-pulse">Simulation Active</span>
-                          )}
-                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 sm:px-10 py-5 sm:py-7 text-right">
-                    <div className="flex flex-col items-end">
-                       <span className={`text-xl sm:text-3xl font-black italic ${
-                         index === 0 ? 'text-gold drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]' : 'text-primary'
-                       }`}>
-                          {row.points}
-                       </span>
-                       <span className="text-[8px] font-black text-white/10 uppercase tracking-widest mt-1">Total Pts</span>
-                    </div>
-                  </td>
-                </tr>
-              </FadeInItem>
-            ))}
-            {displayRanks.length === 0 && (
-              <tr>
-                <td colSpan={3} className="px-10 py-24 text-center">
-                   <div className="flex flex-col items-center opacity-30">
-                      <Trophy className="w-12 h-12 mb-4 text-primary/40" />
-                      <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">Standings Encrypting...</p>
+        
+        <motion.tbody 
+          className="divide-y divide-white/[0.05]"
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.06 }
+            }
+          }}
+        >
+          {displayRanks.map((row, index) => (
+            <FadeInRow 
+              key={row.walletAddress}
+              className={`transition-all group cursor-default ${row.isSimulated ? 'bg-gold/5 border-l-2 border-l-gold relative' : 'hover:bg-white/[0.03]'}`}
+            >
+              <td className="px-6 sm:px-10 py-5 sm:py-7">
+                <div className="flex items-center gap-3 sm:gap-5">
+                   <span className={`font-black italic text-lg sm:text-2xl ${
+                     index === 0 ? 'text-gold drop-shadow-[0_0_10px_rgba(255,215,0,0.4)]' : 
+                     index === 1 ? 'text-zinc-300' : 
+                     index === 2 ? 'text-amber-700' : 
+                     'text-white/20'
+                   }`}>
+                      {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                   </span>
+                   {index === 0 && <Crown className="w-4 h-4 text-gold animate-bounce" />}
+                </div>
+              </td>
+              <td className="px-6 sm:px-10 py-5 sm:py-7">
+                <div className="flex items-center gap-4">
+                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border border-white/10 bg-gradient-to-br ${
+                     index === 0 ? 'from-gold/20 to-gold/5 border-gold/30' : 
+                     'from-white/10 to-transparent'
+                   }`}>
+                      <User className={`w-4 h-4 ${index === 0 ? 'text-gold' : 'text-white/40'}`} />
                    </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </StaggerChildren>
+                   <div className="flex flex-col">
+                      <span className="font-black text-xs sm:text-base text-white/90 group-hover:text-primary transition-colors italic uppercase tracking-tight">
+                         {row.displayName || `${row.walletAddress.slice(0, 6)}...${row.walletAddress.slice(-4)}`}
+                      </span>
+                      {index < 3 && (
+                        <span className="text-[8px] font-black text-primary/40 uppercase tracking-widest leading-none mt-1">Podium Qualifier</span>
+                      )}
+                      {row.isSimulated && (
+                        <span className="text-[8px] font-black text-gold uppercase tracking-widest leading-none mt-1 italic animate-pulse">Simulation Active</span>
+                      )}
+                   </div>
+                </div>
+              </td>
+              <td className="px-6 sm:px-10 py-5 sm:py-7 text-right">
+                <div className="flex flex-col items-end">
+                   <span className={`text-xl sm:text-3xl font-black italic ${
+                     index === 0 ? 'text-gold drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]' : 'text-primary'
+                   }`}>
+                      {row.points}
+                   </span>
+                   <span className="text-[8px] font-black text-white/10 uppercase tracking-widest mt-1">Total Pts</span>
+                </div>
+              </td>
+            </FadeInRow>
+          ))}
+          
+          {displayRanks.length === 0 && (
+            <tr>
+              <td colSpan={3} className="px-10 py-24 text-center">
+                 <div className="flex flex-col items-center opacity-30">
+                    <Trophy className="w-12 h-12 mb-4 text-primary/40" />
+                    <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">Standings Encrypting...</p>
+                 </div>
+              </td>
+            </tr>
+          )}
+        </motion.tbody>
       </table>
     </div>
   );
