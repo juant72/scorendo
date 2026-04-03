@@ -23,36 +23,47 @@ export async function POST(req: NextRequest) {
 
     const userWallet = session.wallet as string;
 
+    // 1. INTEGRITY CHECK: Ensure every matchId in the payload belongs to the contestId
     const contest = await prisma.contest.findUnique({ 
       where: { id: contestId },
       include: {
-        tournament: { include: { phases: { include: { matches: true } } } },
-        phase: { include: { matches: true } }
+        phase: { include: { matches: { select: { id: true, kickoff: true } } } },
+        tournament: { include: { phases: { include: { matches: { select: { id: true, kickoff: true } } } } } }
       }
     });
     if (!contest) {
       return NextResponse.json({ success: false, error: 'Contest not found' }, { status: 404 });
     }
 
-    // 2. TIMELOCK CHECK: Multi-level safety
-    // We prevent submission if the earliest match in the contest starts in < 10 mins.
-    const allMatches = contest.phase?.matches || (contest.tournament?.phases?.flatMap((p: any) => p.matches) || []);
-    const validMatchesForThisContest = allMatches.filter((m: any) => {
-       return true; 
-    });
+    const availableMatches = contest.phase?.matches || (contest.tournament?.phases?.flatMap((p: any) => p.matches) || []);
+    const availableMatchIds = new Set(availableMatches.map((m: any) => m.id));
 
-    if (validMatchesForThisContest.length > 0) {
-      const kickoffTimes = validMatchesForThisContest.map((m: any) => m.kickoff instanceof Date ? m.kickoff.getTime() : new Date(m.kickoff).getTime());
-      const earliestKickoff = Math.min(...kickoffTimes);
-      const now = Date.now();
-      const BUFFER_MS = 10 * 60 * 1000; // 10 minutes
+    // Limit payload size to actual contest matches + 10 items padding maximum
+    if (predictions.length > availableMatches.length + 10) {
+      return NextResponse.json({ success: false, error: 'PAYLOAD_OVERFLOW' }, { status: 400 });
+    }
 
-      if (now > (earliestKickoff - BUFFER_MS)) {
-        return NextResponse.json({ 
-          success: false, 
-          error: 'LOCKED: Submission window closed 10 mins before kickoff.' 
-        }, { status: 403 });
-      }
+    // Verify each prediction matchId
+    for (const p of predictions) {
+       if (!availableMatchIds.has(p.matchId)) {
+          return NextResponse.json({ success: false, error: `Match ID ${p.matchId} not in contest` }, { status: 403 });
+       }
+    }
+
+    // 2. TIMELOCK CHECK
+    const earliestMatch = availableMatches.reduce((min: any, m: any) => {
+        const time = new Date(m.kickoff).getTime();
+        return time < min ? time : min;
+    }, Infinity);
+
+    const now = Date.now();
+    const BUFFER_MS = 5 * 60 * 1000; // 5 minute hard-lock
+
+    if (earliestMatch !== Infinity && now > (earliestMatch - BUFFER_MS)) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'LOCKED: Entry closed before kickoff.' 
+      }, { status: 403 });
     }
 
     // 3. We use a Prisma transaction to ensure all predictions are saved atomically
@@ -107,14 +118,41 @@ export async function POST(req: NextRequest) {
       return results;
     }, { timeout: 15000 });
 
-    // Update entry count
+    // 4. Update entry count and Award Submission XP
     const count = await prisma.userContestEntry.count({ where: { contestId } });
+    const xpPerPrediction = 10;
+    const totalXpEarned = savedPredictions.length * xpPerPrediction;
+
+    // Update User XP and check for Level Up
+    const currentUser = await prisma.user.findUnique({ where: { walletAddress: userWallet } }) as any;
+    if (currentUser) {
+       const newXp = (currentUser.xp || 0) + totalXpEarned;
+       const nextLevelThreshold = currentUser.level * 100;
+       
+       let newLevel = currentUser.level;
+       let finalXp = newXp;
+       
+       if (newXp >= nextLevelThreshold) {
+          newLevel += 1;
+          finalXp = newXp - nextLevelThreshold; // Reset progress for next level
+       }
+
+       await prisma.user.update({
+         where: { walletAddress: userWallet },
+         data: { xp: finalXp, level: newLevel } as any
+       });
+    }
+
     await prisma.contest.update({
       where: { id: contestId },
       data: { currentEntries: count }
     });
 
-    return NextResponse.json({ success: true, count: savedPredictions.length });
+    return NextResponse.json({ 
+      success: true, 
+      count: savedPredictions.length,
+      xpEarned: totalXpEarned
+    });
 
   } catch (error: any) {
     console.error('CRITICAL: Prediction Submission Failed:', error);

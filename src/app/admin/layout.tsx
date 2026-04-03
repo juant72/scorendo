@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Trophy, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, Settings, ArrowLeft, Zap, Wallet } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -23,11 +23,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
           <Link href="/admin/contests" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
             <Trophy size={18} />
-            Contests
+            Tournaments
+          </Link>
+          <Link href="/admin/scores" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
+            <Zap size={18} className="text-primary" />
+            Settle Scores
+          </Link>
+          <Link href="/admin/finance" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
+            <Wallet size={18} />
+            Treasury Monitor
           </Link>
           <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
             <Settings size={18} />
-            AFA Settings
+            Global Settings
           </Link>
         </nav>
 

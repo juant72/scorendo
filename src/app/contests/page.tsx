@@ -52,6 +52,8 @@ export default function ContestsLobbyPage() {
                         onClick={() => router.push(`/contests/league/${comp.slug}`)}
                         className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10 hover:border-primary/50 transition-all hover:scale-[1.02] cursor-pointer stadium-shadow"
                       >
+                         {/* Live Energy Pulse (Background) */}
+                         <div className="absolute -inset-4 bg-primary/5 opacity-0 group-hover:opacity-100 animate-pulse duration-[3000ms] rounded-[4rem] blur-3xl transition-opacity" />
                          {/* Full-bleed Background */}
                          <div className="absolute inset-0 z-0">
                             <img 

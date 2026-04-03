@@ -3,10 +3,24 @@
 import { useState, useEffect } from 'react';
 import { MatchStatus, PredictionOutcome } from '@prisma/client';
 import { TeamBadge } from './TeamBadge';
-import { Loader2, Shield, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { 
+  Loader2, 
+  Shield, 
+  ChevronRight, 
+  Sparkles, 
+  Share2, 
+  LayoutGrid, 
+  ListOrdered,
+  Zap,
+  CheckCircle2
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition, StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
 import { calculateMatchPoints } from '@/lib/scoring';
+import { MatchTicket } from './MatchTicket';
+import { exportMatchTicket } from '@/lib/ticket-exporter';
+import { CommunityTrends } from './CommunityTrends';
+import { ConfettiCelebration } from './ConfettiCelebration';
 
 interface TeamProps { name: string; code: string; }
 interface MatchProps { 
@@ -48,7 +62,9 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   );
 
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', msg: string, lastSaved?: string } | null>(null);
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', msg: string, lastSaved?: string, xpEarned?: number } | null>(null);
+  const [sharingMatchId, setSharingMatchId] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -105,7 +121,13 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setSaveStatus({ type: 'success', msg: 'Sync completed', lastSaved: new Date().toLocaleTimeString() });
+        setSaveStatus({ 
+          type: 'success', 
+          msg: 'Sync completed', 
+          lastSaved: new Date().toLocaleTimeString(),
+          xpEarned: data.xpEarned 
+        });
+        setShowConfetti(true);
       } else {
         if (data.error === 'PAYMENT_REQUIRED') {
            setSaveStatus({ type: 'error', msg: '💰 Entry Ticket Required' });
@@ -132,9 +154,22 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     });
   };
 
+  const handleShare = async (matchId: string) => {
+    setSharingMatchId(matchId);
+    // Wait for render
+    setTimeout(async () => {
+      try {
+        await exportMatchTicket('match-ticket-capture', `Scorendo_Prediction_${matchId}`);
+      } finally {
+        setSharingMatchId(null);
+      }
+    }, 100);
+  };
+
   if (!mounted) return <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
   return (
+    <>
     <PageTransition>
       <div className="space-y-12 sm:space-y-20 relative pb-16">
         {/* ═ TOP SECURE STATUS BAR ═ */}
@@ -235,6 +270,9 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                                 <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">DEF</div>
                               </div>
                             </div>
+
+                            {/* ══ WISDOM OF THE CROWD ══ */}
+                            <CommunityTrends matchId={match.id} />
                           </div>
 
                           {/* ══ TEAM AWAY ══ */}
@@ -254,9 +292,24 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
 
                         {/* ══ BROADCAST FOOTER ══ */}
                         <div className="w-full mt-4 sm:mt-12 pt-4 sm:pt-10 border-t border-white/[0.05] flex flex-row items-center justify-between gap-4 px-2">
-                          <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/[0.02] border border-white/5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">LIVE_LINK</span>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/[0.02] border border-white/5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                              <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">LIVE_LINK</span>
+                            </div>
+
+                            <button 
+                              onClick={() => handleShare(match.id)}
+                              disabled={sharingMatchId === match.id}
+                              className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition-all group/btn"
+                            >
+                               {sharingMatchId === match.id ? (
+                                 <Loader2 className="w-3 h-3 animate-spin" />
+                               ) : (
+                                 <Share2 className="w-3 h-3 group-hover/btn:scale-110 transition-transform" />
+                               )}
+                               <span className="text-[8px] font-black uppercase tracking-[0.2em]">Share Pick</span>
+                            </button>
                           </div>
                           
                           <div className="flex items-center gap-4 sm:gap-10">
@@ -298,7 +351,38 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
             </div>
           </div>
         )}
+
+        {/* ══ HIDDEN CAPTURE AREA ══ */}
+        <div className="fixed top-[-5000px] left-0 pointer-events-none overflow-hidden">
+          {sharingMatchId && (
+            <MatchTicket 
+              homeTeam={matches.find(m => m.id === sharingMatchId)!.homeTeam}
+              awayTeam={matches.find(m => m.id === sharingMatchId)!.awayTeam}
+              prediction={predictions[sharingMatchId] || { home: '0', away: '0' }}
+              contestName="PRO ARENA LEAGUE"
+            />
+          )}
+        </div>
       </div>
     </PageTransition>
+
+    {/* ══ CELEBRATION ══ */}
+    <ConfettiCelebration show={showConfetti} onComplete={() => setShowConfetti(false)} />
+
+    {/* ══ SUCCESS TOAST ══ */}
+    <AnimatePresence>
+      {saveStatus?.type === 'success' && (
+        <motion.div 
+          initial={{ opacity: 0, y: 50, x: '-50%' }}
+          animate={{ opacity: 1, y: 0, x: '-50%' }}
+          exit={{ opacity: 0, y: 20, x: '-50%' }}
+          className="fixed bottom-32 left-1/2 z-50 bg-primary/95 backdrop-blur-xl text-black px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-[0_0_50px_rgba(0,230,118,0.4)]"
+        >
+          <Zap size={14} fill="black" />
+          LOCKED IN! +{saveStatus.xpEarned} XP
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 }

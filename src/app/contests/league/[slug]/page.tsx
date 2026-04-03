@@ -7,6 +7,7 @@ import { Loader2, Trophy, Calendar, Users, ChevronRight, ArrowLeft, Shield, Spar
 import { TeamBadge } from '@/components/contests/TeamBadge';
 import { TournamentRankings } from '@/components/contests/TournamentRankings';
 import { PageTransition, StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import Link from 'next/link';
 
 export default function LeagueDashboardPage() {
@@ -51,9 +52,7 @@ export default function LeagueDashboardPage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 lg:py-16">
           
           {/* Navigation */}
-          <Link href="/contests" className="inline-flex items-center gap-2 text-sm font-black text-primary hover:text-white transition-all mb-12 group uppercase tracking-widest">
-            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> {locale === 'en' ? 'Back to Lobby' : 'Volver al Lobby'}
-          </Link>
+          <Breadcrumbs items={[{ label: data?.name || 'League' }]} />
 
           {/* Dynamic Stadium Hero */}
           <div className="relative rounded-[3.5rem] overflow-hidden stadium-shadow mb-20 group border border-white/10">

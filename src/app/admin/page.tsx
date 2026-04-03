@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Users, Trophy, DollarSign, Activity, Loader2, ArrowUpRight } from 'lucide-react';
+import { Users, Trophy, DollarSign, Activity, Loader2, ArrowUpRight, Zap, RefreshCcw } from 'lucide-react';
 
 interface Stats {
   totalUsers: number;
@@ -13,9 +13,11 @@ interface Stats {
 export default function AdminDashboard() {
   const [data, setData] = useState<{ stats: Stats; recentUsers: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncMsg, setSyncMsg] = useState('');
 
-  useEffect(() => {
+  const fetchStats = () => {
     fetch('/api/admin/stats')
       .then((res) => {
         if (!res.ok) throw new Error('Forbidden or Error');
@@ -24,7 +26,30 @@ export default function AdminDashboard() {
       .then(setData)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchStats();
   }, []);
+
+  const handleGlobalSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/admin/oracle/sync', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setSyncMsg(`SUCCESS: ${data.syncedCount} matches auto-settled.`);
+        fetchStats(); // Refresh stats
+      } else {
+        setSyncMsg(`ERROR: ${data.error}`);
+      }
+    } catch (err) {
+      setSyncMsg('SYNC FAILED');
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMsg(''), 5000);
+    }
+  };
 
   if (loading) return (
     <div className="flex h-full items-center justify-center">
@@ -41,10 +66,28 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-12">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight mb-2">Platform Overview</h1>
-        <p className="text-muted-foreground">Real-time statistics for Scorendo Global.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div>
+           <h1 className="text-3xl font-black tracking-tight mb-2 uppercase italic">Command <span className="text-primary">Center</span></h1>
+           <p className="text-muted-foreground uppercase text-[10px] font-mono tracking-widest">Scorendo Platform Intelligence Hub</p>
+        </div>
+        <div className="flex gap-4">
+           <button 
+             onClick={handleGlobalSync}
+             disabled={syncing}
+             className="h-14 px-8 bg-primary text-midnight font-black uppercase text-[10px] tracking-[0.25em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center gap-3 disabled:opacity-50"
+           >
+              {syncing ? <RefreshCcw className="animate-spin" size={16} /> : <Zap size={16} />}
+              {syncing ? 'Synchronizing Universe...' : 'Pulse Oracle Sync'}
+           </button>
+        </div>
       </div>
+
+      {syncMsg && (
+        <div className={`p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border animate-in fade-in slide-in-from-top-4 ${syncMsg.startsWith('SUCCESS') ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+           {syncMsg}
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,7 +1,8 @@
 import { MatchStatus, PredictionOutcome } from '@prisma/client';
 import { TeamBadge } from '@/components/contests/TeamBadge';
 import { formatDateShort, getStatusColor } from '@/lib/utils';
-import { Clock, MapPin, Trophy } from 'lucide-react';
+import { Clock, MapPin, Trophy, Users } from 'lucide-react';
+import { CommunityTrends } from '@/components/contests/CommunityTrends';
 
 interface TeamProps {
   name: string;
@@ -23,6 +24,7 @@ interface MatchCardProps {
   // Visual variations
   variant?: 'default' | 'prediction' | 'compact';
   renderCenter?: React.ReactNode;
+  matchId?: string;
 }
 
 export function MatchCard({
@@ -39,6 +41,7 @@ export function MatchCard({
   predictedWinner,
   variant = 'default',
   renderCenter,
+  matchId,
 }: MatchCardProps) {
   const isFinished = status === MatchStatus.FINISHED;
   const isLive = status === MatchStatus.LIVE;
@@ -151,6 +154,13 @@ export function MatchCard({
                <Trophy className="h-3 w-3" /> Prediction Lock
              </span>
           )}
+        </div>
+      )}
+
+      {/* Community Pulse - Live Trends */}
+      {variant === 'default' && matchId && (
+        <div className="mt-6">
+           <CommunityTrends matchId={matchId} />
         </div>
       )}
     </div>

@@ -43,7 +43,7 @@ export function StaggerChildren({
   );
 }
 
-export function FadeInItem({ children, className = "" }: { children: React.ReactNode, className?: string }) {
+export function FadeInItem({ children, className = "", delay = 0 }: { children: React.ReactNode, className?: string, delay?: number }) {
   return (
     <motion.div
       className={className}
@@ -51,7 +51,7 @@ export function FadeInItem({ children, className = "" }: { children: React.React
         hidden: { opacity: 0, scale: 0.95, y: 10 },
         show: { opacity: 1, scale: 1, y: 0 }
       }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut", delay }}
     >
       {children}
     </motion.div>

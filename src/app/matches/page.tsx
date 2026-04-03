@@ -76,6 +76,7 @@ export default async function MatchesPage() {
                 {dateMatches.map((match) => (
                   <MatchCard
                     key={match.id}
+                    matchId={match.id}
                     matchNumber={match.matchNumber}
                     homeTeam={{ name: match.homeTeam.name, code: match.homeTeam.code }}
                     awayTeam={{ name: match.awayTeam.name, code: match.awayTeam.code }}

@@ -27,7 +27,7 @@ const TEAM_CONFIG: Record<string, { main: string, accent: string, third?: string
   'GOD': { main: '#1E40AF', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'STRIPES_FINE' },
   'TUC': { main: '#A2DDFE', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'STRIPES_FINE' },
   'SAR': { main: '#166534', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'SOLID' },
-  'BEL': { main: '#A2DDFE', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'SOLID' },
+  'BEL_GR': { main: '#A2DDFE', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'SOLID' },
   'CCB': { main: '#FFFFFF', accent: '#1C1917', third: '#1C1917', pattern: 'STRIPES_FINE' },
   'BAR_CAS': { main: '#FFFFFF', accent: '#DC2626', third: '#DC2626', pattern: 'STRIPES_FINE' },
   'DEF': { main: '#FACC15', accent: '#166534', third: '#166534', pattern: 'SOLID' },

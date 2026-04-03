@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifySessionToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { ContestTier } from '@prisma/client';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,11 +27,14 @@ export async function POST(req: NextRequest) {
 
     const tournament = competition.tournaments[0];
     const matchdayName = `Matchday ${matchdayNumber}`;
+    const phaseSlug = `${leagueSlug}-matchday-${matchdayNumber}`;
 
     // 1. Create Phase
     const phase = await prisma.phase.create({
       data: {
         name: matchdayName,
+        slug: phaseSlug,
+        order: matchdayNumber,
         tournamentId: tournament.id,
         startDate: new Date(),
         endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days later
@@ -44,10 +48,15 @@ export async function POST(req: NextRequest) {
         slug: `${leagueSlug}-fecha-${matchdayNumber}-free-${Math.random().toString(36).substring(7)}`,
         tournamentId: tournament.id,
         phaseId: phase.id,
+        type: 'MATCH_DAY',
         entryFeeSOL: 0,
-        prizePool: 0,
+        prizePool: 0n,
+        distribution: {}, 
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        registrationEnd: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         status: 'UPCOMING',
-        tier: 'AMATEUR'
+        tier: ContestTier.FREE
       }
     });
 
@@ -58,10 +67,15 @@ export async function POST(req: NextRequest) {
         slug: `${leagueSlug}-fecha-${matchdayNumber}-pro-${Math.random().toString(36).substring(7)}`,
         tournamentId: tournament.id,
         phaseId: phase.id,
+        type: 'MATCH_DAY',
         entryFeeSOL: 0.1, // Default 0.1 SOL for pro
-        prizePool: 0,
+        prizePool: 0n,
+        distribution: {},
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        registrationEnd: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         status: 'UPCOMING',
-        tier: 'PRO'
+        tier: ContestTier.STANDARD
       }
     });
 

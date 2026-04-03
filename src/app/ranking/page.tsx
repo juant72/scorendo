@@ -1,6 +1,10 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { verifySessionToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
 import { Trophy, Medal, Crown } from 'lucide-react';
+import { LevelBadge } from '@/components/contests/LevelBadge';
+import { EliteUser } from '@/lib/types';
 
 export const metadata: Metadata = {
   title: 'Global Rankings',
@@ -10,6 +14,11 @@ export const metadata: Metadata = {
 export const revalidate = 60; // 60 sec cache
 
 export default async function RankingPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('scorendo_session')?.value;
+  const session = token ? await verifySessionToken(token) : null;
+  const currentUserWallet = session?.wallet as string | undefined;
+
   const users = await prisma.user.findMany({
     orderBy: {
       totalPoints: 'desc'
@@ -20,9 +29,13 @@ export default async function RankingPage() {
       displayName: true,
       totalPoints: true,
       totalCorrect: true,
-      accuracy: true
-    }
-  });
+      accuracy: true,
+      level: true
+    } as any
+  }) as unknown as EliteUser[];
+
+  // Final stabilize cast to ensure the loop doesn't fail TS checks
+  const rankingList = (users || []) as EliteUser[];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 lg:py-20">
@@ -57,13 +70,17 @@ export default async function RankingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {users.map((user, index) => {
+              {rankingList.map((user, index) => {
                 const isTop3 = index < 3;
+                const isME = currentUserWallet === user.walletAddress;
                 const shortAddress = `${user.walletAddress.slice(0, 4)}...${user.walletAddress.slice(-4)}`;
                 const displayName = user.displayName || shortAddress;
 
                 return (
-                  <tr key={user.walletAddress} className="hover:bg-white/5 transition-colors group">
+                  <tr 
+                    key={user.walletAddress} 
+                    className={`transition-colors group ${isME ? 'bg-primary/10 border-y border-primary/20 hover:bg-primary/20' : 'hover:bg-white/5'}`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {index === 0 && <Crown className="h-5 w-5 text-gold mr-2" />}
@@ -75,8 +92,11 @@ export default async function RankingPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {displayName}
+                      <div className="flex items-center gap-3">
+                        <div className={`font-semibold transition-colors ${isME ? 'text-primary' : 'text-foreground group-hover:text-primary'}`}>
+                          {displayName} {isME && <span className="text-[8px] bg-primary text-black px-1.5 py-0.5 rounded ml-1">YOU</span>}
+                        </div>
+                        <LevelBadge level={user.level} />
                       </div>
                       <div className="text-[10px] text-muted-foreground font-mono">
                         {user.walletAddress}

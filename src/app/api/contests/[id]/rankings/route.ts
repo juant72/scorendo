@@ -7,19 +7,19 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   try {
     const entries = await prisma.userContestEntry.findMany({
       where: { contestId: id },
-      orderBy: { points: 'desc' },
+      orderBy: { finalPoints: 'desc' },
       take: 50,
       include: {
         user: {
-          select: { displayName: true, walletAddress: true }
+          select: { displayName: true }
         }
       }
     });
 
     const rankings = entries.map(e => ({
       walletAddress: e.userWallet,
-      displayName: e.user?.displayName || '',
-      points: e.points
+      displayName: e.user?.displayName || 'Anonymous Hero',
+      points: e.finalPoints
     }));
 
     return NextResponse.json({ success: true, rankings });

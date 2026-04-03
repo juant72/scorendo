@@ -1,0 +1,20 @@
+prisma.config.ts(4,30): error TS2307: Cannot find module 'prisma/config' or its corresponding type declarations.
+scripts/test-drive-api.ts(1,7): error TS2451: Cannot redeclare block-scoped variable 'fetch'.
+src/app/api/admin/matches/generate/route.ts(32,7): error TS2322: Type '{ name: string; tournamentId: string; startDate: Date; endDate: Date; }' is not assignable to type '(Without<PhaseCreateInput, PhaseUncheckedCreateInput> & PhaseUncheckedCreateInput) | (Without<...> & PhaseCreateInput)'.
+  Type '{ name: string; tournamentId: string; startDate: Date; endDate: Date; }' is not assignable to type 'Without<PhaseCreateInput, PhaseUncheckedCreateInput> & PhaseUncheckedCreateInput'.
+    Type '{ name: string; tournamentId: string; startDate: Date; endDate: Date; }' is missing the following properties from type 'PhaseUncheckedCreateInput': slug, order
+src/app/api/admin/matches/generate/route.ts(50,9): error TS2322: Type '"AMATEUR"' is not assignable to type 'ContestTier | undefined'.
+src/app/api/admin/matches/generate/route.ts(64,9): error TS2322: Type '"PRO"' is not assignable to type 'ContestTier | undefined'.
+src/app/api/contests/[id]/rankings/route.ts(10,18): error TS2353: Object literal may only specify known properties, and 'points' does not exist in type 'UserContestEntryOrderByWithRelationInput | UserContestEntryOrderByWithRelationInput[]'.
+src/app/api/contests/[id]/rankings/route.ts(21,22): error TS2339: Property 'user' does not exist on type '{ id: string; createdAt: Date; userWallet: string; contestId: string; entryTxSignature: string | null; entryPaid: boolean; entryPaidAt: Date | null; isFreeEntry: boolean; finalRank: number | null; finalPoints: number; prizeAmount: bigint | null; prizeClaimed: boolean; claimTxSignature: string | null; }'.
+src/app/api/contests/[id]/rankings/route.ts(22,17): error TS2339: Property 'points' does not exist on type '{ id: string; createdAt: Date; userWallet: string; contestId: string; entryTxSignature: string | null; entryPaid: boolean; entryPaidAt: Date | null; isFreeEntry: boolean; finalRank: number | null; finalPoints: number; prizeAmount: bigint | null; prizeClaimed: boolean; claimTxSignature: string | null; }'.
+src/app/api/seed/route.ts(145,76): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+src/app/api/seed/route.ts(182,71): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+src/app/api/seed/route.ts(195,70): error TS2737: BigInt literals are not available when targeting lower than ES2020.
+src/app/contests/[slug]/page.tsx(194,32): error TS2339: Property 'displayName' does not exist on type 'JWTPayload'.
+src/app/settings/page.tsx(134,27): error TS2322: Type '{ children: Element; delay: number; }' is not assignable to type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+  Property 'delay' does not exist on type 'IntrinsicAttributes & { children: ReactNode; className?: string | undefined; }'.
+src/components/contests/PredictionForm.tsx(193,18): error TS2304: Cannot find name 'CheckCircle2'.
+src/components/contests/TeamBadge.tsx(66,3): error TS1117: An object literal cannot have multiple properties with the same name.
+src/components/providers/AppProviders.tsx(32,11): error TS2353: Object literal may only specify known properties, and 'createOnLogin' does not exist in type '{ ethereum?: { createOnLogin?: EmbeddedWalletCreateOnLoginConfig | undefined; } | undefined; solana?: { createOnLogin?: EmbeddedWalletCreateOnLoginConfig | undefined; } | undefined; disableAutomaticMigration?: boolean | undefined; showWalletUIs?: boolean | undefined; priceDisplay?: PriceDisplayOptions | undefined; e...'.
+src/lib/ticket-exporter.ts(3,23): error TS2307: Cannot find module 'html-to-image' or its corresponding type declarations.

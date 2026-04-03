@@ -8,6 +8,7 @@ import { Trophy, Clock, Users, ArrowLeft, Key } from 'lucide-react';
 import Link from 'next/link';
 import { ShareButton } from '@/components/contests/ShareButton';
 import { ContestPredictionHub } from '@/components/contests/ContestPredictionHub';
+import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -66,13 +67,20 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
   // 4. Fetch User's existing predictions for this contest
   let existingPredictions: any[] = [];
   let userEntry = null;
+  let userData = null;
+
   if (userWallet) {
-    userEntry = await prisma.userContestEntry.findUnique({
-      where: { userWallet_contestId: { userWallet, contestId: contest.id } }
-    });
-    existingPredictions = await prisma.prediction.findMany({
-      where: { userWallet, contestId: contest.id }
-    });
+    [userEntry, userData, existingPredictions] = await Promise.all([
+      prisma.userContestEntry.findUnique({
+        where: { userWallet_contestId: { userWallet, contestId: contest.id } }
+      }),
+      prisma.user.findUnique({
+        where: { walletAddress: userWallet as string }
+      }),
+      prisma.prediction.findMany({
+        where: { userWallet, contestId: contest.id }
+      })
+    ]);
   }
 
   // 5. Timelock Logic (Sync with Backend 10-minute rule)
@@ -93,10 +101,11 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 lg:py-12">
       
-      {/* Back Link */}
-      <Link href="/contests" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-8">
-        <ArrowLeft className="h-4 w-4" /> Back to Lobby
-      </Link>
+      {/* Navigation */}
+      <Breadcrumbs items={[
+        { label: contest.tournament?.name || 'League', href: `/contests/league/${contest.tournament?.slug}` },
+        { label: contest.name }
+      ]} />
 
       {/* Contest Header UI */}
       <div className="glass-strong rounded-3xl p-6 md:p-10 mb-10 border border-primary/20 relative overflow-hidden">
@@ -189,7 +198,7 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
             isEntered={!!userEntry}
             entryFeeSOL={contest.entryFeeSOL}
             userWallet={userWallet}
-            userName={session?.displayName || userWallet}
+            userName={userData?.displayName || userWallet}
           />
         )}
       </div>

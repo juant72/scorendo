@@ -142,7 +142,7 @@ export async function GET() {
         name: 'LPF Season - Rookie Arena',
         slug: 'lpf-2026-season-rookie',
         description: 'Predict all matchdays. Free entry, bragging rights and badges.',
-        type: 'GRAND_TOURNAMENT', tier: 'FREE', entryFeeSOL: 0, prizePool: 0n, distribution: { "1": 1.0 },
+        type: 'GRAND_TOURNAMENT', tier: 'FREE', entryFeeSOL: 0, prizePool: BigInt(0), distribution: { "1": 1.0 },
         tournamentId: tournamentArg.id, startDate: new Date('2026-01-01'), endDate: new Date('2026-12-31'), registrationEnd: new Date('2026-12-31'), status: 'ACTIVE'
       }
     });
@@ -179,7 +179,7 @@ export async function GET() {
         name: 'Matchday 14 - Pro Battle',
         slug: 'afa-md14-pro',
         description: '0.1 SOL entry for the matchday pool.',
-        type: 'PHASE', tier: 'STANDARD', entryFeeSOL: 0.1, prizePool: 10000000000n, distribution: { "1": 0.7, "2": 0.3 },
+        type: 'PHASE', tier: 'STANDARD', entryFeeSOL: 0.1, prizePool: BigInt(10000000000), distribution: { "1": 0.7, "2": 0.3 },
         tournamentId: tournamentArg.id, phaseId: phaseArg.id, startDate: new Date('2026-04-01'), endDate: new Date('2026-04-10'), registrationEnd: new Date('2026-04-05'), status: 'ACTIVE'
       }
     });
@@ -192,7 +192,7 @@ export async function GET() {
         name: 'UEFA Quarters - Pro Midweek',
         slug: 'uefa-qf-pro',
         description: 'The path to Paris. Predict the first legs.',
-        type: 'PHASE', tier: 'PREMIUM', entryFeeSOL: 0.5, prizePool: 50000000000n, distribution: { "1": 1.0 },
+        type: 'PHASE', tier: 'PREMIUM', entryFeeSOL: 0.5, prizePool: BigInt(50000000000), distribution: { "1": 1.0 },
         tournamentId: tournamentChampions.id, phaseId: phaseUefa.id, startDate: new Date('2026-04-01'), endDate: new Date('2026-04-15'), registrationEnd: new Date('2026-04-09'), status: 'UPCOMING'
       }
     });

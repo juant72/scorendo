@@ -24,6 +24,8 @@ model User {
   avatarUrl        String?
   email            String?            @unique
   language         String             @default("en")
+  xp               Int                @default(0)
+  level            Int                @default(1)
   predictions      Prediction[]
   transactions     Transaction[]
   achievements     UserAchievement[]

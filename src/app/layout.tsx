@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { BottomNav } from '@/components/layout/BottomNav';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -62,10 +63,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AppProviders>
           <Header />
-          <main className="flex-1 overflow-x-hidden pt-12 pb-16">
+          <main className="flex-1 overflow-x-hidden pt-12 pb-24 sm:pb-16">
             {children}
           </main>
           <Footer />
+          <BottomNav />
         </AppProviders>
 
         {/* Global SVG Assets for Jersey Engine */}
