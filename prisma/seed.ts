@@ -86,56 +86,84 @@ const PHASES = [
 ]
 
 async function main() {
-  console.log('Seeding database...')
+  console.log('Seeding multisport database...')
 
-  // 1. Venues
+  // 1. Create Sports
+  const football = await prisma.sport.upsert({
+    where: { slug: 'football' },
+    update: {},
+    create: { name: 'Fútbol', slug: 'football', type: 'TEAM_VS_TEAM' }
+  });
+
+  const motorsports = await prisma.sport.upsert({
+    where: { slug: 'motorsports' },
+    update: {},
+    create: { name: 'Automovilismo', slug: 'motorsports', type: 'RACING' }
+  });
+
+  const nba = await prisma.sport.upsert({
+    where: { slug: 'nba' },
+    update: {},
+    create: { name: 'Basquet NBA', slug: 'nba', type: 'TEAM_VS_TEAM' }
+  });
+
+  // 2. Create Competitions
+  const worldCupComp = await prisma.competition.upsert({
+    where: { slug: 'fifa-world-cup-2026' },
+    update: { sportId: football.id },
+    create: { name: 'FIFA World Cup 2026', slug: 'fifa-world-cup-2026', sportId: football.id, category: 'International' }
+  });
+
+  const f1Comp = await prisma.competition.upsert({
+    where: { slug: 'f1-world-championship' },
+    update: { sportId: motorsports.id },
+    create: { name: 'F1 World Championship', slug: 'f1-world-championship', sportId: motorsports.id, category: 'Professional' }
+  });
+
+  const nbaComp = await prisma.competition.upsert({
+    where: { slug: 'nba-season' },
+    update: { sportId: nba.id },
+    create: { name: 'NBA Regular Season', slug: 'nba-season', sportId: nba.id, category: 'Professional' }
+  });
+
+  // 3. Venues
   for (const v of VENUES) {
     await prisma.venue.upsert({
-      where: { id: v.name.replace(/\s+/g, '-').toLowerCase() }, // Fake ID for simplificty or let it autogenerate (we'll look it up)
+      where: { id: v.name.replace(/\s+/g, '-').toLowerCase() },
       update: {},
-      create: {
-        name: v.name,
-        city: v.city,
-        country: v.country,
-        zone: v.zone,
-        capacity: v.capacity
-      }
-    })
+      create: { name: v.name, city: v.city, country: v.country, zone: v.zone, capacity: v.capacity }
+    });
   }
 
-  // 2. Teams
+  // 4. Teams
   for (const t of TEAMS) {
     await prisma.team.upsert({
       where: { code: t.code },
       update: {},
-      create: {
-        name: t.name,
-        code: t.code,
-        confederation: t.confederation
-      }
-    })
+      create: { name: t.name, code: t.code, confederation: t.confederation }
+    });
   }
 
-  // 3. Tournament
-  const tournament = await prisma.tournament.upsert({
+  // 5. Tournaments
+  const worldCupTournament = await prisma.tournament.upsert({
     where: { slug: 'fifa-world-cup-2026' },
-    update: {},
-    create: {
-      name: 'FIFA World Cup 2026™',
-      slug: 'fifa-world-cup-2026',
-      startDate: new Date('2026-06-11'),
-      endDate: new Date('2026-07-19'),
-      status: 'UPCOMING'
-    }
-  })
+    update: { competitionId: worldCupComp.id },
+    create: { name: 'FIFA World Cup 2026™ Edition', slug: 'fifa-world-cup-2026', startDate: new Date('2026-06-11'), endDate: new Date('2026-07-19'), status: 'UPCOMING', competitionId: worldCupComp.id }
+  });
 
-  // 4. Phases
+  const f12025 = await prisma.tournament.upsert({
+    where: { slug: 'f1-season-2025' },
+    update: { competitionId: f1Comp.id },
+    create: { name: 'F1 2025 Season', slug: 'f1-season-2025', startDate: new Date('2025-03-01'), endDate: new Date('2025-11-30'), status: 'UPCOMING', competitionId: f1Comp.id }
+  });
+
+  // 6. Phases
   for (const p of PHASES) {
     await prisma.phase.upsert({
-      where: { tournamentId_slug: { tournamentId: tournament.id, slug: p.slug } },
+      where: { tournamentId_slug: { tournamentId: worldCupTournament.id, slug: p.slug } },
       update: {},
       create: {
-        tournamentId: tournament.id,
+        tournamentId: worldCupTournament.id,
         name: p.name,
         slug: p.slug,
         order: p.order,
@@ -143,137 +171,90 @@ async function main() {
         endDate: p.endDate,
         multiplier: p.multiplier
       }
-    })
+    });
   }
 
-  // 5. Setup tournament teams
-  const dbTeams = await prisma.team.findMany()
-  for (const t of dbTeams) {
-    await prisma.tournamentTeam.upsert({
-      where: { teamId_tournamentId: { teamId: t.id, tournamentId: tournament.id } },
-      update: {},
-      create: {
-        teamId: t.id,
-        tournamentId: tournament.id
-      }
-    })
-  }
-
-  // 6. Groups (A to L for 48 teams)
-  const groupLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
-  const groupPhase = await prisma.phase.findFirst({ where: { slug: 'group-stage' } })
-  const tTeams = await prisma.tournamentTeam.findMany({ include: { team: true } })
-
-  if (groupPhase && tTeams.length === 48) {
-    for (let i = 0; i < groupLetters.length; i++) {
-      const letter = groupLetters[i]
-      const group = await prisma.group.upsert({
-        where: { phaseId_name: { phaseId: groupPhase.id, name: `Group ${letter}` } },
-        update: {},
-        create: {
-          phaseId: groupPhase.id,
-          name: `Group ${letter}`
-        }
-      })
-
-      // Assign 4 teams to each group sequentially just for seeding
-      const groupTeams = tTeams.slice(i * 4, (i + 1) * 4)
-      for (const gt of groupTeams) {
-        await prisma.tournamentTeam.update({
-          where: { id: gt.id },
-          data: { groupId: group.id }
-        })
-      }
-    }
-  }
-
-  // 7. Dummy/Mock Matches (Real-life Opening Matches of 2026 World Cup)
-  // groupPhase is already declared above
-  const azteca = await prisma.venue.findFirst({ where: { name: 'Azteca Stadium' } })
-  const sofi = await prisma.venue.findFirst({ where: { name: 'SoFi Stadium' } })
-  const bmo = await prisma.venue.findFirst({ where: { name: 'BMO Field' } })
-  const metlife = await prisma.venue.findFirst({ where: { name: 'MetLife Stadium' } })
-
-  const mex = await prisma.team.findUnique({ where: { code: 'MEX' } })
-  const usa = await prisma.team.findUnique({ where: { code: 'USA' } })
-  const can = await prisma.team.findUnique({ where: { code: 'CAN' } })
-  const arg = await prisma.team.findUnique({ where: { code: 'ARG' } })
-  const bra = await prisma.team.findUnique({ where: { code: 'BRA' } })
-  const eng = await prisma.team.findUnique({ where: { code: 'ENG' } })
-
-  let m1, m2, m3;
-
-  if (groupPhase && azteca && sofi && bmo && metlife && mex && usa && can && arg && bra && eng) {
-    // Math 1: Opening Match at Azteca
-    m1 = await prisma.match.upsert({
-      where: { id: 'match-1' },
-      update: {},
-      create: { id: 'match-1', phaseId: groupPhase.id, matchNumber: 1, homeTeamId: mex.id, awayTeamId: eng.id, venueId: azteca.id, kickoff: new Date('2026-06-11T20:00:00Z'), status: MatchStatus.SCHEDULED }
-    })
-    // Match 2: USA Opening at SoFi
-    m2 = await prisma.match.upsert({
-      where: { id: 'match-2' },
-      update: {},
-      create: { id: 'match-2', phaseId: groupPhase.id, matchNumber: 2, homeTeamId: usa.id, awayTeamId: arg.id, venueId: sofi.id, kickoff: new Date('2026-06-12T20:00:00Z'), status: MatchStatus.SCHEDULED }
-    })
-    // Match 3: CAN Opening at BMO
-    m3 = await prisma.match.upsert({
-      where: { id: 'match-3' },
-      update: {},
-      create: { id: 'match-3', phaseId: groupPhase.id, matchNumber: 3, homeTeamId: can.id, awayTeamId: bra.id, venueId: bmo.id, kickoff: new Date('2026-06-12T23:00:00Z'), status: MatchStatus.SCHEDULED }
-    })
-  }
-
-  // 8. Contests (For User to interact in Lobby)
-  const globContest = await prisma.contest.upsert({
+  // 7. Contests (Hierarchical variety)
+  // World Cup Full Tournament
+  await prisma.contest.upsert({
     where: { slug: 'world-cup-2026-global' },
-    update: {},
+    update: { tournamentId: worldCupTournament.id },
     create: {
-      name: 'Global World Cup Prediction Pool',
+      name: 'World Cup 2026: Full Tournament',
       slug: 'world-cup-2026-global',
-      description: 'Predict all matches throughout the tournament and win the Grand Prize. Entry is free!',
+      description: 'Predict everything from Group Stage to Final.',
       type: 'GRAND_TOURNAMENT',
       tier: 'FREE',
-      entryFeeLamports: BigInt(0),
-      entryFeeSOL: 0,
-      prizePool: BigInt(50000000000), // 50 SOL (for MVP display)
       distribution: { "1": 0.5, "2": 0.3, "3": 0.2 },
-      tournamentId: tournament.id,
-      startDate: new Date('2026-06-11T20:00:00Z'),
-      endDate: new Date('2026-07-19T23:59:59Z'),
-      registrationEnd: new Date('2026-06-11T20:00:00Z'),
-      status: 'REGISTRATION',
-      minParticipants: 10,
-      maxParticipants: 1000000,
-      currentEntries: 12543
+      tournamentId: worldCupTournament.id,
+      startDate: new Date('2026-06-11'),
+      endDate: new Date('2026-07-19'),
+      registrationEnd: new Date('2026-06-11'),
+      prizePool: BigInt(50000000000),
+      currentEntries: 12500
     }
-  })
+  });
 
+  // World Cup Opening Day (By Date/Day)
   await prisma.contest.upsert({
-    where: { slug: 'opening-weekend-battle' },
-    update: {},
+    where: { slug: 'wc2026-opening-day' },
+    update: { tournamentId: worldCupTournament.id },
     create: {
-      name: 'Opening Weekend High-Roller',
-      slug: 'opening-weekend-battle',
-      description: 'Predict the first 3 opening matches correctly. Winner takes all.',
+      name: 'World Cup: Opening Day Battles',
+      slug: 'wc2026-opening-day',
+      description: 'Predict the first 3 opening matches accurately.',
       type: 'MATCH_DAY',
-      tier: 'PREMIUM',
-      entryFeeLamports: BigInt(1000000000), // 1 SOL
-      entryFeeSOL: 1,
-      prizePool: BigInt(15000000000), // 15 SOL
+      tier: 'STANDARD',
+      entryFeeSOL: 0.1,
       distribution: { "1": 1.0 },
-      phaseId: groupPhase?.id,
-      startDate: new Date('2026-06-11T20:00:00Z'),
-      endDate: new Date('2026-06-13T23:59:59Z'),
-      registrationEnd: new Date('2026-06-11T20:00:00Z'),
-      status: 'UPCOMING',
-      minParticipants: 2,
-      maxParticipants: 100,
-      currentEntries: 14
+      tournamentId: worldCupTournament.id,
+      startDate: new Date('2026-06-11'),
+      endDate: new Date('2026-06-11'),
+      registrationEnd: new Date('2026-06-11'),
+      prizePool: BigInt(10000000000)
     }
-  })
+  });
 
-  console.log('Seeding completed successfully!')
+  // F1 Annual Championship
+  await prisma.contest.upsert({
+    where: { slug: 'f1-2025-annual' },
+    update: { tournamentId: f12025.id },
+    create: {
+      name: 'F1 2025: Annual Championship',
+      slug: 'f1-2025-annual',
+      description: 'The long game. Predict the full season winner and podiums.',
+      type: 'GRAND_TOURNAMENT',
+      tier: 'FREE',
+      distribution: { "1": 1.0 },
+      tournamentId: f12025.id,
+      startDate: new Date('2025-03-01'),
+      endDate: new Date('2025-11-30'),
+      registrationEnd: new Date('2025-03-01'),
+      prizePool: BigInt(50000000000)
+    }
+  });
+
+  // F1 GP Mónaco Specific (By Event/Date)
+  await prisma.contest.upsert({
+    where: { slug: 'f1-2025-monaco-gp' },
+    update: { tournamentId: f12025.id },
+    create: {
+      name: 'F1: Grand Prix de Monaco Special',
+      slug: 'f1-2025-monaco-gp',
+      description: 'Specific event contest for the most iconic street circuit.',
+      type: 'MATCH_DAY',
+      tier: 'STANDARD',
+      entryFeeSOL: 0.05,
+      distribution: { "1": 1.0 },
+      tournamentId: f12025.id,
+      startDate: new Date('2025-05-25'),
+      endDate: new Date('2025-05-25'),
+      registrationEnd: new Date('2025-05-25'),
+      prizePool: BigInt(5000000000)
+    }
+  });
+
+  console.log('Seeding multisport completed successfully!')
 }
 
 main()
@@ -284,3 +265,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+

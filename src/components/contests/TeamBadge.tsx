@@ -87,10 +87,23 @@ const TEAM_CONFIG: Record<string, { main: string, accent: string, third?: string
   'PAN': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' },
   
   // EUROPEAN CLUBS
+  // EUROPEAN CLUBS
   'RMA': { main: '#FFFFFF', accent: '#F3F4F6', third: '#FEF08A', pattern: 'SOLID' },   
   'MCI': { main: '#7DD3FC', accent: '#38BDF8', third: '#FFFFFF', pattern: 'SOLID' },   
   'BAR': { main: '#1A365D', accent: '#702459', third: '#FEF08A', pattern: 'STRIPES' }, 
-  'LIV': { main: '#DC2626', accent: '#991B1B', third: '#FEF08A', pattern: 'SOLID' },   
+  'LIV': { main: '#DC2626', accent: '#991B1B', third: '#FEF08A', pattern: 'SOLID' },
+
+  // MOTORSPORTS (F1 Teams)
+  'RBR': { main: '#0600EF', accent: '#FFEB00', third: '#FFFFFF', pattern: 'SOLID' },
+  'FER': { main: '#E80020', accent: '#FFFFFF', third: '#000000', pattern: 'SOLID' },
+  'MER': { main: '#00D2BE', accent: '#FFFFFF', third: '#000000', pattern: 'SOLID' },
+  'MCL': { main: '#FF8700', accent: '#47C7FC', third: '#000000', pattern: 'SOLID' },
+
+  // NBA Teams
+  'LAL': { main: '#552583', accent: '#FDB927', third: '#FFFFFF', pattern: 'SOLID' },
+  'GSW': { main: '#1D428A', accent: '#FFC72C', third: '#FFFFFF', pattern: 'SOLID' },
+  'CHI': { main: '#CE1141', accent: '#000000', third: '#FFFFFF', pattern: 'SOLID' },
+  'BOS': { main: '#007A33', accent: '#BA9653', third: '#FFFFFF', pattern: 'SOLID' },
   
   'DEFAULT': { main: '#1E293B', accent: '#334155', pattern: 'SOLID' }
 };
@@ -101,7 +114,6 @@ const TEAM_CONFIG: Record<string, { main: string, accent: string, third?: string
 const getFallbackConfig = (code: string) => {
   if (TEAM_CONFIG[code]) return TEAM_CONFIG[code];
   
-  // Basic intelligence based on common code patterns
   const hash = code.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
   const hue = hash % 360;
   
@@ -117,9 +129,10 @@ interface TeamBadgeProps {
   code: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   hideName?: boolean;
+  sport?: 'football' | 'motorsports' | 'nba';
 }
 
-export function TeamBadge({ name, code, size = 'md', hideName = false }: TeamBadgeProps) {
+export function TeamBadge({ name, code, size = 'md', hideName = false, sport = 'football' }: TeamBadgeProps) {
   const config = getFallbackConfig(code);
   const dimensions = size === 'sm' ? { width: 52, height: 52 } : 
                     size === 'lg' ? { width: 130, height: 130 } : 
@@ -132,67 +145,92 @@ export function TeamBadge({ name, code, size = 'md', hideName = false }: TeamBad
         className="relative flex items-center justify-center transition-transform hover:scale-110 duration-500"
         style={{ width: dimensions.width, height: dimensions.height }}
       >
-        {/* ... existing SVG content ... */}
         <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl overflow-visible">
-          {/* Main Jersey Shape - Athletic Athlete Fit Contour */}
           <defs>
-            <clipPath id={`jersey-mask-${code}-${size}`}>
-              <path d="M50,15 L72,18 L88,28 L94,52 L84,56 L78,42 L78,85 C78,92 72,95 65,95 L35,95 C28,95 22,92 22,85 L22,42 L16,56 L6,52 L12,28 L28,18 Z" />
+            <clipPath id={`badge-mask-${code}-${size}`}>
+              {sport === 'football' && (
+                <path d="M50,15 L72,18 L88,28 L94,52 L84,56 L78,42 L78,85 C78,92 72,95 65,95 L35,95 C28,95 22,92 22,85 L22,42 L16,56 L6,52 L12,28 L28,18 Z" />
+              )}
+              {sport === 'motorsports' && (
+                <path d="M50,10 C25,10 15,25 15,50 C15,75 30,90 50,90 C70,90 85,75 85,50 C85,25 75,10 50,10 M25,55 L75,55 L75,65 C75,75 65,80 50,80 C35,80 25,75 25,65 Z" />
+              )}
+              {sport === 'nba' && (
+                <path d="M30,15 L40,15 C45,25 55,25 60,15 L70,15 L75,40 L70,90 L30,90 L25,40 Z" />
+              )}
             </clipPath>
           </defs>
           
-          <path 
-            d="M50,15 L72,18 L88,28 L94,52 L84,56 L78,42 L78,85 C78,92 72,95 65,95 L35,95 C28,95 22,92 22,85 L22,42 L16,56 L6,52 L12,28 L28,18 Z" 
-            fill={config.main} 
-            stroke="rgba(255,255,255,0.05)"
-            strokeWidth="0.5"
-          />
+          {/* Main Shape */}
+          {sport === 'football' && (
+            <path 
+              d="M50,15 L72,18 L88,28 L94,52 L84,56 L78,42 L78,85 C78,92 72,95 65,95 L35,95 C28,95 22,92 22,85 L22,42 L16,56 L6,52 L12,28 L28,18 Z" 
+              fill={config.main} 
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="0.5"
+            />
+          )}
+          {sport === 'motorsports' && (
+            <path 
+              d="M50,10 C25,10 15,25 15,50 C15,75 30,90 50,90 C70,90 85,75 85,50 C85,25 75,10 50,10" 
+              fill={config.main} 
+              stroke="rgba(255,255,255,0.2)"
+              strokeWidth="1"
+            />
+          )}
+          {sport === 'nba' && (
+            <path 
+              d="M30,15 L40,15 C45,25 55,25 60,15 L70,15 L75,40 L70,90 L30,90 L25,40 Z" 
+              fill={config.main} 
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="0.5"
+            />
+          )}
 
-          <g clipPath={`url(#jersey-mask-${code}-${size})`}>
+          <g clipPath={`url(#badge-mask-${code}-${size})`}>
+             {/* Patterns (Shared logic) */}
              {config.pattern === 'SASH' && (
-                <polygon points="75,10 85,15 25,90 15,85" fill={config.accent} />
+                <polygon points="75,0 95,0 25,100 5,100" fill={config.accent} opacity="0.8" />
              )}
              {config.pattern === 'STRIPES' && (
-                <g fill={config.accent}>
+                <g fill={config.accent} opacity="0.8">
                    <rect x="0" y="0" width="18" height="100" />
                    <rect x="41" y="0" width="18" height="100" />
                    <rect x="82" y="0" width="18" height="100" />
                 </g>
              )}
              {config.pattern === 'STRIPES_FINE' && (
-                <g fill={config.accent}>
-                   <rect x="0" y="0" width="12" height="100" />
-                   <rect x="22" y="0" width="12" height="100" />
-                   <rect x="44" y="0" width="12" height="100" />
-                   <rect x="66" y="0" width="12" height="100" />
-                   <rect x="88" y="0" width="12" height="100" />
+                <g fill={config.accent} opacity="0.6">
+                   <rect x="0" y="0" width="10" height="100" />
+                   <rect x="25" y="0" width="10" height="100" />
+                   <rect x="50" y="0" width="10" height="100" />
+                   <rect x="75" y="0" width="10" height="100" />
                 </g>
-             )}
-             {config.pattern === 'BANDS' && (
-                <g>
-                  <rect x="0" y="42" width="100" height="18" fill={config.accent} />
-                  <path d="M84,52 L94,48 L96,52 L86,56 Z" fill={config.accent} />
-                  <path d="M16,52 L6,48 L4,52 L14,56 Z" fill={config.accent} />
-                </g>
-             )}
-             {config.pattern === 'CHEVRON' && (
-                <polygon points="50,45 100,15 100,28 50,58 0,28 0,15" fill={config.accent} />
-             )}
-             {config.pattern === 'HALVES' && (
-                <rect x="50" y="0" width="50" height="100" fill={config.accent} />
              )}
              
-             <rect width="100" height="100" fill="url(#jersey-mesh)" className="mix-blend-overlay opacity-50" />
+             {/* Motorsports Special: Visor */}
+             {sport === 'motorsports' && (
+                <path d="M25,25 L75,25 L78,45 L22,45 Z" fill="rgba(0,0,0,0.8)" />
+             )}
+             
+             <rect width="100" height="100" fill="url(#jersey-mesh)" className="mix-blend-overlay opacity-30" />
           </g>
 
-          <path d="M78,40 L78,85" stroke="black" strokeWidth="1.5" opacity="0.15" />
-          <path d="M22,40 L22,85" stroke="black" strokeWidth="1.5" opacity="0.15" />
-          
-          <path 
-             d="M35,15 C35,15 42,21 50,21 C58,21 65,15 65,15 L62,13 C62,13 56,18 50,18 C44,18 38,13 38,13 Z" 
-             fill={config.third || '#000'} 
-             className="opacity-70"
-          />
+          {/* Details & Necklines per sport */}
+          {sport === 'football' && (
+            <path 
+              d="M35,15 C35,15 42,21 50,21 C58,21 65,15 65,15 L62,13 C62,13 56,18 50,18 C44,18 38,13 38,13 Z" 
+              fill={config.third || '#000'} 
+              className="opacity-40"
+            />
+          )}
+          {sport === 'nba' && (
+            <path 
+              d="M30,15 C30,15 40,25 50,25 C60,25 70,15 70,15 L68,13 C68,13 58,22 50,22 C42,22 32,13 32,13 Z" 
+              fill={config.accent} 
+              className="opacity-60"
+            />
+          )}
+
           
           <path d="M50,15 L15,25 L92,50 L50,15" fill="white" className="mix-blend-overlay opacity-10" />
         </svg>

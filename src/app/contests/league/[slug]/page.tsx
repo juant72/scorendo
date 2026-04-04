@@ -198,7 +198,12 @@ export default function LeagueDashboardPage() {
                                       </div>
 
                                       <div className="flex items-center gap-3 w-[40%]">
-                                         <TeamBadge name={m.homeTeam.name} code={m.homeTeam.code} size="sm" />
+                                         <TeamBadge 
+                                            name={m.homeTeam.name} 
+                                            code={m.homeTeam.code} 
+                                            size="sm" 
+                                            sport={data.sport?.slug}
+                                          />
                                       </div>
 
                                       <div className="flex flex-col items-center gap-1 w-[20%] text-center">
@@ -209,7 +214,12 @@ export default function LeagueDashboardPage() {
                                       </div>
                                       
                                       <div className="flex items-center justify-end gap-3 w-[40%]">
-                                         <TeamBadge name={m.awayTeam.name} code={m.awayTeam.code} size="sm" />
+                                         <TeamBadge 
+                                            name={m.awayTeam.name} 
+                                            code={m.awayTeam.code} 
+                                            size="sm" 
+                                            sport={data.sport?.slug}
+                                          />
                                       </div>
                                    </div>
                                 ))}

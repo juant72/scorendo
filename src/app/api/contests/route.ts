@@ -3,8 +3,17 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const sportSlug = searchParams.get('sport');
+
     const competitions = await prisma.competition.findMany({
+      where: sportSlug ? {
+        sport: {
+          slug: sportSlug
+        }
+      } : undefined,
       include: {
+        sport: true,
         tournaments: {
           where: {
             status: { in: ['UPCOMING', 'GROUP_STAGE', 'KNOCKOUT'] }
@@ -20,6 +29,7 @@ export async function GET(req: NextRequest) {
         }
       }
     });
+
 
     // BigInt serialization fix
     const serializedCompetitions = JSON.parse(JSON.stringify(competitions, (key, value) =>

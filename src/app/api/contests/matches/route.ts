@@ -1,24 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { MatchStatus } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const statusParam = searchParams.get('status');
-    const statusList = statusParam ? statusParam.split(',') : ['SCHEDULED', 'LIVE'];
+    const sportSlug = searchParams.get('sport');
+    const statusList = (statusParam ? statusParam.split(',') : ['SCHEDULED', 'LIVE']) as MatchStatus[];
 
     const matches = await prisma.match.findMany({
       where: {
-        status: { in: statusList }
+        status: { in: statusList },
+        ...(sportSlug ? {
+          phase: {
+            tournament: {
+              competition: {
+                sport: {
+                  slug: sportSlug
+                }
+              }
+            }
+          }
+        } : {})
       },
       include: {
         homeTeam: true,
-        awayTeam: true
+        awayTeam: true,
+        phase: {
+          include: {
+            tournament: {
+              include: {
+                competition: {
+                  include: {
+                    sport: true
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       orderBy: {
         kickoff: 'asc'
       }
     });
+
 
     // BigInt fallback for prisma matches if any
     const serializedMatches = JSON.parse(JSON.stringify(matches, (key, value) =>

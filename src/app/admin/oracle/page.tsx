@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Target, Zap, Clock, Trophy, Save, Loader2, Search, Filter, ShieldCheck, XCircle } from 'lucide-react';
+import { Target, Zap, Clock, Trophy, Save, Loader2, Search, Filter, ShieldCheck, XCircle, Activity, Fuel } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,16 +13,19 @@ export default function OracleHub() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, { home: number, away: number }>>({});
+  const [activeSport, setActiveSport] = useState<string>('football');
 
-  const fetchMatches = async () => {
+  const fetchMatches = async (sport?: string) => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/contests/matches?status=SCHEDULED,LIVE');
+      const targetSport = sport || activeSport;
+      const res = await fetch(`/api/contests/matches?status=SCHEDULED,LIVE&sport=${targetSport}`);
       const data = await res.json();
       if (data.success) {
         setMatches(data.matches || []);
         // Initialize local scores
         const initialScores: any = {};
-        data.matches.forEach((m: any) => {
+        (data.matches || []).forEach((m: any) => {
           initialScores[m.id] = { home: m.homeScore || 0, away: m.awayScore || 0 };
         });
         setScores(initialScores);
@@ -35,8 +38,8 @@ export default function OracleHub() {
   };
 
   useEffect(() => {
-    fetchMatches();
-  }, []);
+    fetchMatches(activeSport);
+  }, [activeSport]);
 
   const handleScoreUpdate = async (matchId: string) => {
     const matchScores = scores[matchId];
@@ -71,10 +74,11 @@ export default function OracleHub() {
   return (
     <div className="space-y-10">
       {/* 🔮 Oracle Header */}
-      <div className="flex justify-between items-center bg-card/40 p-10 rounded-3xl border border-white/5 backdrop-blur-2xl relative overflow-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-8 bg-card/40 p-10 rounded-3xl border border-white/5 backdrop-blur-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
            <Zap size={180} className="text-primary fill-primary" />
         </div>
+        
         <div className="flex items-center gap-6 relative z-10">
            <div className="p-4 bg-primary/20 rounded-2xl shadow-xl border border-primary/20 animate-pulse">
               <Target className="w-10 h-10 text-primary" />
@@ -84,7 +88,27 @@ export default function OracleHub() {
               <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-[0.4em]">Real-time Result Injection & Reconciliation</p>
            </div>
         </div>
+
+        {/* Sport Selector */}
+        <div className="flex bg-black/40 p-2 rounded-2xl border border-white/5 relative z-10">
+           {[
+             { id: 'football', label: 'Football', icon: Activity },
+             { id: 'motorsports', label: 'Motorsports', icon: Fuel },
+             { id: 'nba', label: 'NBA', icon: Target }
+           ].map((s) => (
+             <Button
+               key={s.id}
+               variant={activeSport === s.id ? 'default' : 'ghost'}
+               onClick={() => setActiveSport(s.id)}
+               className={`rounded-xl px-6 h-12 gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSport === s.id ? 'bg-primary text-midnight shadow-lg' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
+             >
+               <s.icon size={14} />
+               {s.label}
+             </Button>
+           ))}
+        </div>
       </div>
+
 
       {/* 🏟️ Matches Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -109,18 +133,29 @@ export default function OracleHub() {
                   <div className="flex items-center justify-between gap-4">
                      <div className="flex flex-col items-center gap-3 w-1/3">
                         <div className="w-20 h-20 group-hover:scale-110 transition-transform flex items-center justify-center">
-                           <TeamBadge name={m.homeTeam.name} code={m.homeTeam.code} hideName />
+                           <TeamBadge 
+                             name={m.homeTeam.name} 
+                             code={m.homeTeam.code} 
+                             hideName 
+                             sport={m.phase.tournament.competition.sport.slug}
+                           />
                         </div>
                         <span className="text-[10px] font-black uppercase text-center truncate w-full">{m.homeTeam.name}</span>
                      </div>
                      <div className="text-2xl font-black italic text-primary opacity-20 tracking-tighter uppercase font-mono">VS</div>
                      <div className="flex flex-col items-center gap-3 w-1/3">
                         <div className="w-20 h-20 group-hover:scale-110 transition-transform flex items-center justify-center">
-                           <TeamBadge name={m.awayTeam.name} code={m.awayTeam.code} hideName />
+                           <TeamBadge 
+                             name={m.awayTeam.name} 
+                             code={m.awayTeam.code} 
+                             hideName 
+                             sport={m.phase.tournament.competition.sport.slug}
+                           />
                         </div>
                         <span className="text-[10px] font-black uppercase text-center truncate w-full">{m.awayTeam.name}</span>
                      </div>
                   </div>
+
 
                   {/* Score Input Fabricator */}
                   <div className="bg-midnight/40 p-6 rounded-3xl border border-white/5 space-y-6">

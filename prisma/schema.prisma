@@ -42,6 +42,16 @@ model Session {
   @@index([token])
 }
 
+model Sport {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  slug         String        @unique
+  icon         String?
+  type         SportType     @default(TEAM_VS_TEAM)
+  createdAt    DateTime      @default(now())
+  competitions Competition[]
+}
+
 model Competition {
   id          String       @id @default(cuid())
   name        String
@@ -49,9 +59,19 @@ model Competition {
   category    String?
   country     String?
   logoUrl     String?
+  sportId     String?
+  sport       Sport?       @relation(fields: [sportId], references: [id])
   createdAt   DateTime     @default(now())
   tournaments Tournament[]
 }
+
+enum SportType {
+  TEAM_VS_TEAM
+  RACING
+  BRACKET
+  POINTS_BASED
+}
+
 
 model Tournament {
   id            String           @id @default(cuid())

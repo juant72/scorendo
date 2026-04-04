@@ -7,18 +7,26 @@ import { Trophy, ChevronRight, Users, Sparkles, Key, Lock, ArrowLeft, PlusCircle
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
 import { PageTransition, StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
 
+import { useSearchParams } from 'next/navigation';
+
 export default function ContestsLobbyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sportSlug = searchParams.get('sport');
+  
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/contests')
+    const url = sportSlug ? `/api/contests?sport=${sportSlug}` : '/api/contests';
+    fetch(url)
       .then(res => res.json())
       .then(json => {
         if (json.success) setCompetitions(json.competitions);
       });
-  }, []);
+  }, [sportSlug]);
+
+  const sportName = competitions[0]?.sport?.name || (sportSlug ? sportSlug.charAt(0).toUpperCase() + sportSlug.slice(1) : 'Global');
 
   return (
     <PageTransition>
@@ -29,20 +37,26 @@ export default function ContestsLobbyPage() {
 
         <div className="container mx-auto px-4 py-12 sm:py-24 relative z-10">
           
+          {/* Back to Arenas */}
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:border-primary/20 transition-all mb-12">
+             <ArrowLeft className="w-4 h-4" /> Back to Arenas
+          </Link>
+
           {/* ════ SECTION 1: GLOBAL LEAGUES ════ */}
           <div className="mb-24 sm:mb-40">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12 sm:mb-20 pb-8 border-b border-white/5">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                       <div className="h-0.5 w-12 bg-primary" />
-                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">Authentic Competition</span>
+                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">{sportName} Elite</span>
                   </div>
                   <h1 className="text-7xl sm:text-[9rem] font-black uppercase italic tracking-tighter leading-none">
-                      Global<br/><span className="text-primary truncate">Leagues</span>
+                      {sportName}<br/><span className="text-primary truncate">Leagues</span>
                   </h1>
                 </div>
-                <div className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{competitions.length} Global Leagues Active</div>
+                <div className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{competitions.length} active chambers</div>
             </div>
+
 
             <StaggerChildren delay={0.15}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

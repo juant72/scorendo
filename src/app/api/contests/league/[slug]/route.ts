@@ -11,6 +11,7 @@ export async function GET(
     const competition = await prisma.competition.findUnique({
       where: { slug },
       include: {
+        sport: true,
         tournaments: {
           include: {
             phases: {
