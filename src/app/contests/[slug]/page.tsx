@@ -195,11 +195,11 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
             matches={matches} 
             existingPredictions={existingPredictions}
             isLocked={isLocked}
-            isEntered={!!userEntry}
-            entryFeeSOL={contest.entryFeeSOL}
-            userWallet={userWallet}
-            userName={userData?.displayName || userWallet}
-          />
+              isEntered={!!userEntry}
+              entryFeeSOL={contest.entryFeeSOL}
+              userWallet={userWallet}
+              userName={(userData as any)?.displayName || userWallet}
+            />
         )}
       </div>
 

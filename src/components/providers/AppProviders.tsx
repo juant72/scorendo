@@ -29,9 +29,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
           showWalletLoginFirst: false,
         },
         embeddedWallets: {
-          solana: {
-            createOnLogin: 'users-without-wallets',
-          },
+          createOnLogin: 'users-without-wallets',
+        },
+        solana: {
+          // Solana specific config here
         },
       }}
     >

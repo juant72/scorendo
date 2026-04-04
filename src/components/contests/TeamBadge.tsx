@@ -35,57 +35,56 @@ const TEAM_CONFIG: Record<string, { main: string, accent: string, third?: string
   'IRV': { main: '#0F2050', accent: '#FFFFFF', third: '#FFFFFF', pattern: 'SOLID' },
   
   // NATIONAL TEAMS
-  'ARG': { main: '#7DD3FC', accent: '#FFFFFF', third: '#3B82F6', pattern: 'STRIPES' }, // 5 stripes as requested earlier
+  'ARG': { main: '#7DD3FC', accent: '#FFFFFF', third: '#3B82F6', pattern: 'STRIPES' },
   'BRA': { main: '#FACC15', accent: '#15803D', third: '#1D4ED8', pattern: 'SOLID' },
   'MEX': { main: '#064E3B', accent: '#FFFFFF', third: '#DC2626', pattern: 'SOLID' },
   'USA': { main: '#FFFFFF', accent: '#1E3A8A', third: '#DC2626', pattern: 'SOLID' },
   'CAN': { main: '#DC2626', accent: '#FFFFFF', third: '#991B1B', pattern: 'SOLID' },
   'ENG': { main: '#FFFFFF', accent: '#0B1121', third: '#94A3B8', pattern: 'SOLID' },
   
-  // FWC 2026 GROUPS
-  'RSA': { main: '#FACC15', accent: '#166534', third: '#000000', pattern: 'BANDS' }, // South Africa
-  'KOR': { main: '#DC2626', accent: '#1E40AF', third: '#FFFFFF', pattern: 'SOLID' }, // South Korea
-  'CZE': { main: '#FFFFFF', accent: '#DC2626', third: '#1E40AF', pattern: 'SOLID' }, // Czechia
-  'SUI': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' }, // Switzerland
-  'QAT': { main: '#701A10', accent: '#FFFFFF', third: '#701A10', pattern: 'SOLID' }, // Qatar (Maroon)
-  'BIH': { main: '#1E40AF', accent: '#FACC15', third: '#FFFFFF', pattern: 'SOLID' }, // Bosnia
-  'MAR': { main: '#DC2626', accent: '#166534', third: '#FACC15', pattern: 'SOLID' }, // Morocco
-  'HAI': { main: '#1E40AF', accent: '#DC2626', third: '#FFFFFF', pattern: 'SOLID' }, // Haiti
-  'SCO': { main: '#0F172A', accent: '#FFFFFF', third: '#0F172A', pattern: 'SOLID' }, // Scotland
-  'PAR': { main: '#FFFFFF', accent: '#DC2626', third: '#1E3A8A', pattern: 'STRIPES_FINE' }, // Paraguay
-  'AUS': { main: '#FACC15', accent: '#166534', third: '#FFFFFF', pattern: 'SOLID' }, // Australia
-  'TUR': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' }, // Türkiye
-  'GER': { main: '#FFFFFF', accent: '#000000', third: '#DC2626', pattern: 'SOLID' }, // Germany
-  'ECU': { main: '#FACC15', accent: '#1E40AF', third: '#DC2626', pattern: 'SOLID' }, // Ecuador
-  'CIV': { main: '#F97316', accent: '#15803D', third: '#FFFFFF', pattern: 'SOLID' }, // Ivory Coast
-  'CUR': { main: '#1E40AF', accent: '#FACC15', third: '#FFFFFF', pattern: 'SOLID' }, // Curaçao
-  'NED': { main: '#F97316', accent: '#FFFFFF', third: '#22C55E', pattern: 'SOLID' }, // Netherlands
-  'JPN': { main: '#1E3A8A', accent: '#FFFFFF', third: '#EF4444', pattern: 'SOLID' }, // Japan
-  'TUN': { main: '#FFFFFF', accent: '#DC2626', third: '#DC2626', pattern: 'SOLID' }, // Tunisia
-  'SWE': { main: '#FACC15', accent: '#1E40AF', third: '#FFFFFF', pattern: 'SOLID' }, // Sweden
-  'BEL': { main: '#B91C1C', accent: '#000000', third: '#FACC15', pattern: 'SOLID' }, // Belgium
-  'IRN': { main: '#FFFFFF', accent: '#15803D', third: '#DC2626', pattern: 'SOLID' }, // Iran
-  'EGY': { main: '#DC2626', accent: '#FFFFFF', third: '#000000', pattern: 'SOLID' }, // Egypt
-  'NZL': { main: '#000000', accent: '#FFFFFF', third: '#94A3B8', pattern: 'SOLID' }, // New Zealand
-  'ESP': { main: '#DC2626', accent: '#FACC15', third: '#1E3A8A', pattern: 'SOLID' }, // Spain
-  'URU': { main: '#7DD3FC', accent: '#000000', third: '#FFFFFF', pattern: 'SOLID' }, // Uruguay
-  'KSA': { main: '#FFFFFF', accent: '#166534', third: '#166534', pattern: 'SOLID' }, // Saudi Arabia
-  'CPV': { main: '#1E40AF', accent: '#DC2626', third: '#FACC15', pattern: 'SOLID' }, // Cape Verde
-  'FRA': { main: '#1E3A8A', accent: '#FFFFFF', third: '#DC2626', pattern: 'SOLID' }, // France
-  'SEN': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' }, // Senegal
-  'NOR': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' }, // Norway
-  'IRQ': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' }, // Iraq
-  'ALG': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' }, // Algeria
-  'AUT': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' }, // Austria
-  'JOR': { main: '#FFFFFF', accent: '#DC2626', third: '#166534', pattern: 'SOLID' }, // Jordan
-  'POR': { main: '#B91C1C', accent: '#166534', third: '#FACC15', pattern: 'SOLID' }, // Portugal
-  'COL': { main: '#FACC15', accent: '#1E3A8A', third: '#DC2626', pattern: 'SOLID' }, // Colombia
-  'UZB': { main: '#FFFFFF', accent: '#1E40AF', third: '#1E40AF', pattern: 'SOLID' }, // Uzbekistan
-  'COD': { main: '#3B82F6', accent: '#DC2626', third: '#FACC15', pattern: 'SASH' },    // DR Congo
-  'CRO': { main: '#FFFFFF', accent: '#DC2626', third: '#1E40AF', pattern: 'SOLID' }, // Croatia (Will use checker if I add it, but solid for now)
-  'GHA': { main: '#FFFFFF', accent: '#000000', third: '#DC2626', pattern: 'SOLID' }, // Ghana
-  'PAN': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' }, // Panama
-
+  // FWC 2026 / INTERNATIONALS
+  'RSA': { main: '#FACC15', accent: '#166534', third: '#000000', pattern: 'BANDS' },
+  'KOR': { main: '#DC2626', accent: '#1E40AF', third: '#FFFFFF', pattern: 'SOLID' },
+  'CZE': { main: '#FFFFFF', accent: '#DC2626', third: '#1E40AF', pattern: 'SOLID' },
+  'SUI': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' },
+  'QAT': { main: '#701A10', accent: '#FFFFFF', third: '#701A10', pattern: 'SOLID' },
+  'BIH': { main: '#1E40AF', accent: '#FACC15', third: '#FFFFFF', pattern: 'SOLID' },
+  'MAR': { main: '#DC2626', accent: '#166534', third: '#FACC15', pattern: 'SOLID' },
+  'HAI': { main: '#1E40AF', accent: '#DC2626', third: '#FFFFFF', pattern: 'SOLID' },
+  'SCO': { main: '#0F172A', accent: '#FFFFFF', third: '#0F172A', pattern: 'SOLID' },
+  'PAR': { main: '#FFFFFF', accent: '#DC2626', third: '#1E3A8A', pattern: 'STRIPES_FINE' },
+  'AUS': { main: '#FACC15', accent: '#166534', third: '#FFFFFF', pattern: 'SOLID' },
+  'TUR': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' },
+  'GER': { main: '#FFFFFF', accent: '#000000', third: '#DC2626', pattern: 'SOLID' },
+  'ECU': { main: '#FACC15', accent: '#1E40AF', third: '#DC2626', pattern: 'SOLID' },
+  'CIV': { main: '#F97316', accent: '#15803D', third: '#FFFFFF', pattern: 'SOLID' },
+  'CUR': { main: '#1E40AF', accent: '#FACC15', third: '#FFFFFF', pattern: 'SOLID' },
+  'NED': { main: '#F97316', accent: '#FFFFFF', third: '#22C55E', pattern: 'SOLID' },
+  'JPN': { main: '#1E3A8A', accent: '#FFFFFF', third: '#EF4444', pattern: 'SOLID' },
+  'TUN': { main: '#FFFFFF', accent: '#DC2626', third: '#DC2626', pattern: 'SOLID' },
+  'SWE': { main: '#FACC15', accent: '#1E40AF', third: '#FFFFFF', pattern: 'SOLID' },
+  'BEL': { main: '#B91C1C', accent: '#000000', third: '#FACC15', pattern: 'SOLID' },
+  'IRN': { main: '#FFFFFF', accent: '#15803D', third: '#DC2626', pattern: 'SOLID' },
+  'EGY': { main: '#DC2626', accent: '#FFFFFF', third: '#000000', pattern: 'SOLID' },
+  'NZL': { main: '#000000', accent: '#FFFFFF', third: '#94A3B8', pattern: 'SOLID' },
+  'ESP': { main: '#DC2626', accent: '#FACC15', third: '#1E3A8A', pattern: 'SOLID' },
+  'URU': { main: '#7DD3FC', accent: '#000000', third: '#FFFFFF', pattern: 'SOLID' },
+  'KSA': { main: '#FFFFFF', accent: '#166534', third: '#166534', pattern: 'SOLID' },
+  'CPV': { main: '#1E40AF', accent: '#DC2626', third: '#FACC15', pattern: 'SOLID' },
+  'FRA': { main: '#1E3A8A', accent: '#FFFFFF', third: '#DC2626', pattern: 'SOLID' },
+  'SEN': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' },
+  'NOR': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' },
+  'IRQ': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' },
+  'ALG': { main: '#FFFFFF', accent: '#166534', third: '#DC2626', pattern: 'SOLID' },
+  'AUT': { main: '#DC2626', accent: '#FFFFFF', third: '#B91C1C', pattern: 'SOLID' },
+  'JOR': { main: '#FFFFFF', accent: '#DC2626', third: '#166534', pattern: 'SOLID' },
+  'POR': { main: '#B91C1C', accent: '#166534', third: '#FACC15', pattern: 'SOLID' },
+  'COL': { main: '#FACC15', accent: '#1E3A8A', third: '#DC2626', pattern: 'SOLID' },
+  'UZB': { main: '#FFFFFF', accent: '#1E40AF', third: '#1E40AF', pattern: 'SOLID' },
+  'COD': { main: '#3B82F6', accent: '#DC2626', third: '#FACC15', pattern: 'SASH' },
+  'CRO': { main: '#FFFFFF', accent: '#DC2626', third: '#1E40AF', pattern: 'SOLID' },
+  'GHA': { main: '#FFFFFF', accent: '#000000', third: '#DC2626', pattern: 'SOLID' },
+  'PAN': { main: '#DC2626', accent: '#1E3A8A', third: '#FFFFFF', pattern: 'SOLID' },
   
   // EUROPEAN CLUBS
   'RMA': { main: '#FFFFFF', accent: '#F3F4F6', third: '#FEF08A', pattern: 'SOLID' },   

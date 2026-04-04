@@ -3,6 +3,18 @@ import { prisma } from '@/lib/prisma';
 import { verifySessionToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 
+// Required OPTIONS for CORS/Next.js router pre-flight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Allow': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
 export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
@@ -47,10 +59,10 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { displayName, email } = await req.json();
+    const body = await req.json();
+    const { displayName, email } = body;
     const userWallet = session.wallet as string;
 
-    // Validate nickname length
     if (displayName && (displayName.length < 3 || displayName.length > 20)) {
       return NextResponse.json({ success: false, error: 'Nickname must be between 3 and 20 characters.' }, { status: 400 });
     }
@@ -74,6 +86,6 @@ export async function PUT(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Profile Update Failed:', error);
-    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal Error' }, { status: 500 });
   }
 }

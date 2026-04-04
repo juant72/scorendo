@@ -1,55 +1,64 @@
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Trophy, Settings, ArrowLeft, Zap, Wallet } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, Settings, ArrowLeft, Zap, Wallet, ShieldCheck } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* Admin Sidebar */}
-      <aside className="w-64 border-r border-border/50 bg-card p-6 fixed h-full hidden lg:block">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-black text-white italic">S</div>
-          <span className="text-xl font-bold tracking-tight">Admin Console</span>
+      <aside className="w-72 border-r border-border/50 bg-card/50 backdrop-blur-xl p-8 fixed h-full hidden lg:block overflow-y-auto">
+        <div className="flex items-center gap-4 mb-12 group cursor-pointer">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center font-black text-midnight italic shadow-lg shadow-primary/20 group-hover:scale-110 transition-all">S</div>
+          <div className="flex flex-col">
+            <span className="text-lg font-black tracking-tighter uppercase italic leading-none">Scorendo</span>
+            <span className="text-[9px] font-mono text-primary uppercase tracking-[0.2em]">Grandmaster OS</span>
+          </div>
         </div>
 
-        <nav className="space-y-2">
-          <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-all">
-            <LayoutDashboard size={18} />
-            Dashboard
+        <nav className="space-y-1">
+          <Link href="/admin" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary font-bold hover:bg-primary/15 transition-all text-xs uppercase tracking-widest border border-primary/10 mb-6">
+            <LayoutDashboard size={14} />
+            Command Center
           </Link>
-          <Link href="/admin/users" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
-            <Users size={18} />
-            Users
+          
+          <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] px-4 py-2 mt-4">Operations</div>
+          <Link href="/admin/oracle" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+            <Zap size={14} className="text-primary" />
+            Oracle Hub
           </Link>
-          <Link href="/admin/contests" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
-            <Trophy size={18} />
-            Tournaments
+          <Link href="/admin/settle" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+            <Trophy size={14} className="text-gold" />
+            Prize Settlement
           </Link>
-          <Link href="/admin/scores" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
-            <Zap size={18} className="text-primary" />
-            Settle Scores
+          
+          <div className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em] px-4 py-2 mt-4">Architecture</div>
+          <Link href="/admin/competitions" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+            <Settings size={14} />
+            Competition Studio
           </Link>
-          <Link href="/admin/finance" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
-            <Wallet size={18} />
-            Treasury Monitor
+          <Link href="/admin/users" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+            <Users size={14} />
+            User Intelligence
           </Link>
-          <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 transition-all">
-            <Settings size={18} />
-            Global Settings
+          <Link href="/admin/audit" className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+            <ShieldCheck size={14} className="text-emerald-400" />
+            Audit Ledger
           </Link>
         </nav>
 
-        <div className="absolute bottom-8 left-6 right-6 pt-6 border-t border-border/30">
-          <Link href="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
-            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-            Back to Scorendo
+        <div className="absolute bottom-10 left-8 right-8 pt-6 border-t border-border/10">
+          <Link href="/" className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-all group">
+            <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform" />
+            Exit Console
           </Link>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 lg:ml-64 p-8 min-h-screen">
-        {children}
+      <main className="flex-1 lg:ml-72 min-h-screen relative">
+        <div className="p-10 max-w-[1600px] mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );
