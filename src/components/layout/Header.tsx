@@ -2,18 +2,12 @@
 
 import Link from 'next/link';
 import { Trophy, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LanguageSelector } from './LanguageSelector';
 import { locales } from '@/lib/locales';
-
-const NAV_LINKS = [
-  { href: '/matches', label: 'Matches' },
-  { href: '/contests', label: 'Contests' },
-  { href: '/ranking', label: 'Rankings' },
-  { href: '/how-it-works', label: 'How It Works' },
-];
+import { SportDropdown } from './SportDropdown';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,16 +25,25 @@ export function Header() {
     <header className="sticky top-0 z-50 glass-strong">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-              <Trophy className="h-5 w-5 text-primary" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">
-              <span className="text-gradient-pitch">Score</span>
-              <span className="text-foreground">ndo</span>
-            </span>
-          </Link>
+          
+          {/* Logo & Sport Selector */}
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Trophy className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xl font-bold tracking-tight hidden xs:block">
+                <span className="text-gradient-pitch">Score</span>
+                <span className="text-foreground">ndo</span>
+              </span>
+            </Link>
+
+            <div className="h-6 w-px bg-white/10 hidden sm:block mx-2" />
+
+            <Suspense fallback={<div className="w-10 h-10 bg-white/5 animate-pulse rounded-xl" />}>
+              <SportDropdown />
+            </Suspense>
+          </div>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">

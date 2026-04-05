@@ -136,3 +136,45 @@ export const LEGAL = {
   SKILL_BASED_NOTICE:
     'This is a skill-based competition. Free entry always available.',
 } as const;
+
+// ═══════════════════════════════════════
+// Sport Arenas Meta
+// ═══════════════════════════════════════
+
+export const SPORT_META = {
+  football: {
+    name: 'Fútbol',
+    slug: 'football',
+    stats: 'Tournaments & Daily',
+    color: 'from-emerald-500/20 to-emerald-900/40',
+    accent: 'text-emerald-400',
+    border: 'border-emerald-500/20',
+  },
+  motorsports: {
+    name: 'Automovilismo',
+    slug: 'motorsports',
+    stats: 'Full Season & GP',
+    color: 'from-red-500/20 to-red-900/40',
+    accent: 'text-red-400',
+    border: 'border-red-500/20',
+  },
+  nba: {
+    name: 'NBA',
+    slug: 'nba',
+    stats: 'Playoffs & Dates',
+    color: 'from-orange-500/20 to-orange-900/40',
+    accent: 'text-orange-400',
+    border: 'border-orange-500/20',
+  },
+  rugby: {
+    name: 'Rugby',
+    slug: 'rugby',
+    stats: 'International Mix',
+    color: 'from-amber-700/20 to-amber-900/40',
+    accent: 'text-amber-500',
+    border: 'border-amber-700/20',
+  },
+} as const;
+
+export type SportSlug = keyof typeof SPORT_META;
+
