@@ -2,93 +2,144 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Activity, ShieldCheck, Database, Server } from 'lucide-react';
+import { Trophy, Flame, Crosshair, Shield } from 'lucide-react';
 
-const MOCK_ORACLE_EVENTS = [
-  { id: 1, type: 'EXECUTION', text: 'Auth req: wallet_xA9...4bF', time: '0ms' },
-  { id: 2, type: 'COMMIT', text: 'State locked [Match_0x9]', time: '142ms' },
-  { id: 3, type: 'ORACLE', text: 'Data sync: F1 Monaco GP', time: '210ms' },
-  { id: 4, type: 'SETTLEMENT', text: 'Tx Confirm: 12.4 SOL payout', time: '890ms' },
-  { id: 5, type: 'EXECUTION', text: 'Auth req: wallet_xZ2...1jK', time: '1.2s' },
-  { id: 6, type: 'COMMIT', text: 'Prediction matrix verified', time: '1.5s' }
+const LIVE_ACTIVITY = [
+  { id: 1, player: 'PhantomX_92', action: 'locked in', target: 'Argentina vs Brazil', reward: '+25 XP', type: 'predict' },
+  { id: 2, player: 'GoalSniper', action: 'climbed to', target: '#3 Global', reward: 'Rank Up!', type: 'rank' },
+  { id: 3, player: 'NetBuster', action: 'claimed', target: '4.2 SOL payout', reward: '💰', type: 'win' },
+  { id: 4, player: 'TacticMind', action: 'entered arena', target: 'Champions League', reward: '+10 XP', type: 'join' },
+  { id: 5, player: 'SoccerSage', action: 'predicted upset', target: 'Monaco GP Round 7', reward: '+50 XP', type: 'predict' },
+  { id: 6, player: 'PitchViper', action: 'hit 5-win streak', target: '🔥 On Fire!', reward: 'Badge!', type: 'streak' },
+];
+
+const HOW_IT_WORKS = [
+  { 
+    step: '01', 
+    icon: Crosshair, 
+    title: 'Choose Your Arena', 
+    desc: 'Pick a live tournament from football, F1, NBA, tennis and more. Each arena has its own prize pool and competitive tier.',
+    color: 'text-primary',
+    glow: 'shadow-[0_0_20px_rgba(0,230,118,0.2)]'
+  },
+  { 
+    step: '02', 
+    icon: Flame, 
+    title: 'Lock In Predictions', 
+    desc: 'Predict exact match scores. The closer you predict, the higher you climb. No luck involved — pure tactical intelligence.',
+    color: 'text-match',
+    glow: 'shadow-[0_0_20px_rgba(255,107,53,0.2)]'
+  },
+  { 
+    step: '03', 
+    icon: Trophy, 
+    title: 'Claim Your Rewards', 
+    desc: 'Top predictors earn SOL payouts instantly. Every prediction earns XP toward your player rank, win or lose.',
+    color: 'text-gold',
+    glow: 'shadow-[0_0_20px_rgba(255,215,0,0.2)]'
+  },
 ];
 
 export function NetworkFeed() {
-  const [logs, setLogs] = useState(MOCK_ORACLE_EVENTS);
+  const [feed, setFeed] = useState(LIVE_ACTIVITY);
 
-  // Fake log rotation
   useEffect(() => {
     const interval = setInterval(() => {
-      setLogs(prev => {
-        const next = [...prev.slice(1), { ...prev[0], id: Date.now(), time: Math.floor(Math.random() * 900) + 'ms' }];
-        return next;
+      setFeed(prev => {
+        const shifted = [...prev.slice(1), { ...prev[0], id: Date.now(), player: `Player_${Math.floor(Math.random() * 9999)}` }];
+        return shifted;
       });
-    }, 2500);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
+  const typeColor = (type: string) => {
+    switch(type) {
+      case 'predict': return 'text-primary';
+      case 'rank': return 'text-blue-400';
+      case 'win': return 'text-gold';
+      case 'streak': return 'text-match';
+      default: return 'text-white/50';
+    }
+  };
+
   return (
-    <section className="bg-[#020814] py-20 px-6 sm:px-12 border-b border-white/5">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
-         
-         {/* Live Oracle Feed */}
-         <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-               <Activity size={14} className="text-white/40" />
-               <span className="text-xs font-mono uppercase tracking-[0.2em] text-white/40">Oracle Data Pipeline</span>
+    <section className="bg-[#020814] border-t border-white/5">
+
+      {/* ── Live Activity Ticker ── */}
+      <div className="border-b border-white/5 py-4 overflow-hidden relative">
+        <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-[#020814] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#020814] to-transparent z-10 pointer-events-none" />
+        <motion.div
+          animate={{ x: [0, '-50%'] }}
+          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+          className="flex gap-10 whitespace-nowrap px-6"
+        >
+          {[...feed, ...feed].map((item, i) => (
+            <div key={`${item.id}-${i}`} className="flex items-center gap-2 text-[10px] font-bold tracking-wide shrink-0">
+              <span className={`${typeColor(item.type)} font-black`}>{item.player}</span>
+              <span className="text-white/30">{item.action}</span>
+              <span className="text-white/60">{item.target}</span>
+              <span className="text-primary/60">{item.reward}</span>
+              <span className="text-white/10 ml-2">•</span>
             </div>
-            
-            <div className="bg-[#060D1A] rounded-xl border border-white/5 p-6 h-64 overflow-hidden relative">
-               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#060D1A] z-10 pointer-events-none" />
-               
-               <div className="space-y-3 font-mono text-[10px]">
-                  {logs.map((log) => (
-                    <motion.div 
-                      key={log.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-4"
-                    >
-                       <span className="text-primary/40 shrink-0 opacity-50">[{log.time}]</span>
-                       <span className={`shrink-0 ${
-                         log.type === 'EXECUTION' ? 'text-blue-400' : 
-                         log.type === 'COMMIT' ? 'text-primary' : 
-                         log.type === 'SETTLEMENT' ? 'text-gold' : 'text-white/40'
-                       }`}>
-                         {log.type}
-                       </span>
-                       <span className="text-white/60 truncate">{log.text}</span>
-                    </motion.div>
-                  ))}
-               </div>
-            </div>
-         </div>
-
-         {/* Protocol Specs */}
-         <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-               <Database size={14} className="text-white/40" />
-               <span className="text-xs font-mono uppercase tracking-[0.2em] text-white/40">Protocol Verification</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               
-               <div className="p-5 border border-white/5 rounded-xl bg-white/[0.01]">
-                  <ShieldCheck size={16} className="text-primary mb-3" />
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">Zero Trust</h3>
-                  <p className="text-[10px] text-white/40 leading-relaxed font-mono">No middleman. Smart contracts settle immediately when official game data registers on the oracle.</p>
-               </div>
-
-               <div className="p-5 border border-white/5 rounded-xl bg-white/[0.01]">
-                  <Server size={16} className="text-white/40 mb-3" />
-                  <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-1">High Density</h3>
-                  <p className="text-[10px] text-white/40 leading-relaxed font-mono">Designed for rapid entries. Predict multi-league events concurrently without unnecessary UI inflation.</p>
-               </div>
-
-            </div>
-         </div>
-
+          ))}
+        </motion.div>
       </div>
+
+      {/* ── How It Works (Gaming Style) ── */}
+      <div className="py-24 px-6 sm:px-12">
+        <div className="max-w-5xl mx-auto">
+          
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white drop-shadow-xl mb-4">
+              How The Arena Works
+            </h2>
+            <p className="text-sm text-white/40 max-w-xl mx-auto font-bold">
+              Three steps. Zero complexity. Maximum adrenaline.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {HOW_IT_WORKS.map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.5 }}
+                className={`relative group p-8 rounded-2xl border border-white/5 bg-[#060D1A] hover:border-white/15 transition-all ${item.glow.replace('shadow', 'hover:shadow')}`}
+              >
+                <div className="absolute top-4 right-4 text-[60px] font-black italic text-white/[0.03] leading-none select-none">{item.step}</div>
+                <div className={`flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-6 group-hover:scale-110 transition-transform ${item.glow}`}>
+                  <item.icon size={22} className={item.color} />
+                </div>
+                <h3 className="text-lg font-black uppercase tracking-tight text-white mb-3">{item.title}</h3>
+                <p className="text-xs text-white/40 leading-relaxed font-medium">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+
+      {/* ── Trust & Compliance Strip ── */}
+      <div className="border-t border-white/5 py-10 px-6 sm:px-12">
+        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-8">
+          {[
+            { icon: Shield, text: 'Non-Custodial Wallets' },
+            { icon: Crosshair, text: 'Skill-Based Only' },
+            { icon: Flame, text: 'Free Entry Available' },
+            { icon: Trophy, text: 'Instant SOL Payouts' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/25 hover:text-white/50 transition-colors">
+              <item.icon size={12} className="text-primary/50" />
+              {item.text}
+            </div>
+          ))}
+        </div>
+      </div>
+
     </section>
   );
 }

@@ -106,8 +106,8 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
   return (
     <div className="min-h-screen bg-[#020814]">
       
-      {/* ── PRAGMATIC HERO SECTION ── */}
-      <div className="relative h-[400px] lg:h-[500px] flex flex-col justify-end overflow-hidden">
+      {/* ── ARENA HERO SECTION ── */}
+      <div className="relative h-[350px] lg:h-[420px] flex flex-col justify-end overflow-hidden">
          {/* Adaptive Backdrop */}
          <div className="absolute inset-0">
             <img src={imagery.banner} className="w-full h-full object-cover opacity-60" alt="Backdrop" />
@@ -158,9 +158,9 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
                <div className="flex items-center justify-between border-b border-white/5 pb-8">
                   <div className="space-y-1">
                      <h2 className="text-2xl font-black uppercase italic text-white flex items-center gap-3">
-                        <Zap size={20} className="text-primary" /> Prediction <span className="text-white/20">Terminal</span>
-                     </h2>
-                     <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Match-by-match score reconciliation</p>
+                       <Zap size={20} className="text-primary" /> Tactical <span className="text-primary">Board</span>
+                    </h2>
+                    <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Deploy your match predictions below</p>
                   </div>
                   {contest.inviteCode && (
                      <div className="flex items-center gap-4">
@@ -177,7 +177,7 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/20">
                       <Shield className="text-primary" size={32} />
                    </div>
-                   <h3 className="text-2xl font-black mb-4 text-white uppercase italic">Authentication Required</h3>
+                    <h3 className="text-2xl font-black mb-4 text-white uppercase italic">Connect To Play</h3>
                    <p className="text-sm text-white/40 mb-10 italic max-w-sm mx-auto leading-relaxed">Verification of wallet identity is mandatory for Arena entry. High-clearance session required.</p>
                    <div className="h-14 px-10 bg-primary text-midnight font-black text-xs uppercase tracking-widest rounded-xl inline-flex items-center justify-center shadow-2xl shadow-primary/20">
                       Secure Terminal Entry
@@ -201,7 +201,7 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
             {/* Sidebar (Pragmatic Context) */}
             <div className="lg:col-span-4 space-y-12">
                <div className="glass-premium p-10 rounded-[2.5rem] border-white/5 space-y-8">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 border-b border-white/5 pb-4">Tournament Intelligence</h4>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 border-b border-white/5 pb-4">Arena Intel</h4>
                   <div className="space-y-6">
                      <p className="text-sm text-white/60 italic leading-relaxed">
                         {contest.description || "Predict outcomes to accumulate points. Precise results grant maximum dominance rewards."}
@@ -209,7 +209,7 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
                      
                      <div className="p-6 bg-white/2 rounded-3xl border border-white/5 space-y-4">
                         <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                           <span className="text-white/40">Scoring Engine</span>
+                           <span className="text-white/40">Scoring Protocol</span>
                            <span className="text-primary">V4.2</span>
                         </div>
                         <ul className="space-y-3 text-[9px] font-black text-white/20 uppercase tracking-widest">
@@ -231,7 +231,7 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
 function StatItem({ icon, label, value, primary }: { icon: React.ReactNode, label: string, value: string | number, primary?: boolean }) {
    return (
       <div className={`px-6 py-4 rounded-2xl border backdrop-blur-xl flex flex-col items-center sm:items-start min-w-[140px] ${primary ? 'bg-primary/5 border-primary/20 shadow-xl' : 'bg-white/5 border-white/10'}`}>
-         <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em] mb-1">{label}</span>
+         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.3em] mb-1">{label}</span>
          <div className="flex items-center gap-2">
             {icon}
             <span className={`text-xl font-black italic tracking-tighter ${primary ? 'text-white' : 'text-white/80'}`}>{value}</span>

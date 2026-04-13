@@ -60,6 +60,8 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   );
 
   const [saving, setSaving] = useState(false);
+  const [isValidating, setIsValidating] = useState(false); // Tension Delay State
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', msg: string, lastSaved?: string, xpEarned?: number } | null>(null);
   const [sharingMatchId, setSharingMatchId] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -68,20 +70,9 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     setMounted(true);
   }, []);
 
-  // Auto-save logic with debounce
+  // Auto-calculation of points to display in UI (No auto-saving)
   useEffect(() => {
     if (!mounted) return;
-    const formattedPredictions = Object.entries(predictions).map(([matchId, scores]) => {
-      const homeScore = parseInt(scores.home);
-      const awayScore = parseInt(scores.away);
-      if (isNaN(homeScore) || isNaN(awayScore)) return null;
-      
-      let winner = 'DRAW';
-      if (homeScore > awayScore) winner = 'HOME';
-      else if (awayScore > homeScore) winner = 'AWAY';
-      return { matchId, predictedHome: homeScore, predictedAway: awayScore, predictedWinner: winner };
-    }).filter(Boolean);
-
     if (onPredictionsChange) {
        let total = 0;
        matches.forEach(m => {
@@ -94,15 +85,33 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
        });
        onPredictionsChange(total);
     }
-
-    const timer = setTimeout(async () => {
-      if (formattedPredictions.length > 0) {
-        savePredictions(formattedPredictions);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
   }, [predictions, mounted]);
+
+  const executeLockIn = async () => {
+    // Stage 1: Tension Validation Effect
+    setIsValidating(true);
+    setSaveStatus(null);
+    
+    const formattedPredictions = Object.entries(predictions).map(([matchId, scores]) => {
+      const homeScore = parseInt(scores.home);
+      const awayScore = parseInt(scores.away);
+      if (isNaN(homeScore) || isNaN(awayScore)) return null;
+      let winner = 'DRAW';
+      if (homeScore > awayScore) winner = 'HOME';
+      else if (awayScore > homeScore) winner = 'AWAY';
+      return { matchId, predictedHome: homeScore, predictedAway: awayScore, predictedWinner: winner };
+    }).filter(Boolean);
+
+    // Simulate 1.5s tension delay
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    setIsValidating(false);
+
+    if (formattedPredictions.length > 0) {
+      await savePredictions(formattedPredictions);
+    } else {
+      setHasUnsavedChanges(false);
+    }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const savePredictions = async (formattedPredictions: any) => {
@@ -136,8 +145,9 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   };
 
   const handleScoreChange = (matchId: string, team: 'home' | 'away', val: string) => {
-    if (isLive) return;
+    if (isLive || saving || isValidating) return;
     const safeVal = val.replace(/[^0-9]/g, '').slice(0, 2);
+    setHasUnsavedChanges(true);
     setPredictions(prev => {
       const current = prev[matchId] || { home: '', away: '' };
       return {
@@ -168,18 +178,20 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     <PageTransition>
       <div className="space-y-6 relative pb-16">
         {/* ═ COMPACT TOP SYNC BAR ═ */}
-        <div className="sticky top-16 z-50 flex items-center justify-between gap-4 py-3 bg-[#020814]/90 backdrop-blur-md border-b border-white/5">
+        <div className="sticky top-[4.5rem] z-40 flex items-center justify-between gap-4 py-3 bg-[#020814]/90 backdrop-blur-md border-b border-white/5 shadow-md">
           <div className="flex items-center gap-3">
-             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500' : 'bg-primary animate-pulse'}`} />
-             <span className="text-[10px] font-black uppercase tracking-widest text-white/50">{isLive ? 'Arena Locked' : 'Predictions Open'}</span>
+             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500' : 'bg-primary animate-pulse shadow-[0_0_10px_rgba(0,230,118,0.5)]'}`} />
+             <span className="text-[10px] font-black uppercase tracking-widest text-white/70">{isLive ? 'Arena Locked' : 'Oracle Sync Active'}</span>
           </div>
           <div className="flex items-center gap-3 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10">
-            {saving ? (
-              <><Loader2 className="w-3 h-3 text-primary animate-spin" /><span className="text-[9px] font-bold text-white/50 uppercase">Syncing...</span></>
+            {isValidating ? (
+              <><Loader2 className="w-3 h-3 text-gold animate-spin" /><span className="text-[9px] font-black text-gold uppercase animate-pulse">Computing Matrix...</span></>
+            ) : saving ? (
+              <><Loader2 className="w-3 h-3 text-primary animate-spin" /><span className="text-[9px] font-black text-primary uppercase">Transmitting...</span></>
             ) : saveStatus?.lastSaved ? (
-              <><CheckCircle2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-bold text-primary uppercase">Saved {saveStatus.lastSaved}</span></>
+              <><CheckCircle2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-bold text-white/50 uppercase">Secured {saveStatus.lastSaved}</span></>
             ) : (
-              <span className="text-[9px] font-bold text-white/30 uppercase">Ready</span>
+              <span className="text-[9px] font-bold text-white/30 uppercase">Awaiting Input</span>
             )}
           </div>
         </div>
@@ -189,7 +201,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
           {matches.map((match) => {
             const pred = predictions[match.id] || { home: '', away: '' };
             return (
-              <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border border-white/5 hover:border-primary/30 transition-colors flex flex-col md:flex-row shadow-md overflow-hidden">
+              <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border-2 border-white/5 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(0,230,118,0.1)] transition-all flex flex-col md:flex-row shadow-md overflow-hidden">
                  {/* Match Info Side */}
                  <div className="flex-1 flex flex-col md:flex-row p-4 gap-4 items-center border-b md:border-b-0 md:border-r border-white/5">
                     {/* Time / Status (Left corner) */}
@@ -220,9 +232,9 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                          inputMode="numeric"
                          value={pred.home}
                          onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                         disabled={isLive}
+                         disabled={isLive || saving || isValidating}
                          placeholder="-"
-                         className="w-12 h-14 bg-black/60 border border-white/10 rounded-lg text-center text-xl font-black text-white focus:bg-white/5 focus:border-primary transition-all outline-none"
+                         className="w-12 h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15"
                        />
                        <span className="text-lg font-bold text-white/10">:</span>
                        <input 
@@ -230,9 +242,9 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                          inputMode="numeric"
                          value={pred.away}
                          onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                         disabled={isLive}
+                         disabled={isLive || saving || isValidating}
                          placeholder="-"
-                         className="w-12 h-14 bg-black/60 border border-white/10 rounded-lg text-center text-xl font-black text-white focus:bg-white/5 focus:border-primary transition-all outline-none"
+                         className="w-12 h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15"
                        />
                     </div>
                     
@@ -241,7 +253,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                       onClick={() => handleShare(match.id)}
                       disabled={sharingMatchId === match.id}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-                      title="Share Prediction"
+                      title="Export Battle Record"
                     >
                       {sharingMatchId === match.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-4 h-4" />}
                     </button>
@@ -283,6 +295,34 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
           )}
         </div>
       </div>
+
+      {/* ══ THE LOCK-IN TENSION BUTTON ══ */}
+      <AnimatePresence>
+         {hasUnsavedChanges && !isLive && (
+            <motion.div
+               initial={{ y: 100, opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               exit={{ y: 100, opacity: 0 }}
+               className="fixed bottom-0 left-0 w-full z-[100] p-6 bg-gradient-to-t from-[#020814] via-[#020814]/90 to-transparent flex justify-center pointer-events-none"
+            >
+               <button
+                  onClick={executeLockIn}
+                  disabled={isValidating || saving}
+                  className={`pointer-events-auto h-16 px-12 rounded-xl border-2 font-black italic uppercase tracking-[0.2em] transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(0,0,0,0.8)] ${
+                     isValidating || saving 
+                     ? 'bg-gold border-gold text-midnight scale-105 shadow-[0_0_30px_rgba(255,215,0,0.6)]' 
+                     : 'bg-primary border-primary text-midnight hover:bg-primary/90 shadow-[0_0_20px_rgba(0,230,118,0.3)] hover:shadow-[0_0_40px_rgba(0,230,118,0.6)]'
+                  }`}
+               >
+                  <span className="flex items-center gap-3">
+                     {isValidating || saving ? <Loader2 className="h-6 w-6 animate-spin" /> : <Zap className="h-6 w-6" />}
+                     {isValidating ? 'Validating Link...' : saving ? 'Transmitting...' : 'Lock In Sequence'}
+                  </span>
+               </button>
+            </motion.div>
+         )}
+      </AnimatePresence>
+
     </PageTransition>
 
     {/* ══ CELEBRATION ══ */}

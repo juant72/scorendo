@@ -1,7 +1,9 @@
 import { ContestType, ContestStatus } from '@prisma/client';
-import { Users, Coins, Trophy, Clock, Medal } from 'lucide-react';
+import { Users, Crosshair, Trophy, Clock, Medal, Zap, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { formatDateShort } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import { getArenaImagery } from '@/lib/graphics';
 
 interface ContestCardProps {
   id: string;
@@ -16,12 +18,13 @@ interface ContestCardProps {
   startDate: Date;
 }
 
-export function ContestCard({
+export default function ContestCard({
   slug,
   name,
   type,
   status,
   entryFeeSOL,
+  prizePool,
   prizePoolPoolAmount = 0,
   currentEntries,
   maxParticipants,
@@ -30,96 +33,107 @@ export function ContestCard({
 
   const isFree = entryFeeSOL === 0;
   const isLive = status === ContestStatus.ACTIVE;
-  const isPremium = prizePoolPoolAmount > 10; // e.g. 10 SOL is premium
+  const isPremium = prizePoolPoolAmount > 10; 
+  const imagery = getArenaImagery({ name, slug });
 
-  // Visual theming based on FREE vs PAID and Prize size
   const cardBorder = isPremium 
-    ? 'border-gold/50 shadow-[0_0_20px_-5px_rgba(255,215,0,0.3)] glow-gold hover:border-gold' 
-    : 'border-border/30 hover:border-primary/50';
-
-  const formatType = (t: string) => t.replace('_', ' ');
+    ? 'border-gold/40 shadow-[0_0_30px_-10px_rgba(255,215,0,0.3)] hover:border-gold' 
+    : 'border-white/10 hover:border-primary/40';
 
   return (
-    <Link href={`/contests/${slug}`} className="block">
-      <div className={`relative flex flex-col justify-between overflow-hidden transition-all duration-300 glass rounded-2xl p-6 h-full cursor-pointer hover:-translate-y-1.5 ${cardBorder}`}>
-        
-        {/* Glow Accent */}
-        {isPremium && (
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        )}
-        {(isLive || isFree) && !isPremium && (
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        )}
+    <Link href={`/contests/league/${slug}`} className="block group">
+      <motion.div 
+        whileHover={{ y: -8 }}
+        className={`relative flex flex-col justify-between overflow-hidden transition-all duration-500 bg-[#060D1A] rounded-[2rem] p-7 h-full border-2 ${cardBorder}`}
+      >
+        {/* Tactical Background Elements */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={imagery.banner} 
+            className="w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-all duration-1000 group-hover:scale-110" 
+            alt="Arena" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#060D1A] via-[#060D1A]/70 to-transparent" />
+        </div>
 
-        {/* Top Header: Free badge, Type, Status */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex flex-col gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1">
-               {type === ContestType.GRAND_TOURNAMENT && <Medal className="h-4 w-4 text-gold mb-0.5" />}
-               {formatType(type)}
-            </span>
-            <h3 className="text-xl sm:text-2xl font-black text-foreground drop-shadow-sm line-clamp-2 leading-tight">
+        {/* Status Badges */}
+        <div className="flex items-start justify-between mb-8 relative z-10">
+          <div className="flex flex-col gap-4">
+            <div className={`flex items-center gap-3 px-3 py-1.5 rounded-xl w-fit bg-white/5 border border-white/10 backdrop-blur-xl shadow-inner`}>
+               <img src={imagery.badge} alt="Arena Badge" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+               <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-[0.25em] text-white/40 leading-none mb-1">Sector Match</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#00E676] leading-none">Verified</span>
+               </div>
+            </div>
+            <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight group-hover:text-primary transition-colors pr-4 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
               {name}
             </h3>
           </div>
           
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2 drop-shadow-xl">
             {isFree ? (
-              <div className="flex flex-col items-end gap-1">
-                <span className="inline-flex items-center rounded-md bg-primary/20 px-2 py-1 text-xs font-black text-primary ring-1 ring-inset ring-primary/30 shadow-sm animate-pulse">
-                  FREE ENTRY
-                </span>
-                <span className="text-[9px] font-bold text-muted-foreground uppercase opacity-70 tracking-tight">
-                  No Wallet Needed
-                </span>
+              <div className="flex flex-col items-end">
+                <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/20 px-3 py-1.5 border border-primary/40 text-[9px] font-black text-primary uppercase tracking-widest shadow-[0_0_15px_rgba(0,230,118,0.2)]">
+                  <Zap size={10} fill="currentColor" /> Open Access
+                </div>
               </div>
             ) : (
-              <span className="inline-flex items-center rounded-md bg-white/5 px-2 py-1 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-white/10">
+              <div className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 border border-white/10 text-[10px] font-black text-white uppercase tracking-widest">
                 {entryFeeSOL} SOL
-              </span>
+              </div>
             )}
             
             {isLive ? (
-              <span className="text-[10px] sm:text-xs font-bold text-primary animate-pulse tracking-wide">
-                ● LIVE NOW
-              </span>
+              <div className="flex items-center gap-1.5 text-[9px] font-black text-primary tracking-widest uppercase mt-1 animate-pulse">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Deployed
+              </div>
             ) : (
-              <span className="text-[10px] sm:text-xs text-muted-foreground tracking-wide flex items-center gap-1">
-                <Clock className="h-3 w-3" /> Starts {formatDateShort(startDate)}
-              </span>
+              <div className="text-[9px] font-black text-white/30 tracking-widest uppercase flex items-center gap-1.5 mt-1">
+                <Clock size={10} /> {formatDateShort(startDate)}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Bottom Metrics */}
-        <div className="grid grid-cols-2 gap-4 mt-auto pt-6 border-t border-border/20">
-           {/* Prize Pool */}
-           <div>
-             <span className="block text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1 shadow-sm">
-               Prize Pool
-             </span>
-             <div className="flex items-center gap-2">
-               <Trophy className={`h-5 w-5 ${isPremium ? 'text-gold' : 'text-primary'}`} />
-               <span className={`text-lg sm:text-xl font-black ${isPremium ? 'text-gradient-gold' : 'text-foreground'}`}>
-                 {prizePoolPoolAmount > 0 ? `${prizePoolPoolAmount} SOL` : 'TBA'}
+        {/* Metrics Section: Stakes & Command */}
+        <div className="grid grid-cols-2 gap-6 mt-6 pt-6 border-t border-white/5 relative z-10">
+           {/* Arena Stakes */}
+           <div className="space-y-2">
+             <div className="flex items-center gap-2 opacity-30">
+               <ShieldAlert size={10} className={isPremium ? 'text-gold' : 'text-primary'} />
+               <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white">
+                 Arena Stakes
+               </span>
+             </div>
+             <div className="flex items-center gap-2.5">
+               <Trophy className={`h-6 w-6 ${isPremium ? 'text-gold drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]' : 'text-primary'}`} />
+               <span className={`text-2xl font-black italic tracking-tighter ${isPremium ? 'text-gold' : 'text-white'}`}>
+                 {(prizePoolPoolAmount > 0 || (prizePool && Number(prizePool) > 0)) ? `${prizePoolPoolAmount || (Number(prizePool) / 1e9)} SOL` : 'TBA'}
                </span>
              </div>
            </div>
 
-           {/* Participants */}
-           <div>
-             <span className="block text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">
-               Participants
-             </span>
-             <div className="flex items-center gap-2">
-               <Users className="h-5 w-5 text-muted-foreground/60" />
-               <span className="text-lg sm:text-xl font-bold text-foreground">
-                 {currentEntries} <span className="text-sm font-medium text-muted-foreground/50">/ {maxParticipants || '∞'}</span>
+           {/* Rivals Joined */}
+           <div className="space-y-2">
+             <div className="flex items-center gap-2 opacity-30">
+               <Users size={10} className="text-white" />
+               <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white">
+                 Rivals Deployed
+               </span>
+             </div>
+             <div className="flex items-center gap-2.5">
+               <Crosshair className="h-6 w-6 text-white/20" />
+               <span className="text-2xl font-black italic tracking-tighter text-white/90">
+                 {currentEntries} <span className="text-sm font-black text-white/20">/ {maxParticipants || '∞'}</span>
                </span>
              </div>
            </div>
         </div>
-      </div>
+
+        {/* Hover Action Overlay Overlay */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left z-20" />
+      </motion.div>
     </Link>
   );
 }

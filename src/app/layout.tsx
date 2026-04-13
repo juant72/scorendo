@@ -18,11 +18,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Scorendo — Predict. Compete. Win.",
+    default: "Scorendo — Dominate The Leaderboards",
     template: "%s | Scorendo",
   },
   description:
-    "Skill-based prediction competition platform for the World Cup 2026. Use your football knowledge to compete and win SOL prizes.",
+    "The ultimate skill-based multisport prediction arena. Outsmart your rivals, climb global rankings, and earn instant SOL rewards.",
   keywords: [
     "prediction",
     "football",
@@ -32,16 +32,16 @@ export const metadata: Metadata = {
     "competition",
   ],
   openGraph: {
-    title: "Scorendo — Predict. Compete. Win.",
-    description: "Skill-based prediction competition for the World Cup 2026.",
+    title: "Scorendo — Dominate The Leaderboards",
+    description: "Skill-based multisport prediction arena with instant SOL rewards.",
     type: "website",
     locale: "en_US",
     siteName: "Scorendo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Scorendo — Predict. Compete. Win.",
-    description: "Skill-based prediction competition for the World Cup 2026.",
+    title: "Scorendo — Dominate The Leaderboards",
+    description: "Skill-based multisport prediction arena with instant SOL rewards.",
   },
   robots: {
     index: true,
@@ -61,7 +61,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col vignette" suppressHydrationWarning>
         <AppProviders>
           <Header />
           <main className="flex-1 overflow-x-hidden pt-12 pb-24 sm:pb-16">

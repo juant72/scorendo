@@ -38,13 +38,13 @@ export function ContestPredictionHub({
           onClick={() => setActiveTab('matches')}
           className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matches' ? 'bg-primary text-midnight shadow-[0_0_20px_#00E67644]' : 'text-muted-foreground hover:text-white'}`}
         >
-          <LayoutGrid className="w-3.5 h-3.5" /> Matches
+          <LayoutGrid className="w-3.5 h-3.5" /> Loadout
         </button>
         <button 
           onClick={() => setActiveTab('rankings')}
           className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'rankings' ? 'bg-primary text-midnight shadow-[0_0_20px_#00E67644]' : 'text-muted-foreground hover:text-white'}`}
         >
-          <ListOrdered className="w-3.5 h-3.5" /> Rankings
+          <ListOrdered className="w-3.5 h-3.5" /> Global Standing
           {simulatedPoints !== undefined && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 bg-gold rounded-full" />
           )}
@@ -71,8 +71,8 @@ export function ContestPredictionHub({
                       className="fixed bottom-10 right-10 z-[100] h-14 pl-6 pr-2 rounded-2xl bg-gold/90 backdrop-blur-xl border border-gold text-midnight flex items-center gap-6 shadow-2xl stadium-shadow"
                     >
                        <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Potential Score</span>
-                          <span className="text-xl font-black italic tabular-nums">+{simulatedPoints} PTS</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Tactical Projection</span>
+                          <span className="text-xl font-black italic tabular-nums">+{simulatedPoints} XP</span>
                        </div>
                        <button 
                          onClick={() => setActiveTab('rankings')}

@@ -57,7 +57,7 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
         <Loader2 className="w-8 h-8 text-primary" />
       </motion.div>
-      <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.4em]">Deciphering Standings</span>
+      <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.4em]">Synchronizing Elite Standings</span>
     </div>
   );
 
@@ -68,9 +68,9 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
       <table className="w-full text-sm text-left relative z-10">
         <thead className="bg-white/[0.03] text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-primary/60 border-b border-white/[0.05]">
           <tr>
-            <th className="px-6 sm:px-10 py-6">Rk</th>
-            <th className="px-6 sm:px-10 py-6">Elite Predictor</th>
-            <th className="px-6 sm:px-10 py-6 text-right">Points</th>
+            <th className="px-6 sm:px-10 py-6">Pos</th>
+            <th className="px-6 sm:px-10 py-6">Elite Tactician</th>
+            <th className="px-6 sm:px-10 py-6 text-right">XP / Score</th>
           </tr>
         </thead>
         
@@ -150,6 +150,15 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
           )}
         </motion.tbody>
       </table>
+
+      {/* ═ OFFICIAL VERIFICATION FOOTER ═ */}
+      <div className="bg-white/[0.02] border-t border-white/[0.05] px-6 py-4 flex items-center justify-between gap-4">
+         <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_5px_#00E676]" />
+            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Official Results Protocol Active</span>
+         </div>
+         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] italic">Verification courtesy of official league indices</span>
+      </div>
     </div>
   );
 }

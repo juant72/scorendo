@@ -71,7 +71,7 @@ export function Header() {
                      <div className="h-full bg-primary shadow-[0_0_5px_rgba(0,230,118,0.8)] w-[65%]" />
                   </div>
                </div>
-               <span className="text-[10px] uppercase font-black tracking-widest text-white/40">Gold III</span>
+               <span className="text-[10px] uppercase font-black tracking-widest text-white/40">Top 5%</span>
             </div>
           )}
 
@@ -80,7 +80,7 @@ export function Header() {
                href="/dashboard"
                className="group flex items-center justify-center h-10 px-4 bg-primary text-midnight hover:bg-primary/90 font-black text-xs uppercase tracking-widest transition-all rounded-xl shadow-[0_0_15px_rgba(0,230,118,0.3)] hover:shadow-[0_0_25px_rgba(0,230,118,0.6)]"
             >
-               Terminal
+               Locker Room
             </Link>
           ) : (
              <div className="hover:scale-105 transition-transform"><AuthButton /></div>
