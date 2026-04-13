@@ -10,8 +10,8 @@ export async function GET() {
       select: {
         id: true,
         name: true,
-        badgeUrl: true,
-        shortName: true
+        code: true,
+        flagUrl: true
       }
     });
 

@@ -5,24 +5,19 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { 
-      tournamentId, 
-      phaseId, 
+      phaseId,
       homeTeamId, 
       awayTeamId, 
-      startTime, 
-      stadium,
-      metadata
+      startTime,
     } = body;
 
-    // 1. Basic Validation
-    if (!tournamentId || !homeTeamId || !awayTeamId || !startTime) {
+    if (!phaseId || !homeTeamId || !awayTeamId || !startTime) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Missing required fields' 
+        error: 'Missing required fields: phaseId, homeTeamId, awayTeamId, startTime' 
       }, { status: 400 });
     }
 
-    // 2. Prevent Same Team Match
     if (homeTeamId === awayTeamId) {
       return NextResponse.json({ 
         success: false, 
@@ -30,17 +25,22 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // 3. Create the Match
+    // Get current highest matchNumber in this phase
+    const lastMatch = await prisma.match.findFirst({
+      where: { phaseId },
+      orderBy: { matchNumber: 'desc' },
+      select: { matchNumber: true }
+    });
+    const matchNumber = (lastMatch?.matchNumber ?? 0) + 1;
+
     const match = await prisma.match.create({
       data: {
-        tournamentId,
-        phaseId: phaseId || null,
+        phaseId,
+        matchNumber,
         homeTeamId,
         awayTeamId,
-        startTime: new Date(startTime),
-        stadium: stadium || 'TBD',
+        kickoff: new Date(startTime),
         status: 'SCHEDULED',
-        metadata: metadata || {}
       },
       include: {
         homeTeam: true,
@@ -48,10 +48,7 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({
-      success: true,
-      match
-    });
+    return NextResponse.json({ success: true, match });
 
   } catch (error: any) {
     console.error('Match Creation Error:', error);

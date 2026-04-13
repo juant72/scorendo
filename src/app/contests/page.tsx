@@ -1,223 +1,222 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Trophy, ChevronRight, Users, Sparkles, Key, Lock, ArrowLeft, PlusCircle, Shield } from 'lucide-react';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+import { ChevronRight, Sparkles, Key, Lock, PlusCircle, Shield, Activity, Fuel, Target, ShieldCheck } from 'lucide-react';
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
-import { PageTransition, StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
+import { PageTransition } from '@/components/layout/PageTransition';
+import { getArenaImagery } from '@/lib/graphics';
 
-import { useSearchParams } from 'next/navigation';
+const QUICK_FILTERS = [
+  { id: 'all', name: 'All Arenas', icon: Sparkles },
+  { id: 'football', name: 'Football', icon: Activity },
+  { id: 'motorsports', name: 'Formula 1', icon: Fuel },
+  { id: 'nba', name: 'NBA', icon: Target },
+  { id: 'rugby', name: 'Rugby', icon: ShieldCheck },
+];
 
-export default function ContestsLobbyPage() {
+
+function ContestsLobbyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const sportSlug = searchParams.get('sport');
+  const sportSlug = searchParams.get('sport') || 'all';
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const url = sportSlug ? `/api/contests?sport=${sportSlug}` : '/api/contests';
+    // eslint-disable-next-line
+    setLoading(true);
+    const url = sportSlug !== 'all' ? `/api/contests?sport=${sportSlug}` : '/api/contests';
     fetch(url)
       .then(res => res.json())
       .then(json => {
         if (json.success) setCompetitions(json.competitions);
+        setLoading(false);
       });
   }, [sportSlug]);
 
-  const sportName = competitions[0]?.sport?.name || (sportSlug ? sportSlug.charAt(0).toUpperCase() + sportSlug.slice(1) : 'Global');
+  const activeSport = QUICK_FILTERS.find(f => f.id === sportSlug) || QUICK_FILTERS[0];
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-midnight text-white overflow-hidden selection:bg-primary/30">
-        {/* Elite Heritage BG */}
-        <div className="fixed inset-0 bg-net opacity-20 pointer-events-none" />
-        <div className="fixed inset-0 bg-pitch-lines opacity-10 pointer-events-none" />
+      <div className="min-h-screen bg-[#020814] text-white selection:bg-primary/30">
+        
+        {/* Functional Hero & Nav */}
+        <div className="relative pt-24 pb-12 border-b border-white/5">
+           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+           
+           <div className="container mx-auto px-4">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                 <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="h-px w-8 bg-primary" />
+                       <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Arena Lobby</span>
+                    </div>
+                    <h1 className="text-6xl font-black uppercase italic tracking-tighter leading-none">
+                       {activeSport.name.split(' ')[0]} <span className="text-white/20 italic">Chambers</span>
+                    </h1>
+                 </div>
 
-        <div className="container mx-auto px-4 py-12 sm:py-24 relative z-10">
-          
-          {/* Back to Arenas */}
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary hover:border-primary/20 transition-all mb-12">
-             <ArrowLeft className="w-4 h-4" /> Back to Arenas
-          </Link>
-
-          {/* ════ SECTION 1: GLOBAL LEAGUES ════ */}
-          <div className="mb-24 sm:mb-40">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12 sm:mb-20 pb-8 border-b border-white/5">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                      <div className="h-0.5 w-12 bg-primary" />
-                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">{sportName} Elite</span>
-                  </div>
-                  <h1 className="text-7xl sm:text-[9rem] font-black uppercase italic tracking-tighter leading-none">
-                      {sportName}<br/><span className="text-primary truncate">Leagues</span>
-                  </h1>
-                </div>
-                <div className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{competitions.length} active chambers</div>
-            </div>
-
-
-            <StaggerChildren delay={0.15}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {competitions.length > 0 ? competitions.map((comp) => (
-                   <FadeInItem key={comp.id}>
-                      <div 
-                        onClick={() => router.push(`/contests/league/${comp.slug}`)}
-                        className="group relative h-[500px] rounded-[3rem] overflow-hidden border border-white/10 hover:border-primary/50 transition-all hover:scale-[1.02] cursor-pointer stadium-shadow"
-                      >
-                         {/* Live Energy Pulse (Background) */}
-                         <div className="absolute -inset-4 bg-primary/5 opacity-0 group-hover:opacity-100 animate-pulse duration-[3000ms] rounded-[4rem] blur-3xl transition-opacity" />
-                         {/* Full-bleed Background */}
-                         <div className="absolute inset-0 z-0">
-                            <img 
-                              src={
-                                comp.slug === 'argentine-football-first-div' ? '/arena_argentina.png' :
-                                comp.slug === 'european-champions-cup' ? '/arena_eurocup.png' :
-                                comp.slug === 'fifa-world-cup-2026' ? '/arena_worldcup.png' :
-                                `/arena_${comp.slug}.png`
-                              }
-                              onError={(e) => { e.currentTarget.src = '/stadium_hero.png'; }}
-                              alt="Arena Backdrop"
-                              className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity group-hover:scale-110 duration-1000"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/50 to-transparent" />
-                         </div>
-
-                         {/* Card Content */}
-                         <div className="relative z-10 h-full p-12 flex flex-col justify-between">
-                            <div className="flex justify-between items-start">
-                               <div className="bg-black/40 backdrop-blur-xl border border-white/10 p-4 rounded-2xl">
-                                  <img 
-                                    src={
-                                      comp.slug === 'argentine-football-first-div' ? '/badge_afa.png' :
-                                      comp.slug === 'european-champions-cup' ? '/badge_euro.png' :
-                                      comp.slug === 'fifa-world-cup-2026' ? '/badge_worldcup.png' :
-                                      `/badge_${comp.slug}.png`
-                                    }
-                                    onError={(e) => { e.currentTarget.src = '/badge_worldcup.png'; }}
-                                    alt="Comp Badge"
-                                    className="w-16 h-16 object-contain filter invert opacity-80"
-                                    style={{ mixBlendMode: 'screen' }}
-                                  />
-                               </div>
-                               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
-                                  <Users className="w-3 h-3 text-primary" />
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Live Arena</span>
-                               </div>
-                            </div>
-
-                            <div className="space-y-6">
-                               <h3 className="text-5xl font-black text-white uppercase tracking-tighter leading-[0.85] italic drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-                                  {comp.name}
-                               </h3>
-                               
-                               <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                     <span className="text-xs font-black text-white/60 uppercase tracking-widest">{comp.country || 'International'} Arena</span>
-                                  </div>
-                                  <div className="h-14 px-8 rounded-2xl bg-primary text-midnight font-black text-xs uppercase tracking-widest flex items-center justify-center shadow-[0_10px_30px_rgba(0,230,118,0.3)] group-hover:scale-105 transition-transform">
-                                     Enter Arena
-                                  </div>
-                               </div>
-                            </div>
-                         </div>
-
-                         {/* Shimmer overlay for premium feel */}
-                         <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-                      </div>
-                   </FadeInItem>
-                )) : (
-                  <div className="col-span-full py-24 glass rounded-[4rem] text-center border-dashed border-white/10">
-                     <div className="text-primary/20 mb-6 flex justify-center"><Sparkles className="w-12 h-12" /></div>
-                     <p className="text-xl font-black text-white/20 uppercase tracking-widest italic leading-none">Scanning World Leagues</p>
-                  </div>
-                )}
+                 {/* Pragmatic Navigation: Quick Pill Bar */}
+                 <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+                    {QUICK_FILTERS.map((f) => (
+                       <button
+                         key={f.id}
+                         onClick={() => router.push(f.id === 'all' ? '/contests' : `/contests?sport=${f.id}`)}
+                         className={`whitespace-nowrap h-11 px-6 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                            sportSlug === f.id 
+                            ? 'bg-primary text-midnight shadow-lg shadow-primary/20' 
+                            : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white'
+                         }`}
+                       >
+                          <f.icon size={14} />
+                          {f.name}
+                       </button>
+                    ))}
+                 </div>
               </div>
-            </StaggerChildren>
+           </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-16">
+          
+          {/* Main Grid: Data-Rich League Cards */}
+          <div className="mb-32">
+             {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-20">
+                   {[1,2,3,4].map(i => <div key={i} className="h-64 glass-premium rounded-3xl animate-pulse" />)}
+                </div>
+             ) : competitions.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                   {competitions.map((comp) => {
+                      const imagery = getArenaImagery(comp);
+                      return (
+                        <div 
+                          key={comp.id}
+                          onClick={() => router.push(`/contests/league/${comp.slug}`)}
+                          className="group relative h-72 rounded-[2rem] overflow-hidden border border-white/5 hover:border-primary/40 transition-all hover:-translate-y-1 cursor-pointer shadow-2xl"
+                        >
+                           {/* BG Overlay */}
+                           <div className="absolute inset-0">
+                              <img src={imagery.banner} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-all duration-700" alt="Arena" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-[#020814] via-[#020814]/40 to-transparent" />
+                           </div>
+
+                           {/* Content */}
+                           <div className="relative z-10 h-full p-8 flex flex-col justify-between">
+                              <div className="flex justify-between items-start">
+                                 <div className="p-3 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
+                                    <img src={imagery.badge} alt="Logo" className="w-10 h-10 object-contain" />
+                                 </div>
+                                 <Badge text="ACTIVE RECRUITMENT" />
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+                                 <div className="space-y-1">
+                                    <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
+                                       {comp.name}
+                                    </h3>
+                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{comp.country || 'International'} Division</p>
+                                 </div>
+                                 <button className="h-12 px-8 bg-white/5 border border-white/10 group-hover:bg-primary group-hover:text-midnight rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                                    Join Arena
+                                 </button>
+                              </div>
+                           </div>
+                        </div>
+                      );
+                   })}
+                </div>
+             ) : (
+                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
+                   <Sparkles className="mx-auto text-white/5 mb-6" size={64} />
+                   <p className="text-white/20 font-black uppercase tracking-[0.4em] italic">No Active Arenas in this Sector</p>
+                </div>
+             )}
           </div>
 
-          {/* ════ SECTION 2: PRIVATE BATTLES ════ */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-              
-              {/* Private Battles Section */}
-              <div className="lg:col-span-4">
-                <div className="flex items-center justify-between mb-12 pb-8 border-b border-white/5">
-                   <h2 className="text-3xl font-black text-white uppercase italic tracking-wider flex items-center gap-4">
-                      <Lock className="text-primary w-8 h-8" /> Private Battle
-                   </h2>
+          {/* Secondary Actions: Private & Pro */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+             
+             {/* Battle Deployment (Private) */}
+             <div className="lg:col-span-5 glass-premium p-10 rounded-[2.5rem] border-white/5 relative overflow-hidden flex flex-col justify-between h-full min-h-[400px]">
+                <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none transform translate-x-8 -translate-y-8">
+                   <Lock size={200} />
                 </div>
                 
-                <div className="space-y-10">
-                   {/* Join Private Card */}
-                   <div className="glass-strong p-12 rounded-[4rem] border-primary/20 stadium-shadow group relative overflow-hidden">
-                      <div className="relative z-10">
-                        <h4 className="text-2xl font-black text-white mb-4 uppercase italic">Recruit Base</h4>
-                        <p className="text-sm text-white/40 mb-10 italic leading-relaxed">Enter an authorization code to access restricted tournament zones. No fee required for verified recruits.</p>
-                        <div className="flex gap-4">
-                          <input 
-                            type="text" 
-                            placeholder="AUTH_CODE" 
-                            className="flex-1 h-16 bg-black/40 border border-white/10 rounded-2xl px-6 font-black text-xs tracking-widest focus:border-primary outline-none"
-                          />
-                          <button className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center hover:scale-105 transition-transform shadow-lg">
-                            <ChevronRight className="text-midnight w-6 h-6" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[80px] -mr-16 -mt-16" />
+                <div className="space-y-6 relative z-10">
+                   <div className="flex items-center gap-3 text-primary">
+                      <Lock size={18} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">Restricted Zones</span>
                    </div>
+                   <h2 className="text-4xl font-black text-white uppercase italic leading-none">Private <span className="text-white/30">Battles</span></h2>
+                   <p className="text-sm text-white/40 italic leading-relaxed max-w-sm">Launch a custom arena or use an authorization signature to penetrate private tournament layers.</p>
+                </div>
 
-                   {/* Create Multiplier Card */}
-                   <div 
-                      onClick={() => setIsModalOpen(true)}
-                      className="group p-12 rounded-[4rem] border border-dashed border-white/10 hover:border-primary/50 transition-all cursor-pointer bg-white/2 hover:bg-white/5 text-center"
+                <div className="space-y-3 relative z-10">
+                   <div className="flex gap-3">
+                      <input 
+                        type="text" 
+                        placeholder="SIGNATURE_CODE" 
+                        className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl px-6 font-black text-xs tracking-widest focus:border-primary outline-none placeholder:text-white/10"
+                      />
+                      <button className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-primary hover:text-midnight transition-all">
+                         <ChevronRight size={24} />
+                      </button>
+                   </div>
+                   <button 
+                     onClick={() => setIsModalOpen(true)}
+                     className="w-full h-14 border border-dashed border-white/10 hover:border-primary/50 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-primary transition-all rounded-2xl flex items-center justify-center gap-2"
                    >
-                      <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 group-hover:bg-primary/10 transition-colors">
-                        <PlusCircle className="text-primary w-10 h-10" />
-                      </div>
-                      <h4 className="text-xl font-black text-white mb-2 uppercase italic">Initialize Battlefield</h4>
-                      <p className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em]">Deploy private tournament protocol</p>
-                   </div>
+                      <PlusCircle size={14} /> Initialize Conflict protocol
+                   </button>
                 </div>
-              </div>
+             </div>
 
-              {/* High Stakes Rewards Area */}
-              <div className="lg:col-span-8">
-                <div className="relative h-full rounded-[4rem] overflow-hidden border border-white/5 group">
-                  <img 
-                    src="/corporate_lobby.png" 
-                    onError={(e) => { e.currentTarget.src = '/stadium_hero_default.png'; }}
-                    className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity duration-1000 group-hover:scale-105"
-                    alt="Lobby Backdrop"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-midnight via-midnight/40 to-transparent" />
-                  
-                  <div className="absolute inset-0 p-16 flex flex-col justify-end">
-                    <div className="space-y-8 max-w-xl">
-                       <div className="flex items-center gap-4">
-                          <Shield className="text-gold w-10 h-10" />
-                          <span className="text-xs font-black text-gold uppercase tracking-[0.4em]">Corporate & Brand Tiers</span>
-                       </div>
-                       <h2 className="text-6xl sm:text-8xl font-black text-white uppercase italic leading-[0.85] tracking-tighter">
-                          Pro<br/><span className="text-gold">Sponsorship</span>
-                       </h2>
-                       <p className="text-lg text-white/60 italic leading-relaxed">Unlock high-stakes arenas with verified brand rewards. Authenticate your terminal to participate in official global events.</p>
-                       <button className="h-20 px-12 rounded-[2rem] bg-white text-midnight font-black text-xs uppercase tracking-[0.3em] hover:bg-primary hover:text-midnight transition-all hover:scale-105 shadow-2xl">
-                          Authenticate Terminal
-                       </button>
-                    </div>
-                  </div>
+             {/* Pro Sponsorship (High Stakes) */}
+             <div className="lg:col-span-7 relative rounded-[2.5rem] overflow-hidden group shadow-2xl min-h-[400px]">
+                <img src="/corporate_lobby.png" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-1000 group-hover:scale-105" alt="Pro" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#020814] via-[#020814]/40 to-transparent" />
+                
+                <div className="relative h-full p-12 flex flex-col justify-end items-start space-y-8">
+                   <div className="flex items-center gap-3 text-gold">
+                      <Shield size={24} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.5em]">High-Clearance Rewards</span>
+                   </div>
+                   <h2 className="text-5xl md:text-7xl font-black text-white uppercase italic leading-[0.85] tracking-tighter">Verified<br/><span className="text-gold">Sponsorship</span></h2>
+                   <p className="text-base text-white/30 italic max-w-md">Official brand-sanctioned events. Liquidate high-tier tokens by proving market dominance.</p>
+                   <button className="h-16 px-12 bg-white text-midnight font-black text-xs uppercase tracking-[0.3em] hover:bg-gold hover:scale-105 transition-all rounded-2xl shadow-2xl shadow-black/50">
+                      Request Authentication
+                   </button>
                 </div>
-              </div>
+             </div>
 
           </div>
-
         </div>
 
         {isModalOpen && <CreatePrivateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
       </div>
     </PageTransition>
+  );
+}
+
+function Badge({ text }: { text: string }) {
+   return (
+      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+         <span className="text-[8px] font-black text-white/60 tracking-widest uppercase">{text}</span>
+      </div>
+   );
+}
+
+export default function ContestsLobbyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#020814] flex items-center justify-center"><Sparkles className="animate-pulse text-primary/50" size={32} /></div>}>
+      <ContestsLobbyContent />
+    </Suspense>
   );
 }

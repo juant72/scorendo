@@ -1,14 +1,13 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
-import { notFound, redirect } from 'next/navigation';
-import { PredictionForm } from '@/components/contests/PredictionForm';
+import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { verifySessionToken } from '@/lib/auth';
-import { Trophy, Clock, Users, ArrowLeft, Key } from 'lucide-react';
-import Link from 'next/link';
+import { Trophy, Clock, Users, ArrowLeft, Key, Share2, Shield, Activity, Zap } from 'lucide-react';
 import { ShareButton } from '@/components/contests/ShareButton';
 import { ContestPredictionHub } from '@/components/contests/ContestPredictionHub';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { getArenaImagery } from '@/lib/graphics';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -41,6 +40,9 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
       },
       tournament: {
         include: {
+          competition: {
+             include: { sport: true }
+          },
           phases: {
             include: {
               matches: {
@@ -56,15 +58,18 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
 
   if (!contest) notFound();
 
-  // 3. Determine Mathes to Predict
-  // If Contest is tied to a specific Phase, show only phase matches.
-  // Otherwise, show tournament matches (up to a limit if GRAND_TOURNAMENT).
+  // Arena Imagery Logic (V2 Implementation)
+  const imagery = getArenaImagery(contest);
+
+  // 3. Determine Matches to Predict
   let matches = contest.phase?.matches || [];
   if (matches.length === 0 && contest.tournament) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matches = contest.tournament.phases.flatMap((p: any) => p.matches);
   }
 
-  // 4. Fetch User's existing predictions for this contest
+  // 4. Fetch User Data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let existingPredictions: any[] = [];
   let userEntry = null;
   let userData = null;
@@ -83,126 +88,154 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
     ]);
   }
 
-  // 5. Timelock Logic (Sync with Backend 10-minute rule)
+  // 5. Timelock Logic
   const earliestKickoff = matches.length > 0 
     ? Math.min(...matches.map(m => new Date(m.kickoff).getTime())) 
     : Infinity;
   
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
-  const BUFFER_MS = 10 * 60 * 1000; // 10 minutes
-  
-  // A contest is locked if we are within 10 mins of kickoff OR if its status is advanced (Scoring, Finished, etc.)
+  const BUFFER_MS = 10 * 60 * 1000;
   const isLockedByTime = now > (earliestKickoff - BUFFER_MS);
   const isLockedByStatus = !['UPCOMING', 'REGISTRATION', 'ACTIVE'].includes(contest.status);
   const isLocked = isLockedByTime || isLockedByStatus;
 
   const prizePool = Number(contest.prizePool) / 1_000_000_000;
+  const entryFee = Number(contest.entryFeeSOL) / 1_000_000_000;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 lg:py-12">
+    <div className="min-h-screen bg-[#020814]">
       
-      {/* Navigation */}
-      <Breadcrumbs items={[
-        { label: contest.tournament?.name || 'League', href: `/contests/league/${contest.tournament?.slug}` },
-        { label: contest.name }
-      ]} />
+      {/* ── PRAGMATIC HERO SECTION ── */}
+      <div className="relative h-[400px] lg:h-[500px] flex flex-col justify-end overflow-hidden">
+         {/* Adaptive Backdrop */}
+         <div className="absolute inset-0">
+            <img src={imagery.banner} className="w-full h-full object-cover opacity-60" alt="Backdrop" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#020814] via-[#020814]/40 to-transparent" />
+         </div>
 
-      {/* Contest Header UI */}
-      <div className="glass-strong rounded-3xl p-6 md:p-10 mb-10 border border-primary/20 relative overflow-hidden">
-        {/* Glow Effects */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gold/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none" />
+         <div className="container mx-auto px-4 relative z-10 pb-12">
+            <Breadcrumbs items={[
+               { label: 'Arenas', href: '/contests' },
+               { label: contest.tournament?.name || 'League', href: `/contests?sport=${contest.tournament?.competition?.sport?.slug}` },
+               { label: contest.name }
+            ]} />
 
-        <div className="relative z-10">
-          {/* Corporate Branding if Private */}
-          {contest.isPrivate && (
-            <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-white/5 border border-white/10 group">
-               <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30 shadow-inner">
-                  <img src={contest.customLogoUrl || '/branding/default-logo.png'} alt={contest.customBrandName || ''} className="h-full w-full object-cover" />
-               </div>
-               <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-primary opacity-80 mb-0.5">Corporate Battle Sponsored by</div>
-                  <div className="text-xl font-black text-white">{contest.customBrandName}</div>
-               </div>
-            </div>
-          )}
-
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                {contest.isPrivate ? (
-                  <span className="px-3 py-1 text-[10px] font-black bg-primary text-primary-foreground rounded-full border border-primary glow-green uppercase tracking-widest">
-                    Private League
-                  </span>
-                ) : (
-                  <span className={`px-3 py-1 text-xs font-bold rounded-md ${contest.entryFeeSOL > 0 ? 'bg-white/10 text-white' : 'bg-primary/20 text-primary'}`}>
-                    {contest.entryFeeSOL > 0 ? `${contest.entryFeeSOL} SOL Entry` : 'FREE ENTRY'}
-                  </span>
-                )}
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{contest.status}</span>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-foreground drop-shadow-sm leading-tight text-white">
-                {contest.name}
-              </h1>
-              <p className="text-muted-foreground text-lg max-w-xl">
-                {contest.description || "Predict the match outcomes to earn points. Exact scores yield bonus points!"}
-              </p>
-            </div>
-
-            <div className="flex gap-4 md:flex-col md:items-end md:gap-6 mt-4 md:mt-0">
-              {contest.isPrivate ? (
-                <div className="flex flex-col items-center md:items-end gap-3">
-                   <div className="flex items-center gap-2 text-primary font-mono text-sm font-black border border-primary/20 px-4 py-2 rounded-xl bg-primary/5">
-                      <Key className="w-3 h-3" /> {contest.inviteCode}
-                   </div>
-                   <ShareButton inviteCode={contest.inviteCode} contestName={contest.name} />
-                </div>
-              ) : (
-                <div className="glass px-5 py-3 rounded-xl border border-gold/30 flex flex-col items-center md:items-end shadow-2xl">
-                  <span className="text-xs font-bold uppercase text-muted-foreground tracking-widest mb-1 shadow-sm">Prize Pool</span>
-                  <div className="flex items-center gap-2 text-2xl md:text-3xl font-black text-gradient-gold">
-                    <Trophy className="h-6 w-6 text-gold" /> {prizePool > 0 ? `${prizePool} SOL` : 'TBA'}
+            <div className="mt-8 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+               <div className="space-y-6 max-w-3xl">
+                  <div className="flex items-center gap-4">
+                     <div className="p-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl">
+                        <img src={imagery.badge} className="w-12 h-12 object-contain" alt="Badge" />
+                     </div>
+                     <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                           <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${imagery.accent}`}>{contest.tournament?.name}</span>
+                           <div className="w-1 h-1 rounded-full bg-white/20" />
+                           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">{contest.status}</span>
+                        </div>
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase italic tracking-tighter leading-none text-white">
+                           {contest.name}
+                        </h1>
+                     </div>
                   </div>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Users className="h-4 w-4" /> {contest.currentEntries} Entered</span>
-                <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> {Math.max(0, matches.length)} Matches</span>
-              </div>
+               </div>
+
+               {/* Quick Info Bar */}
+               <div className="flex flex-wrap items-center gap-4">
+                  <StatItem icon={<Trophy className="text-gold" />} label="Prize Fund" value={prizePool > 0 ? `${prizePool} SOL` : 'TBA'} primary />
+                  <StatItem icon={<Key className="text-primary" />} label="Entry Fee" value={entryFee === 0 ? 'FREE' : `${entryFee} SOL`} />
+                  <StatItem icon={<Users className="text-white/40" />} label="Entries" value={contest.currentEntries} />
+               </div>
             </div>
-          </div>
-        </div>
+         </div>
       </div>
 
-      {/* Predictions Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-black mb-6 flex items-center gap-2 text-white">
-          <span className="text-primary">●</span> Match Predictions
-        </h2>
+      <div className="container mx-auto px-4 py-16">
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+            
+            {/* Predictions Area (Main Segment) */}
+            <div className="lg:col-span-8 space-y-12">
+               <div className="flex items-center justify-between border-b border-white/5 pb-8">
+                  <div className="space-y-1">
+                     <h2 className="text-2xl font-black uppercase italic text-white flex items-center gap-3">
+                        <Zap size={20} className="text-primary" /> Prediction <span className="text-white/20">Terminal</span>
+                     </h2>
+                     <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Match-by-match score reconciliation</p>
+                  </div>
+                  {contest.inviteCode && (
+                     <div className="flex items-center gap-4">
+                        <div className="hidden sm:flex items-center gap-2 text-[10px] font-black text-primary/40 uppercase tracking-widest border border-primary/10 px-4 py-2 rounded-xl bg-primary/5">
+                           <Key size={12} /> {contest.inviteCode}
+                        </div>
+                        <ShareButton inviteCode={contest.inviteCode} contestName={contest.name} />
+                     </div>
+                  )}
+               </div>
 
-        {!userWallet ? (
-          <div className="glass p-12 rounded-2xl text-center border border-border/30 shadow-[0_0_30px_rgba(0,0,0,0.3)]">
-            <h3 className="text-xl font-bold mb-3 text-white">Authentication Required</h3>
-            <p className="text-muted-foreground mb-6">You must verify your identity to make predictions for this contest.</p>
-            <p className="text-sm text-primary font-bold bg-primary/10 inline-block px-4 py-2 rounded-lg border border-primary/20">
-              Please click the <span className="text-white">Secure Entry</span> button in the top right header to finalize your session ↑
-            </p>
-          </div>
-        ) : (
-          <ContestPredictionHub 
-            contestId={contest.id}
-            matches={matches} 
-            existingPredictions={existingPredictions}
-            isLocked={isLocked}
-              isEntered={!!userEntry}
-              entryFeeSOL={contest.entryFeeSOL}
-              userWallet={userWallet}
-              userName={(userData as any)?.displayName || userWallet}
-            />
-        )}
+               {!userWallet ? (
+                 <div className="glass-premium p-16 rounded-[3rem] text-center border-white/5 shadow-3xl">
+                   <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-primary/20">
+                      <Shield className="text-primary" size={32} />
+                   </div>
+                   <h3 className="text-2xl font-black mb-4 text-white uppercase italic">Authentication Required</h3>
+                   <p className="text-sm text-white/40 mb-10 italic max-w-sm mx-auto leading-relaxed">Verification of wallet identity is mandatory for Arena entry. High-clearance session required.</p>
+                   <div className="h-14 px-10 bg-primary text-midnight font-black text-xs uppercase tracking-widest rounded-xl inline-flex items-center justify-center shadow-2xl shadow-primary/20">
+                      Secure Terminal Entry
+                   </div>
+                 </div>
+               ) : (
+                 <ContestPredictionHub 
+                   contestId={contest.id}
+                   matches={matches} 
+                   existingPredictions={existingPredictions}
+                   isLocked={isLocked}
+                   isEntered={!!userEntry}
+                   entryFeeSOL={contest.entryFeeSOL}
+                   userWallet={userWallet}
+                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   userName={(userData as any)?.displayName || userWallet}
+                 />
+               )}
+            </div>
+
+            {/* Sidebar (Pragmatic Context) */}
+            <div className="lg:col-span-4 space-y-12">
+               <div className="glass-premium p-10 rounded-[2.5rem] border-white/5 space-y-8">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 border-b border-white/5 pb-4">Tournament Intelligence</h4>
+                  <div className="space-y-6">
+                     <p className="text-sm text-white/60 italic leading-relaxed">
+                        {contest.description || "Predict outcomes to accumulate points. Precise results grant maximum dominance rewards."}
+                     </p>
+                     
+                     <div className="p-6 bg-white/2 rounded-3xl border border-white/5 space-y-4">
+                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                           <span className="text-white/40">Scoring Engine</span>
+                           <span className="text-primary">V4.2</span>
+                        </div>
+                        <ul className="space-y-3 text-[9px] font-black text-white/20 uppercase tracking-widest">
+                           <li className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-primary" /> Exact Score: 100 PTS</li>
+                           <li className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-white/10" /> Goal Diff: 50 PTS</li>
+                           <li className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-white/10" /> Outcome: 30 PTS</li>
+                        </ul>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div>
       </div>
-
     </div>
   );
+}
+
+function StatItem({ icon, label, value, primary }: { icon: React.ReactNode, label: string, value: string | number, primary?: boolean }) {
+   return (
+      <div className={`px-6 py-4 rounded-2xl border backdrop-blur-xl flex flex-col items-center sm:items-start min-w-[140px] ${primary ? 'bg-primary/5 border-primary/20 shadow-xl' : 'bg-white/5 border-white/10'}`}>
+         <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em] mb-1">{label}</span>
+         <div className="flex items-center gap-2">
+            {icon}
+            <span className={`text-xl font-black italic tracking-tighter ${primary ? 'text-white' : 'text-white/80'}`}>{value}</span>
+         </div>
+      </div>
+   );
 }

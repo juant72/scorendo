@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
- * API to list contests ready for settlement
+ * API to list contests ready for settlement.
+ * Matches belong to Phases, not directly to Contests.
+ * A Contest links to matches through its phase or tournament.phases.
  */
 export async function GET() {
   try {
@@ -13,19 +15,35 @@ export async function GET() {
       include: {
         _count: {
           select: { predictions: true }
+        },
+        phase: {
+          include: {
+            matches: { select: { status: true } }
+          }
+        },
+        tournament: {
+          include: {
+            phases: {
+              include: {
+                matches: { select: { status: true } }
+              }
+            }
+          }
         }
       }
     });
 
-    const settleableContests = await Promise.all(contests.map(async (c) => {
-      // Get match counts
-      const totalMatches = await prisma.match.count({ where: { contestId: c.id } });
-      const finishedMatches = await prisma.match.count({ 
-        where: { 
-          contestId: c.id, 
-          status: 'FINISHED' 
-        } 
-      });
+    const settleableContests = contests.map((c) => {
+      // Collect all matches from the contest's phase or tournament phases
+      let allMatches: { status: string }[] = [];
+      if (c.phase?.matches) {
+        allMatches = c.phase.matches;
+      } else if (c.tournament?.phases) {
+        allMatches = c.tournament.phases.flatMap(p => p.matches);
+      }
+
+      const totalMatches = allMatches.length;
+      const finishedMatches = allMatches.filter(m => m.status === 'FINISHED').length;
 
       return {
         id: c.id,
@@ -39,7 +57,7 @@ export async function GET() {
         totalMatches: totalMatches,
         canSettle: totalMatches > 0 && totalMatches === finishedMatches
       };
-    }));
+    });
 
     return NextResponse.json({ success: true, contests: settleableContests });
   } catch (error: any) {
