@@ -1,21 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MatchStatus, PredictionOutcome } from '@prisma/client';
 import { TeamBadge } from './TeamBadge';
 import { 
   Loader2, 
-  Shield, 
-  ChevronRight, 
-  Sparkles, 
   Share2, 
-  LayoutGrid, 
-  ListOrdered,
   Zap,
-  CheckCircle2
+  CheckCircle2,
+  Trophy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PageTransition, StaggerChildren, FadeInItem } from '@/components/layout/PageTransition';
+import { PageTransition } from '@/components/layout/PageTransition';
 import { calculateMatchPoints } from '@/lib/scoring';
 import { MatchTicket } from './MatchTicket';
 import { exportMatchTicket } from '@/lib/ticket-exporter';
@@ -52,12 +48,14 @@ interface PredictionFormProps {
 
 export function PredictionForm({ contestId, matches, existingPredictions, isLive, isEntered, entryFeeSOL = 0, onPredictionsChange }: PredictionFormProps) {
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [predictions, setPredictions] = useState<Record<string, { home: string, away: string }>>(
     existingPredictions.reduce((acc, pred) => {
       if (pred.predictedHome !== null && pred.predictedAway !== null) {
         acc[pred.matchId] = { home: pred.predictedHome.toString(), away: pred.predictedAway.toString() };
       }
       return acc;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }, {} as any)
   );
 
@@ -84,24 +82,20 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
       return { matchId, predictedHome: homeScore, predictedAway: awayScore, predictedWinner: winner };
     }).filter(Boolean);
 
-    // Calculate simulated points
     if (onPredictionsChange) {
        let total = 0;
        matches.forEach(m => {
           const scores = predictions[m.id];
           if (!scores || scores.home === '' || scores.away === '') return;
           const pred = { home: parseInt(scores.home), away: parseInt(scores.away) };
-          if (isNaN(pred.home) || isNaN(pred.away)) return;
-          // For simulation, we assume PREDICTION matches ACTUAL in the user's mind
-          // (Actually, a true simulation needs actual scores, but if they are TBD, 
-          // we use the user's picks to show what they WOULD get if they hit)
-          total += calculateMatchPoints(pred, pred); 
+          if (!isNaN(pred.home) && !isNaN(pred.away)) {
+            total += calculateMatchPoints(pred, pred); 
+          }
        });
        onPredictionsChange(total);
     }
 
     const timer = setTimeout(async () => {
-
       if (formattedPredictions.length > 0) {
         savePredictions(formattedPredictions);
       }
@@ -110,6 +104,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     return () => clearTimeout(timer);
   }, [predictions, mounted]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const savePredictions = async (formattedPredictions: any) => {
     try {
       setSaving(true);
@@ -127,7 +122,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
           lastSaved: new Date().toLocaleTimeString(),
           xpEarned: data.xpEarned 
         });
-        setShowConfetti(true);
+        if(data.xpEarned > 0) setShowConfetti(true);
       } else {
         if (data.error === 'PAYMENT_REQUIRED') {
            setSaveStatus({ type: 'error', msg: '💰 Entry Ticket Required' });
@@ -141,6 +136,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   };
 
   const handleScoreChange = (matchId: string, team: 'home' | 'away', val: string) => {
+    if (isLive) return;
     const safeVal = val.replace(/[^0-9]/g, '').slice(0, 2);
     setPredictions(prev => {
       const current = prev[matchId] || { home: '', away: '' };
@@ -156,7 +152,6 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
 
   const handleShare = async (matchId: string) => {
     setSharingMatchId(matchId);
-    // Wait for render
     setTimeout(async () => {
       try {
         await exportMatchTicket('match-ticket-capture', `Scorendo_Prediction_${matchId}`);
@@ -166,187 +161,109 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     }, 100);
   };
 
-  if (!mounted) return <div className="h-96 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
+  if (!mounted) return <div className="h-64 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>;
 
   return (
     <>
     <PageTransition>
-      <div className="space-y-12 sm:space-y-20 relative pb-16">
-        {/* ═ TOP SECURE STATUS BAR ═ */}
-        <div className="sticky top-0 z-50 flex items-center justify-between gap-4 mb-8 py-4 bg-midnight/80 backdrop-blur-xl border-b border-white/5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:bg-transparent sm:backdrop-blur-none sm:border-none">
-          <div className="hidden sm:block flex-1 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-          <div className="flex items-center gap-4 px-6 py-2 rounded-xl border border-white/10 bg-black/40 backdrop-blur-2xl shadow-xl">
-            <div className="flex items-center gap-2">
-              <div className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">ARENA_LOCKED</div>
-              <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-            </div>
-            <div className="h-3 w-[1px] bg-white/10" />
+      <div className="space-y-6 relative pb-16">
+        {/* ═ COMPACT TOP SYNC BAR ═ */}
+        <div className="sticky top-16 z-50 flex items-center justify-between gap-4 py-3 bg-[#020814]/90 backdrop-blur-md border-b border-white/5">
+          <div className="flex items-center gap-3">
+             <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-red-500' : 'bg-primary animate-pulse'}`} />
+             <span className="text-[10px] font-black uppercase tracking-widest text-white/50">{isLive ? 'Arena Locked' : 'Predictions Open'}</span>
+          </div>
+          <div className="flex items-center gap-3 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10">
             {saving ? (
-              <div className="flex items-center gap-2">
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                  <Loader2 className="w-3 h-3 text-primary" />
-                </motion.div>
-                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest italic">Syncing</span>
-              </div>
+              <><Loader2 className="w-3 h-3 text-primary animate-spin" /><span className="text-[9px] font-bold text-white/50 uppercase">Syncing...</span></>
             ) : saveStatus?.lastSaved ? (
-              <div className="flex items-center gap-2 relative">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -inset-1 bg-primary/20 blur-md rounded-full" />
-                <CheckCircle2 className="w-3 h-3 text-primary relative z-10" />
-                <span className="text-[9px] font-black text-primary italic uppercase tracking-widest relative z-10">Secured</span>
-              </div>
+              <><CheckCircle2 className="w-3 h-3 text-primary" /><span className="text-[9px] font-bold text-primary uppercase">Saved {saveStatus.lastSaved}</span></>
             ) : (
-              <div className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 italic">Standby</div>
+              <span className="text-[9px] font-bold text-white/30 uppercase">Ready</span>
             )}
           </div>
-          <div className="hidden sm:block flex-1 h-[1px] bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         </div>
 
-        {/* ═ MATCH GRID ═ */}
-        <StaggerChildren delay={0.1}>
-          <div className="grid grid-cols-1 gap-12 sm:gap-16">
-            {matches.map((match, index) => {
-              const pred = predictions[match.id] || { home: '', away: '' };
-
-              return (
-                <FadeInItem key={match.id}>
-                  <motion.div 
-                    whileHover={{ scale: 1.01, rotateY: 2 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="group relative"
-                  >
-                    {/* ══ STADIUM WATERMARK ══ */}
-                    <div className="hidden sm:block absolute -top-14 left-8 text-8xl font-black text-white/5 uppercase italic pointer-events-none select-none tracking-tighter mix-blend-overlay">
-                      {index + 1 < 10 ? `MATCH 0${index + 1}` : `MATCH ${index + 1}`}
+        {/* ═ DENSE DATA LIST ═ */}
+        <div className="space-y-3">
+          {matches.map((match) => {
+            const pred = predictions[match.id] || { home: '', away: '' };
+            return (
+              <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border border-white/5 hover:border-primary/30 transition-colors flex flex-col md:flex-row shadow-md overflow-hidden">
+                 {/* Match Info Side */}
+                 <div className="flex-1 flex flex-col md:flex-row p-4 gap-4 items-center border-b md:border-b-0 md:border-r border-white/5">
+                    {/* Time / Status (Left corner) */}
+                    <div className="w-full md:w-16 flex md:flex-col justify-between md:justify-center items-center md:items-start text-[10px] font-bold text-white/30 tracking-wider">
+                       <span>{match.kickoff ? new Date(match.kickoff).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBA'}</span>
+                       <span className="font-medium">{match.kickoff ? new Date(match.kickoff).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}</span>
                     </div>
 
-                    <div className="relative glass-premium-thick rounded-[2rem] sm:rounded-[3rem] overflow-hidden group-hover:border-primary/20 transition-all duration-700">
-                      <div className="absolute inset-0 bg-net opacity-[0.1] pointer-events-none" />
-                      
-                      <div className="relative z-10 p-4 sm:p-14 w-full">
-                        <div className="flex flex-row items-center justify-between gap-2 sm:gap-14 w-full">
-                          
-                          {/* ══ TEAM HOME ══ */}
-                          <div className="flex-1 flex flex-col items-center gap-2 sm:gap-6 min-w-0">
-                            <div className="hidden sm:block stadium-aura-glow w-24 h-24 lg:w-48 lg:h-48 bg-primary rounded-full group-hover:opacity-20 transition-opacity" />
-                            <div className="relative z-10 scale-[0.6] sm:scale-100">
-                              <TeamBadge name={match.homeTeam.name} code={match.homeTeam.code} size="lg" hideName />
-                            </div>
-                            <div className="relative z-10 w-full text-center">
-                              <h3 className="text-[10px] sm:text-2xl lg:text-4xl font-black text-white uppercase italic tracking-tighter leading-none truncate block">
-                                {match.homeTeam.name}
-                              </h3>
-                              <span className="hidden sm:block text-[8px] font-black text-primary/40 uppercase tracking-[0.4em] mt-1">{match.homeTeam.code} UNIT</span>
-                            </div>
-                          </div>
-
-                          {/* ══ TACTICAL SCOREBOARD ══ */}
-                          <div className="relative z-20 flex-shrink-0">
-                            <div className="stadium-tactical-display px-3 sm:px-12 py-3 sm:py-10 rounded-2xl sm:rounded-[3.5rem] flex items-center gap-2 sm:gap-10 relative z-30 stadium-shadow border border-white/5">
-                              <div className="flex flex-col items-center gap-1 sm:gap-2">
-                                <input 
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={pred.home}
-                                  onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                                  disabled={isLive}
-                                  placeholder="-"
-                                  className="w-10 h-12 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
-                                />
-                                <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">ATK</div>
-                              </div>
-
-                              <div className="text-lg sm:text-6xl font-black text-primary italic drop-shadow-[0_0_15px_#00E676] opacity-90">VS</div>
-
-                              <div className="flex flex-col items-center gap-1 sm:gap-2">
-                                <input 
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={pred.away}
-                                  onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                                  disabled={isLive}
-                                  placeholder="-"
-                                  className="w-10 h-12 sm:w-28 sm:h-38 bg-black/60 border border-white/10 rounded-xl sm:rounded-3xl text-center text-xl sm:text-7xl font-black text-white focus:border-primary transition-all outline-none"
-                                />
-                                <div className="hidden sm:block text-[9px] font-black uppercase tracking-[0.3em] text-white/20">DEF</div>
-                              </div>
-                            </div>
-
-                            {/* ══ WISDOM OF THE CROWD ══ */}
-                            <CommunityTrends matchId={match.id} />
-                          </div>
-
-                          {/* ══ TEAM AWAY ══ */}
-                          <div className="flex-1 flex flex-col items-center gap-2 sm:gap-6 min-w-0">
-                            <div className="hidden sm:block stadium-aura-glow w-24 h-24 lg:w-48 lg:h-48 bg-primary/40 rounded-full group-hover:opacity-20 transition-opacity" />
-                            <div className="relative z-10 scale-[0.6] sm:scale-100">
-                              <TeamBadge name={match.awayTeam.name} code={match.awayTeam.code} size="lg" hideName />
-                            </div>
-                            <div className="relative z-10 w-full text-center">
-                              <h3 className="text-[10px] sm:text-2xl lg:text-4xl font-black text-white uppercase italic tracking-tighter leading-none truncate block">
-                                {match.awayTeam.name}
-                              </h3>
-                              <span className="hidden sm:block text-[8px] font-black text-primary/40 uppercase tracking-[0.4em] mt-1">{match.awayTeam.code} UNIT</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ══ BROADCAST FOOTER ══ */}
-                        <div className="w-full mt-4 sm:mt-12 pt-4 sm:pt-10 border-t border-white/[0.05] flex flex-row items-center justify-between gap-4 px-2">
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/[0.02] border border-white/5">
-                              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                              <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">LIVE_LINK</span>
-                            </div>
-
-                            <button 
-                              onClick={() => handleShare(match.id)}
-                              disabled={sharingMatchId === match.id}
-                              className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gold/10 border border-gold/20 text-gold hover:bg-gold/20 transition-all group/btn"
-                            >
-                               {sharingMatchId === match.id ? (
-                                 <Loader2 className="w-3 h-3 animate-spin" />
-                               ) : (
-                                 <Share2 className="w-3 h-3 group-hover/btn:scale-110 transition-transform" />
-                               )}
-                               <span className="text-[8px] font-black uppercase tracking-[0.2em]">Share Pick</span>
-                            </button>
-                          </div>
-                          
-                          <div className="flex items-center gap-4 sm:gap-10">
-                            <div className="flex flex-col items-end">
-                              <span className="hidden sm:block text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 text-right">KICKOFF</span>
-                              <span className="text-[10px] sm:text-xs font-black text-white uppercase italic tracking-widest text-right">
-                                {match.kickoff ? new Date(match.kickoff).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : 'TBD'}
-                              </span>
-                            </div>
-                            <div className="h-4 sm:h-8 w-[1px] bg-white/10" />
-                            <div className="flex flex-col items-end">
-                              <span className="hidden sm:block text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40 text-right">LOC</span>
-                              <span className="text-[9px] sm:text-xs font-black text-primary uppercase italic tracking-widest text-right">ARENA A</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    {/* Team Names */}
+                    <div className="flex-1 flex items-center justify-between w-full space-x-4">
+                       <div className="flex items-center gap-3 flex-1 justify-end">
+                          <span className="text-sm md:text-base font-bold text-white tracking-wide truncate">{match.homeTeam.name}</span>
+                          <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.homeTeam.code} size="sm" hideName /></div>
+                       </div>
+                       <span className="text-xs font-bold text-white/20 italic">VS</span>
+                       <div className="flex items-center gap-3 flex-1 justify-start">
+                          <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.awayTeam.code} size="sm" hideName /></div>
+                          <span className="text-sm md:text-base font-bold text-white tracking-wide truncate">{match.awayTeam.name}</span>
+                       </div>
                     </div>
-                  </motion.div>
-                </FadeInItem>
-              );
-            })}
-          </div>
-        </StaggerChildren>
+                 </div>
+
+                 {/* Input Core (Right side) */}
+                 <div className="flex flex-row items-center justify-center p-4 gap-6 bg-black/20 shrink-0">
+                    <div className="flex items-center gap-2">
+                       <input 
+                         type="text"
+                         inputMode="numeric"
+                         value={pred.home}
+                         onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                         disabled={isLive}
+                         placeholder="-"
+                         className="w-12 h-14 bg-black/60 border border-white/10 rounded-lg text-center text-xl font-black text-white focus:bg-white/5 focus:border-primary transition-all outline-none"
+                       />
+                       <span className="text-lg font-bold text-white/10">:</span>
+                       <input 
+                         type="text"
+                         inputMode="numeric"
+                         value={pred.away}
+                         onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                         disabled={isLive}
+                         placeholder="-"
+                         className="w-12 h-14 bg-black/60 border border-white/10 rounded-lg text-center text-xl font-black text-white focus:bg-white/5 focus:border-primary transition-all outline-none"
+                       />
+                    </div>
+                    
+                    {/* Share Action */}
+                    <button 
+                      onClick={() => handleShare(match.id)}
+                      disabled={sharingMatchId === match.id}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                      title="Share Prediction"
+                    >
+                      {sharingMatchId === match.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                    </button>
+                 </div>
+              </div>
+            );
+          })}
+        </div>
 
         {/* ══ PREMIUM ARENA ENTRY ══ */}
         {!isLive && (!isEntered && entryFeeSOL > 0) && (
-          <div className="pt-20">
-            <div className="w-full glass-premium-thick p-10 rounded-[2.5rem] border-gold/40 flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-[100px] -mr-32 -mt-32" />
-              <div className="relative z-10 text-center md:text-left">
-                <div className="inline-block px-3 py-1 bg-gold/20 rounded-full text-[9px] font-black text-gold uppercase tracking-widest mb-4 border border-gold/20">Pro Battle Required</div>
-                <h5 className="text-3xl font-black text-white uppercase italic leading-tight mb-4 tracking-tighter">Initialize Predictions</h5>
-                <p className="text-sm text-muted-foreground italic max-w-md opacity-80 underline-offset-4">Allocation of {entryFeeSOL} SOL mandatory for full Arena authorization.</p>
+          <div className="pt-8">
+            <div className="w-full bg-gold/5 p-6 rounded-2xl border border-gold/20 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                 <Trophy className="text-gold w-8 h-8" />
+                 <div>
+                    <h5 className="text-lg font-bold text-gold uppercase tracking-wide">Pro Battle Entry</h5>
+                    <p className="text-xs text-white/50">Fee: {entryFeeSOL} SOL to validate predictions on chain.</p>
+                 </div>
               </div>
-              <button className="relative z-10 h-16 px-12 rounded-2xl bg-gold text-midnight font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-all shadow-xl">
-                Authorize Entry
+              <button className="h-10 px-8 rounded-lg bg-gold text-midnight font-bold text-xs uppercase tracking-widest hover:bg-yellow-400 transition-colors shadow-lg">
+                Authorize & Lock
               </button>
             </div>
           </div>
@@ -356,10 +273,12 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
         <div className="fixed top-[-5000px] left-0 pointer-events-none overflow-hidden">
           {sharingMatchId && (
             <MatchTicket 
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               homeTeam={matches.find(m => m.id === sharingMatchId)!.homeTeam}
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               awayTeam={matches.find(m => m.id === sharingMatchId)!.awayTeam}
               prediction={predictions[sharingMatchId] || { home: '0', away: '0' }}
-              contestName="PRO ARENA LEAGUE"
+              contestName="- LIGA PRAGMATICA -"
             />
           )}
         </div>
@@ -376,7 +295,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
           initial={{ opacity: 0, y: 50, x: '-50%' }}
           animate={{ opacity: 1, y: 0, x: '-50%' }}
           exit={{ opacity: 0, y: 20, x: '-50%' }}
-          className="fixed bottom-32 left-1/2 z-50 bg-primary/95 backdrop-blur-xl text-black px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-[0_0_50px_rgba(0,230,118,0.4)]"
+          className="fixed bottom-10 left-1/2 z-[100] bg-primary text-black px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl"
         >
           <Zap size={14} fill="black" />
           LOCKED IN! +{saveStatus.xpEarned} XP

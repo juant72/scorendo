@@ -154,7 +154,13 @@
       radial-gradient(ellipse at 80% 100%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
       radial-gradient(ellipse at 50% 60%, rgba(0, 212, 255, 0.02) 0%, transparent 50%);
     min-height: 100vh;
+    cursor: crosshair; /* AAA Gaming Vibe */
   }
+  
+  a, button, [role="button"] {
+    cursor: crosshair !important;
+  }
+
   html {
     @apply font-sans;
     scroll-behavior: smooth;
@@ -162,8 +168,9 @@
 
   /* Selection color */
   ::selection {
-    background: rgba(0, 230, 118, 0.3);
-    color: #F1F5F9;
+    background: rgba(0, 230, 118, 0.4);
+    color: #FFF;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   }
 
   /* Fluid Typography for Elite Scale */
@@ -338,22 +345,25 @@
 
 
 /* ═══════════════════════════════════════
-   Scrollbar styling
+   Scrollbar styling - AAA Glowing Esports
    ═══════════════════════════════════════ */
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px; /* Ultra thin, less invasive */
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A1628;
+  background: #020814;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #132E52;
-  border-radius: 3px;
+  background: rgba(0, 230, 118, 0.3); /* Base primary */
+  border-radius: 4px;
+  box-shadow: inset 0 0 5px rgba(0, 230, 118, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1A3A5C;
+  background: rgba(0, 230, 118, 0.8);
+  box-shadow: inset 0 0 10px rgba(0, 230, 118, 1);
 }

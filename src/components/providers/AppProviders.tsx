@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { SolanaProvider } from './SolanaProvider';
+import { AudioProvider } from './AudioProvider';
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -40,7 +41,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
     >
       <QueryClientProvider client={queryClient}>
         <SolanaProvider>
-          {children}
+          <AudioProvider>
+            {children}
+          </AudioProvider>
         </SolanaProvider>
       </QueryClientProvider>
     </PrivyProvider>

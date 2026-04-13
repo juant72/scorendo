@@ -124,16 +124,16 @@ export default async function ContestDetailsPage({ params }: { params: Promise<{
             <div className="mt-8 flex flex-col lg:flex-row lg:items-end justify-between gap-10">
                <div className="space-y-6 max-w-3xl">
                   <div className="flex items-center gap-4">
-                     <div className="p-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl">
-                        <img src={imagery.badge} className="w-12 h-12 object-contain" alt="Badge" />
+                     <div className="p-2 bg-white/5 backdrop-blur-2xl rounded-xl border border-white/10 shadow-lg">
+                        <img src={imagery.badge} className="w-8 h-8 object-contain" alt="Badge" />
                      </div>
                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                           <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${imagery.accent}`}>{contest.tournament?.name}</span>
+                        <div className="flex items-center gap-2">
+                           <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${imagery.accent}`}>{contest.tournament?.name}</span>
                            <div className="w-1 h-1 rounded-full bg-white/20" />
-                           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">{contest.status}</span>
+                           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">{contest.status}</span>
                         </div>
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase italic tracking-tighter leading-none text-white">
+                        <h1 className="text-3xl md:text-4xl font-black uppercase italic tracking-tight leading-none text-white">
                            {contest.name}
                         </h1>
                      </div>

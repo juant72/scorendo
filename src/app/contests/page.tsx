@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ChevronRight, Sparkles, Key, Lock, PlusCircle, Shield, Activity, Fuel, Target, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Sparkles, PlusCircle, Target, Activity, Fuel, ShieldCheck, Search, Trophy, Key } from 'lucide-react';
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { getArenaImagery } from '@/lib/graphics';
@@ -15,7 +15,6 @@ const QUICK_FILTERS = [
   { id: 'nba', name: 'NBA', icon: Target },
   { id: 'rugby', name: 'Rugby', icon: ShieldCheck },
 ];
-
 
 function ContestsLobbyContent() {
   const router = useRouter();
@@ -45,35 +44,31 @@ function ContestsLobbyContent() {
     <PageTransition>
       <div className="min-h-screen bg-[#020814] text-white selection:bg-primary/30">
         
-        {/* Functional Hero & Nav */}
-        <div className="relative pt-24 pb-12 border-b border-white/5">
-           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-           
-           <div className="container mx-auto px-4">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                 <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                       <div className="h-px w-8 bg-primary" />
-                       <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Arena Lobby</span>
-                    </div>
-                    <h1 className="text-6xl font-black uppercase italic tracking-tighter leading-none">
-                       {activeSport.name.split(' ')[0]} <span className="text-white/20 italic">Chambers</span>
+        {/* Sleek, Esports Header */}
+        <div className="border-b-2 border-white/10 bg-[#020814]/80 backdrop-blur-3xl sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+           <div className="max-w-6xl mx-auto px-4 py-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                 
+                 <div className="flex items-center gap-6">
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter flex items-center gap-3 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                       <Trophy className="text-primary w-6 h-6 animate-pulse filter drop-shadow-[0_0_10px_rgba(0,230,118,0.5)]" />
+                       {activeSport.name} <span className="text-primary">Arenas</span>
                     </h1>
                  </div>
 
-                 {/* Pragmatic Navigation: Quick Pill Bar */}
-                 <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
+                 {/* Compact Esports Pill Bar */}
+                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
                     {QUICK_FILTERS.map((f) => (
                        <button
                          key={f.id}
                          onClick={() => router.push(f.id === 'all' ? '/contests' : `/contests?sport=${f.id}`)}
-                         className={`whitespace-nowrap h-11 px-6 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                         className={`whitespace-nowrap h-8 px-4 rounded-lg flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${
                             sportSlug === f.id 
-                            ? 'bg-primary text-midnight shadow-lg shadow-primary/20' 
+                            ? 'bg-primary text-midnight shadow-md shadow-primary/20' 
                             : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white'
                          }`}
                        >
-                          <f.icon size={14} />
+                          <f.icon size={12} />
                           {f.name}
                        </button>
                     ))}
@@ -82,120 +77,134 @@ function ContestsLobbyContent() {
            </div>
         </div>
 
-        <div className="container mx-auto px-4 py-16">
-          
-          {/* Main Grid: Data-Rich League Cards */}
-          <div className="mb-32">
-             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 opacity-20">
-                   {[1,2,3,4].map(i => <div key={i} className="h-64 glass-premium rounded-3xl animate-pulse" />)}
-                </div>
-             ) : competitions.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   {competitions.map((comp) => {
-                      const imagery = getArenaImagery(comp);
-                      return (
-                        <div 
-                          key={comp.id}
-                          onClick={() => router.push(`/contests/league/${comp.slug}`)}
-                          className="group relative h-72 rounded-[2rem] overflow-hidden border border-white/5 hover:border-primary/40 transition-all hover:-translate-y-1 cursor-pointer shadow-2xl"
-                        >
-                           {/* BG Overlay */}
-                           <div className="absolute inset-0">
-                              <img src={imagery.banner} className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-all duration-700" alt="Arena" />
-                              <div className="absolute inset-0 bg-gradient-to-t from-[#020814] via-[#020814]/40 to-transparent" />
-                           </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              
+              {/* Main List Column */}
+              <div className="lg:col-span-8 space-y-6">
+                 
+                 {/* Search & Filter Bar */}
+                 <div className="flex bg-white/5 border border-white/5 rounded-xl p-1 gap-2">
+                    <div className="flex-1 relative">
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={14} />
+                       <input 
+                         type="text" 
+                         placeholder="Search tournaments..." 
+                         className="w-full h-10 bg-transparent pl-10 pr-4 text-xs font-medium text-white placeholder:text-white/20 outline-none"
+                       />
+                    </div>
+                 </div>
 
-                           {/* Content */}
-                           <div className="relative z-10 h-full p-8 flex flex-col justify-between">
-                              <div className="flex justify-between items-start">
-                                 <div className="p-3 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10">
-                                    <img src={imagery.badge} alt="Logo" className="w-10 h-10 object-contain" />
-                                 </div>
-                                 <Badge text="ACTIVE RECRUITMENT" />
-                              </div>
+                 {/* High-Velocity Data Rows */}
+                 <div className="space-y-3">
+                    {loading ? (
+                       [1,2,3,4].map(i => <div key={i} className="h-24 bg-white/5 rounded-2xl animate-pulse" />)
+                    ) : competitions.length > 0 ? (
+                       competitions.map((comp) => {
+                          const imagery = getArenaImagery(comp);
+                          return (
+                            <div 
+                              key={comp.id}
+                              onClick={() => router.push(`/contests/league/${comp.slug}`)}
+                              className="group relative bg-[#0A0F1A] rounded-2xl overflow-hidden border-2 border-white/5 hover:border-primary/60 hover:shadow-[0_0_25px_rgba(0,230,118,0.15)] transition-all cursor-pointer flex flex-col sm:flex-row transform hover:-translate-y-1"
+                            >
+                               {/* Left Accent Bar / Imagery Hint */}
+                               <div className="w-full sm:w-32 h-16 sm:h-auto relative shrink-0 overflow-hidden">
+                                  <img src={imagery.banner} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 group-hover:scale-110 transition-all duration-700" alt="Arena" />
+                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0A0F1A] hidden sm:block" />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1A] to-transparent sm:hidden" />
+                                  <div className="absolute inset-0 flex items-center justify-center sm:justify-start sm:pl-6 z-10">
+                                     <div className="bg-black/50 p-2 rounded-xl border border-white/10 group-hover:border-primary/50 transition-colors">
+                                        <img src={imagery.badge} alt="Logo" className="w-10 h-10 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+                                     </div>
+                                  </div>
+                               </div>
 
-                              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-                                 <div className="space-y-1">
-                                    <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none group-hover:text-primary transition-colors">
-                                       {comp.name}
-                                    </h3>
-                                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{comp.country || 'International'} Division</p>
-                                 </div>
-                                 <button className="h-12 px-8 bg-white/5 border border-white/10 group-hover:bg-primary group-hover:text-midnight rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                                    Join Arena
-                                 </button>
-                              </div>
-                           </div>
-                        </div>
-                      );
-                   })}
-                </div>
-             ) : (
-                <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
-                   <Sparkles className="mx-auto text-white/5 mb-6" size={64} />
-                   <p className="text-white/20 font-black uppercase tracking-[0.4em] italic">No Active Arenas in this Sector</p>
-                </div>
-             )}
-          </div>
+                               {/* Row Data */}
+                               <div className="flex-1 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+                                  <div className="space-y-1 relative">
+                                     <h3 className="text-xl font-black text-white uppercase italic tracking-tight leading-none group-hover:text-primary transition-colors filter drop-shadow-md">
+                                        {comp.name}
+                                     </h3>
+                                     <div className="flex items-center gap-3">
+                                        <Badge text={comp.status === 'ACTIVE' ? 'LIVE NOW' : 'UPCOMING'} lively={comp.status === 'ACTIVE'} />
+                                        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">{comp.country || 'Global'} Server</span>
+                                     </div>
+                                  </div>
 
-          {/* Secondary Actions: Private & Pro */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
-             
-             {/* Battle Deployment (Private) */}
-             <div className="lg:col-span-5 glass-premium p-10 rounded-[2.5rem] border-white/5 relative overflow-hidden flex flex-col justify-between h-full min-h-[400px]">
-                <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none transform translate-x-8 -translate-y-8">
-                   <Lock size={200} />
-                </div>
-                
-                <div className="space-y-6 relative z-10">
-                   <div className="flex items-center gap-3 text-primary">
-                      <Lock size={18} />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em]">Restricted Zones</span>
-                   </div>
-                   <h2 className="text-4xl font-black text-white uppercase italic leading-none">Private <span className="text-white/30">Battles</span></h2>
-                   <p className="text-sm text-white/40 italic leading-relaxed max-w-sm">Launch a custom arena or use an authorization signature to penetrate private tournament layers.</p>
-                </div>
+                                  <div className="flex items-center gap-6">
+                                     <div className="hidden sm:flex flex-col text-right">
+                                        <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Prize Pool</span>
+                                        <span className="text-sm font-black italic text-gold drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]">{comp.prizePool ? (Number(comp.prizePool) / 1e9).toFixed(2) + ' SOL' : 'TBD'}</span>
+                                     </div>
+                                     <button className="h-10 px-6 bg-primary/10 border-2 border-primary/20 text-primary group-hover:bg-primary group-hover:text-midnight group-hover:border-primary group-hover:shadow-[0_0_20px_rgba(0,230,118,0.4)] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap">
+                                        Enter Area
+                                     </button>
+                                  </div>
+                               </div>
+                            </div>
+                          );
+                       })
+                    ) : (
+                       <div className="py-20 text-center border border-dashed border-white/5 rounded-2xl">
+                          <Sparkles className="mx-auto text-white/10 mb-4" size={32} />
+                          <p className="text-white/20 text-xs font-black uppercase tracking-[0.2em]">No Arenas in this Sector</p>
+                       </div>
+                    )}
+                 </div>
+              </div>
 
-                <div className="space-y-3 relative z-10">
-                   <div className="flex gap-3">
-                      <input 
-                        type="text" 
-                        placeholder="SIGNATURE_CODE" 
-                        className="flex-1 h-16 bg-white/5 border border-white/10 rounded-2xl px-6 font-black text-xs tracking-widest focus:border-primary outline-none placeholder:text-white/10"
-                      />
-                      <button className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center hover:bg-primary hover:text-midnight transition-all">
-                         <ChevronRight size={24} />
-                      </button>
-                   </div>
-                   <button 
-                     onClick={() => setIsModalOpen(true)}
-                     className="w-full h-14 border border-dashed border-white/10 hover:border-primary/50 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-primary transition-all rounded-2xl flex items-center justify-center gap-2"
-                   >
-                      <PlusCircle size={14} /> Initialize Conflict protocol
-                   </button>
-                </div>
-             </div>
+              {/* Practical Sidebar */}
+              <div className="lg:col-span-4 space-y-6">
+                 
+                 {/* Compact Private Room Bar */}
+                 <div className="bg-[#060D1A] p-5 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 text-primary mb-4 border-b border-white/5 pb-3">
+                       <Key size={14} />
+                       <span className="text-[10px] font-black uppercase tracking-[0.3em]">Private Chambers</span>
+                    </div>
+                    
+                    <div className="space-y-3">
+                       <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            placeholder="Enter Signature" 
+                            className="flex-1 h-10 bg-white/5 border border-white/5 rounded-xl px-4 font-bold text-xs tracking-wider focus:border-primary/50 outline-none text-white placeholder:text-white/20"
+                          />
+                          <button className="w-10 h-10 bg-primary/10 text-primary border border-primary/20 rounded-xl flex items-center justify-center hover:bg-primary hover:text-midnight transition-colors">
+                             <ChevronRight size={16} />
+                          </button>
+                       </div>
+                       <button 
+                         onClick={() => setIsModalOpen(true)}
+                         className="w-full h-10 border border-dashed border-white/10 hover:border-primary/50 text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-primary transition-all rounded-xl flex items-center justify-center gap-2"
+                       >
+                          <PlusCircle size={12} /> Create Custom Arena
+                       </button>
+                    </div>
+                 </div>
 
-             {/* Pro Sponsorship (High Stakes) */}
-             <div className="lg:col-span-7 relative rounded-[2.5rem] overflow-hidden group shadow-2xl min-h-[400px]">
-                <img src="/corporate_lobby.png" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-1000 group-hover:scale-105" alt="Pro" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#020814] via-[#020814]/40 to-transparent" />
-                
-                <div className="relative h-full p-12 flex flex-col justify-end items-start space-y-8">
-                   <div className="flex items-center gap-3 text-gold">
-                      <Shield size={24} />
-                      <span className="text-[10px] font-black uppercase tracking-[0.5em]">High-Clearance Rewards</span>
-                   </div>
-                   <h2 className="text-5xl md:text-7xl font-black text-white uppercase italic leading-[0.85] tracking-tighter">Verified<br/><span className="text-gold">Sponsorship</span></h2>
-                   <p className="text-base text-white/30 italic max-w-md">Official brand-sanctioned events. Liquidate high-tier tokens by proving market dominance.</p>
-                   <button className="h-16 px-12 bg-white text-midnight font-black text-xs uppercase tracking-[0.3em] hover:bg-gold hover:scale-105 transition-all rounded-2xl shadow-2xl shadow-black/50">
-                      Request Authentication
-                   </button>
-                </div>
-             </div>
+                 {/* Compact Verified Sponsorship */}
+                 <div className="relative rounded-2xl overflow-hidden group shadow-[0_0_30px_rgba(255,215,0,0.05)] border border-gold/10 hover:border-gold/30 transition-colors">
+                    <img src="/corporate_lobby.png" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 group-hover:scale-105 transition-all duration-700" alt="Pro" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1A] via-[#0A0F1A]/80 to-transparent" />
+                    
+                    <div className="relative p-6 flex flex-col items-center text-center space-y-4">
+                       <div className="bg-gold/10 p-3 rounded-full border border-gold/20 shadow-[0_0_15px_rgba(255,215,0,0.3)]">
+                          <Trophy className="text-gold" size={24} />
+                       </div>
+                       <div className="space-y-1">
+                          <h2 className="text-xl font-black text-white uppercase italic tracking-wide drop-shadow-md">Pro <span className="text-gold">Matches</span></h2>
+                          <p className="text-[10px] text-white/50 font-bold max-w-[200px] leading-relaxed mx-auto">High stakes arenas with massive confirmed liquidity.</p>
+                       </div>
+                       <button className="h-8 px-6 bg-gold/20 hover:bg-gold text-gold hover:text-midnight border border-gold/40 font-black text-[9px] uppercase tracking-widest transition-all rounded-lg shadow-[0_0_10px_rgba(255,215,0,0.2)] hover:shadow-[0_0_20px_rgba(255,215,0,0.6)]">
+                          Unlock
+                       </button>
+                    </div>
+                 </div>
 
-          </div>
+              </div>
+           </div>
         </div>
 
         {isModalOpen && <CreatePrivateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
@@ -204,18 +213,18 @@ function ContestsLobbyContent() {
   );
 }
 
-function Badge({ text }: { text: string }) {
+function Badge({ text, lively }: { text: string, lively?: boolean }) {
    return (
-      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-         <span className="text-[8px] font-black text-white/60 tracking-widest uppercase">{text}</span>
+      <div className={`flex items-center gap-2 px-2 py-1 rounded-md border ${lively ? 'bg-primary/10 border-primary/20' : 'bg-white/5 border-white/10'}`}>
+         {lively && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />}
+         <span className={`text-[8px] font-black tracking-widest uppercase ${lively ? 'text-white/80' : 'text-white/40'}`}>{text}</span>
       </div>
    );
 }
 
 export default function ContestsLobbyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#020814] flex items-center justify-center"><Sparkles className="animate-pulse text-primary/50" size={32} /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#020814] flex items-center justify-center"><Sparkles className="animate-pulse text-white/10" size={32} /></div>}>
       <ContestsLobbyContent />
     </Suspense>
   );

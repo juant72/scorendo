@@ -1,19 +1,11 @@
-import { HowItWorks } from '@/components/landing/HowItWorks';
-import { TrendingContests } from '@/components/landing/TrendingContests';
 import { Hero } from '@/components/landing/Hero';
-import { SportSelector } from '@/components/landing/SportSelector';
-import { LiveStatsBar } from '@/components/landing/LiveStatsBar';
+import { NetworkFeed } from '@/components/landing/NetworkFeed';
 
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ sport?: string }> }) {
-  const { sport } = await searchParams;
-
+export default async function HomePage() {
   return (
-    <div className="bg-midnight min-h-screen">
+    <div className="bg-[#020814] min-h-screen">
       <Hero />
-      <LiveStatsBar />
-      <SportSelector />
-      <TrendingContests sport={sport} />
-      <HowItWorks />
+      <NetworkFeed />
     </div>
   );
 }

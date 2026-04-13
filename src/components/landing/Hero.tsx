@@ -2,182 +2,113 @@
 
 import { motion } from 'framer-motion';
 import { AuthButton } from '@/components/auth/AuthButton';
-import { ChevronDown, Flame, Zap } from 'lucide-react';
+import { ArrowRight, Flame } from 'lucide-react';
 import Link from 'next/link';
-
-const WORDS = ['Predict.', 'Compete.', 'Win.'];
-const WORD_COLORS = ['text-white', 'text-primary', 'text-gold'];
-
-const SPORTS_TICKER = [
-  { emoji: '⚽', name: 'Football' },
-  { emoji: '🏎️', name: 'F1' },
-  { emoji: '🏀', name: 'NBA' },
-  { emoji: '🏉', name: 'Rugby' },
-  { emoji: '🎾', name: 'Tennis' },
-  { emoji: '⚽', name: 'Football' },
-  { emoji: '🏎️', name: 'F1' },
-  { emoji: '🏀', name: 'NBA' },
-  { emoji: '🏉', name: 'Rugby' },
-  { emoji: '🎾', name: 'Tennis' },
-];
 
 export function Hero() {
   return (
-    <section className="relative min-h-[92vh] flex flex-col items-center justify-center px-4 overflow-hidden">
-
-      {/* ── Rich Background Stack ── */}
-      <div className="absolute inset-0 bg-[#050d1a]" />
-
-      {/* Stadium image overlay */}
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `url('/stadium_hero.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-        }}
+    <section className="relative pt-32 pb-20 px-6 sm:px-12 flex flex-col justify-center min-h-[85vh] overflow-hidden">
+      
+      {/* ── Effervescent Dynamic Background ── */}
+      <div className="absolute inset-0 bg-[#020814]" />
+      
+      {/* Fluid Aurora Orbs */}
+      <motion.div 
+         animate={{ 
+           scale: [1, 1.2, 1], 
+           opacity: [0.3, 0.6, 0.3],
+           rotate: [0, 90, 0]
+         }}
+         transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+         className="absolute top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-primary/20 blur-[150px] mix-blend-screen pointer-events-none" 
       />
+      <motion.div 
+         animate={{ 
+           scale: [1, 1.5, 1], 
+           opacity: [0.2, 0.5, 0.2],
+           x: [0, 100, 0]
+         }}
+         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+         className="absolute bottom-[-20%] right-[-10%] w-[70vw] h-[70vw] rounded-full bg-blue-600/20 blur-[150px] mix-blend-screen pointer-events-none" 
+      />
+      
+      {/* Hex Grid Overlay for Structure */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PHBhdGggZD0iTTEwIDBMMjAgNXYxMEwxMCAyMEwwIDE1VjV6IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-50" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#020814] via-transparent to-transparent pointer-events-none" />
 
-      {/* Radial vignette */}
-      <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-midnight/80 via-transparent to-midnight/80" />
+      {/* ── Glassmorphism Content Card ── */}
+      <div className="relative z-10 max-w-5xl mx-auto w-full">
+        <div className="relative p-8 md:p-14 rounded-[3rem] border border-white/[0.08] bg-black/40 backdrop-blur-3xl shadow-2xl overflow-hidden group">
+          
+          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent opacity-50" />
 
-      {/* Green flare — top center */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[400px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
-      {/* Gold flare — bottom right */}
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-gold/5 blur-[100px] pointer-events-none" />
-      {/* Red flare — bottom left */}
-      <div className="absolute bottom-1/4 left-0 w-[350px] h-[350px] rounded-full bg-match/5 blur-[90px] pointer-events-none" />
-
-      {/* ── Pitch Lines ── */}
-      <div className="absolute inset-0 bg-pitch-lines opacity-20" />
-
-      {/* ── Content Zone ── */}
-      <div className="relative z-10 text-center max-w-5xl mx-auto pt-8">
-
-        {/* Live badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: 'backOut' }}
-          className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full mb-10 border border-primary/20"
-          style={{ background: 'rgba(0,230,118,0.06)' }}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-          </span>
-          <Zap className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-black uppercase tracking-[0.25em] text-white/70">
-            Live Tournaments · 8 Sports · World-Class Arenas
-          </span>
-        </motion.div>
-
-        {/* ── Main Headline ── */}
-        <div className="mb-8">
-          {WORDS.map((word, i) => (
-            <motion.span
-              key={word}
-              initial={{ opacity: 0, y: 50, rotateX: -20 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 + i * 0.15, ease: 'backOut' }}
-              className={`inline-block text-5xl sm:text-7xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none mr-4 ${WORD_COLORS[i]}`}
-              style={{ textShadow: i === 2 ? '0 0 60px rgba(255,215,0,0.3)' : i === 1 ? '0 0 60px rgba(0,230,118,0.3)' : 'none' }}
-            >
-              {word}
-            </motion.span>
-          ))}
-        </div>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.55 }}
-          className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-light"
-        >
-          The premier skill-based multisport prediction arena.{' '}
-          <span className="text-white/80 font-medium">No luck. No gambling.</span>{' '}
-          Just pure sport intelligence competing for{' '}
-          <span className="text-gold font-semibold">SOL prizes</span>.
-        </motion.p>
-
-        {/* ── CTA Buttons ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
-        >
-          <AuthButton />
-          <Link
-            href="/contests"
-            className="group flex items-center gap-2 px-8 h-14 rounded-2xl text-sm font-black uppercase tracking-widest border border-white/10 hover:border-primary/40 text-white/60 hover:text-white transition-all hover:bg-white/5"
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-wrap items-center gap-3 mb-8 relative z-20"
           >
-            <Flame className="w-4 h-4 text-match group-hover:text-primary transition-colors" />
-            Browse Arenas
-          </Link>
-        </motion.div>
-
-        {/* ── Trust Indicators ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.9 }}
-          className="flex flex-wrap items-center justify-center gap-5 text-[10px] font-bold uppercase tracking-widest text-white/25 mb-14"
-        >
-          {[
-            '✓ Non-custodial',
-            '✓ Skill-based only',
-            '✓ Free entry always',
-            '✓ Built on Solana',
-            '✓ 8 Sports',
-          ].map((item) => (
-            <span key={item} className="hover:text-white/50 transition-colors cursor-default">{item}</span>
-          ))}
-        </motion.div>
-
-        {/* ── Sports Ticker ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.1 }}
-          className="relative overflow-hidden rounded-2xl border border-white/5 py-3"
-          style={{ background: 'rgba(255,255,255,0.03)' }}
-        >
-          <motion.div
-            animate={{ x: [0, '-50%'] }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            className="flex gap-8 whitespace-nowrap"
-          >
-            {SPORTS_TICKER.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-lg">{s.emoji}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
-                  {s.name}
-                </span>
-                <span className="text-white/10">·</span>
-              </div>
-            ))}
+             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 shadow-[0_0_15px_rgba(0,230,118,0.4)]">
+                <Flame size={14} className="text-primary animate-pulse" />
+             </div>
+             <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/90 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">Live Multisport Arena</span>
           </motion.div>
-        </motion.div>
-      </div>
 
-      {/* ── Scroll Indicator ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-      >
-        <span className="text-[8px] font-black uppercase tracking-[0.4em] text-white/20">Scroll</span>
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-        >
-          <ChevronDown className="h-4 w-4 text-white/20" />
-        </motion.div>
-      </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="max-w-3xl relative z-20"
+          >
+             <h1 className="text-4xl sm:text-6xl md:text-7xl font-black uppercase italic tracking-tighter text-white leading-[0.9] mb-8 drop-shadow-2xl">
+               Dominate The Leaderboards.
+               <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-300 to-primary animate-gradient font-black filter drop-shadow-[0_0_20px_rgba(0,230,118,0.3)]">
+                 Claim The Pot.
+               </span>
+             </h1>
+             
+             <p className="text-base md:text-lg text-white/70 max-w-2xl leading-relaxed mb-10 font-bold tracking-wide">
+               The ultimate skill-based gaming platform for sports fans. Predict real matches, outsmart other players, rank up your profile, and earn instant rewards.
+             </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col sm:flex-row items-center sm:items-start gap-5 relative z-20"
+          >
+             <div className="hover:scale-105 transition-transform"><AuthButton /></div>
+             <Link
+               href="/contests"
+               className="group relative overflow-hidden flex items-center justify-center gap-3 px-8 h-12 rounded-xl text-sm font-black uppercase tracking-widest border-2 border-white/10 hover:border-white text-white transition-all bg-white/5 shadow-xl shadow-black/50"
+             >
+               <span className="relative z-10 flex items-center gap-2">Play Now <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></span>
+             </Link>
+          </motion.div>
+
+          {/* Gaming Value Strip */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-12 pt-6 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 relative z-20"
+          >
+             {[
+               { label: 'Level Up', val: 'Earn XP', color: 'text-primary' },
+               { label: 'Compete', val: 'Global Rank', color: 'text-white' },
+               { label: 'Rewards', val: 'Instant SOL', color: 'text-gold' },
+               { label: 'Fair Play', val: 'Skill Based', color: 'text-blue-400' }
+             ].map((stat, i) => (
+                <div key={i} className="flex flex-col gap-1 items-center sm:items-start text-center sm:text-left">
+                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${stat.color} filter drop-shadow-md`}>{stat.label}</span>
+                  <span className="text-sm font-bold tracking-wide uppercase text-white drop-shadow-sm">{stat.val}</span>
+                </div>
+             ))}
+          </motion.div>
+
+        </div>
+      </div>
     </section>
   );
 }
