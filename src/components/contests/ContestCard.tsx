@@ -3,6 +3,7 @@ import { Users, Crosshair, Trophy, Clock, Medal, Zap, ShieldAlert } from 'lucide
 import Link from 'next/link';
 import { formatDateShort } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { DataFlowPulse } from './LivePulse';
 import { getArenaImagery } from '@/lib/graphics';
 
 interface ContestCardProps {
@@ -57,6 +58,16 @@ export default function ContestCard({
         </div>
 
         {/* Status Badges */}
+        <div className="flex items-center justify-between mb-8 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-2.5 h-2.5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+              <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_#00E676]" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Sector Arena · Entry Alpha</span>
+          </div>
+          <DataFlowPulse />
+        </div>
+
         <div className="flex items-start justify-between mb-8 relative z-10">
           <div className="flex flex-col gap-4">
             <div className={`flex items-center gap-3 px-3 py-1.5 rounded-xl w-fit bg-white/5 border border-white/10 backdrop-blur-xl shadow-inner`}>

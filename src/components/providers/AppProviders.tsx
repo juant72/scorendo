@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { SolanaProvider } from './SolanaProvider';
 import { AudioProvider } from './AudioProvider';
+import { SystemCalibration } from '../layout/SystemCalibration';
 
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -42,6 +43,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <SolanaProvider>
           <AudioProvider>
+            <SystemCalibration />
             {children}
           </AudioProvider>
         </SolanaProvider>

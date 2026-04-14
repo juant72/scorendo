@@ -1,8 +1,54 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, Trophy, Settings, ArrowLeft, Zap, Wallet, ShieldCheck, Activity, Database, LineChart } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, Settings, ArrowLeft, Zap, Wallet, ShieldCheck, Activity, Database, LineChart, Lock, AlertTriangle } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated, isLoading } = useAuthStore();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-[#020814] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Authenticating Terminal...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user?.isAdmin) {
+    return (
+      <div className="flex min-h-screen bg-[#020814] items-center justify-center p-6">
+        <div className="max-w-md w-full glass-strong rounded-[3rem] p-12 text-center border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
+          
+          <div className="w-24 h-24 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-red-500/20 rotate-3 translate-y-2 group">
+             <Lock className="text-red-500 group-hover:scale-110 transition-transform" size={48} />
+          </div>
+          
+          <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">
+            Security <span className="text-red-500">Breach</span>
+          </h1>
+          <p className="text-white/40 text-xs font-black uppercase tracking-widest leading-relaxed mb-10">
+            Unauthorized access detected. This terminal is reserved for Grade-A Grandmasters only. Your signature does not match required protocol.
+          </p>
+
+          <Link href="/" className="inline-flex items-center gap-3 px-8 h-14 bg-white text-midnight rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary transition-all shadow-xl">
+             <ArrowLeft size={14} /> Return to Sector Alpha
+          </Link>
+          
+          <div className="mt-12 pt-8 border-t border-white/5 flex items-center justify-center gap-6 opacity-20">
+             <AlertTriangle size={16} />
+             <span className="text-[8px] font-mono tracking-widest">ERROR_CODE: 403_FORBIDDEN_PROTOCOL</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-[#020814] text-foreground font-sans">
       
@@ -58,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="space-y-1">
             <SidebarLink href="/admin/competitions" icon={<Database size={14} />} label="Arena Factory" />
             <SidebarLink href="/admin/users" icon={<Users size={14} />} label="User Intelligence" />
-            <SidebarLink href="/admin/finance" icon={<LineChart size={14} className="text-emerald-400" />} label="Treasury" />
+            <sidebarlink href="/admin/finance" icon={<linechart size={14} className="text-emerald-400" />} label="Treasury" />
             <SidebarLink href="/admin/audit" icon={<ShieldCheck size={14} className="text-white/30" />} label="Security Audit" />
           </div>
         </nav>
@@ -82,8 +128,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            </div>
            <div className="flex items-center gap-6">
               <div className="flex flex-col items-end">
-                 <span className="text-[10px] font-black uppercase text-white">Administrator</span>
-                 <span className="text-[8px] font-mono text-white/30">ID: 99AC-BB7B</span>
+                 <span className="text-[10px] font-black uppercase text-white">{user?.displayName || 'Administrator'}</span>
+                 <span className="text-[8px] font-mono text-white/30">ID: {user?.walletAddress.slice(0, 4)}-{user?.walletAddress.slice(-4)}</span>
               </div>
               <div className="w-10 h-10 rounded-full border border-white/10 p-1">
                  <div className="w-full h-full rounded-full bg-gradient-to-br from-white/20 to-transparent" />
