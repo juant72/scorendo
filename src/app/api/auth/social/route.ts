@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     const walletMap = publicKey.toString();
+    console.log('Attempting DB upsert for wallet:', walletMap);
 
     // 2. Upsert user in database
     const user = await prisma.user.upsert({
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
         avatarUrl: profile?.avatar || null,
       },
     });
+    console.log('User synced in DB:', user.walletAddress);
 
     // 3. Generate Internal JWT Token for Scorendo
     const token = await createSessionToken(user.walletAddress);
@@ -86,10 +88,15 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error) {
-    console.error('API /auth/social error:', error);
+  } catch (error: any) {
+    console.error('API /auth/social error details:', {
+      message: error.message,
+      code: error.code,
+      clientVersion: error.clientVersion,
+      stack: error.stack
+    });
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Internal Server Error', details: error.message },
       { status: 500 }
     );
   }
