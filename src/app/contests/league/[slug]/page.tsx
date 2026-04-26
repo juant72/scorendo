@@ -252,30 +252,76 @@ export default function LeagueDashboardPage() {
                                  </div>
                               </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative z-10">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                                  {phase.matches?.map((m: any) => (
-                                    <div key={m.id} className="flex flex-col bg-black/40 border border-white/5 p-4 rounded-2xl hover:border-primary/30 transition-all group/match shadow-inner">
-                                       <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
-                                          <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">{new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(m.kickoff))}</span>
-                                          <div className="flex items-center gap-1.5">
-                                             <div className="w-1.5 h-1.5 rounded-full bg-primary/20 animate-pulse" />
-                                             <span className="text-[9px] font-black text-primary/40">ORACLE_LINK</span>
+                                    <div key={m.id} className="relative overflow-hidden group/match bg-[#060D1A] border border-white/5 rounded-[2rem] p-6 md:p-8 transition-all hover:border-wc-pink/50 hover:shadow-[0_20px_50px_-15px_rgba(211,21,138,0.2)]">
+                                       {/* Dynamic WC2026 Background Glow */}
+                                       <div className="absolute -top-24 -right-24 w-64 h-64 bg-wc-blue/10 blur-[80px] rounded-full pointer-events-none" />
+                                       <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-wc-pink/10 blur-[80px] rounded-full pointer-events-none" />
+                                       
+                                       <div className="relative z-10">
+                                          {/* Match Header: Date & Status */}
+                                          <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+                                             <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-1">Operational Window</span>
+                                                <span className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter">
+                                                   {new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(m.kickoff))}
+                                                </span>
+                                             </div>
+                                             <div className="text-right">
+                                                <div className="flex items-center gap-2 mb-1 justify-end">
+                                                   <div className="w-2 h-2 rounded-full bg-wc-green animate-pulse shadow-[0_0_10px_#00E676]" />
+                                                   <span className="text-[10px] font-black text-wc-green uppercase tracking-widest">Oracle Live</span>
+                                                </div>
+                                                <span className="text-lg md:text-xl font-mono text-white/60 tabular-nums">
+                                                   {m.kickoff ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(m.kickoff)) : 'TBD'}
+                                                </span>
+                                             </div>
                                           </div>
-                                       </div>
-                                       <div className="flex items-center justify-between gap-2">
-                                          <div className="flex flex-col items-center gap-2 w-[40%] text-center">
-                                             <TeamBadge name={m.homeTeam.name} code={m.homeTeam.code} size="sm" sport={data.sport?.slug} hideName />
-                                             <span className="text-[10px] font-black text-white uppercase truncate w-full">{m.homeTeam.code}</span>
+
+                                          {/* Match Body: Teams */}
+                                          <div className="flex items-center justify-between gap-4">
+                                             <div className="flex flex-col items-center gap-4 w-[42%] text-center">
+                                                <div className="relative group/badge">
+                                                   <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl opacity-0 group-hover/badge:opacity-100 transition-opacity" />
+                                                   <TeamBadge name={m.homeTeam.name} code={m.homeTeam.code} size="md" sport={data.sport?.slug} hideName />
+                                                </div>
+                                                <div className="space-y-1">
+                                                   <span className="block text-lg md:text-xl font-black text-white uppercase italic tracking-tighter truncate w-full">{m.homeTeam.name}</span>
+                                                   <span className="block text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">{m.homeTeam.code}</span>
+                                                </div>
+                                             </div>
+
+                                             <div className="flex flex-col items-center justify-center w-[16%]">
+                                                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
+                                                   <span className="text-[10px] font-black text-primary italic">VS</span>
+                                                </div>
+                                                <div className="h-12 w-px bg-gradient-to-b from-white/10 to-transparent" />
+                                             </div>
+
+                                             <div className="flex flex-col items-center gap-4 w-[42%] text-center">
+                                                <div className="relative group/badge">
+                                                   <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl opacity-0 group-hover/badge:opacity-100 transition-opacity" />
+                                                   <TeamBadge name={m.awayTeam.name} code={m.awayTeam.code} size="md" sport={data.sport?.slug} hideName />
+                                                </div>
+                                                <div className="space-y-1">
+                                                   <span className="block text-lg md:text-xl font-black text-white uppercase italic tracking-tighter truncate w-full">{m.awayTeam.name}</span>
+                                                   <span className="block text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">{m.awayTeam.code}</span>
+                                                </div>
+                                             </div>
                                           </div>
-                                          <div className="flex flex-col items-center gap-1 w-[20%]">
-                                             <span className="text-[11px] font-black text-primary italic">VS</span>
-                                             <span className="text-[10px] font-mono text-white/40 tabular-nums">
-                                                {m.kickoff ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(m.kickoff)) : 'TBD'}
-                                             </span>
-                                          </div>
-                                          <div className="flex flex-col items-center gap-2 w-[40%] text-center">
-                                             <TeamBadge name={m.awayTeam.name} code={m.awayTeam.code} size="sm" sport={data.sport?.slug} hideName />
-                                             <span className="text-[10px] font-black text-white uppercase truncate w-full">{m.awayTeam.code}</span>
+
+                                          {/* Match Footer: Action */}
+                                          <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                                             <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-wc-blue/10 border border-wc-blue/20 flex items-center justify-center text-wc-blue">
+                                                   <Target size={14} />
+                                                </div>
+                                                <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Sector: Intel Squad</span>
+                                             </div>
+                                             <button className="flex items-center gap-2 text-[10px] font-black text-primary hover:text-white transition-colors uppercase tracking-widest">
+                                                Predict Match <ChevronRight size={14} />
+                                             </button>
                                           </div>
                                        </div>
                                     </div>
