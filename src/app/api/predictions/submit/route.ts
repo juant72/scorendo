@@ -47,20 +47,29 @@ const contest = await prisma.contest.findUnique({
        }
     }
 
-    const earliestMatch = availableMatches.reduce((min: any, m: any) => {
-        const time = new Date(m.kickoff).getTime();
-        return time < min ? time : min;
-    }, Infinity);
+  const earliestMatch = availableMatches.reduce((min: any, m: any) => {
+      const time = new Date(m.kickoff).getTime();
+      return time < min ? time : min;
+  }, Infinity);
 
-    const now = Date.now();
-    const BUFFER_MS = 5 * 60 * 1000;
+  const now = Date.now();
+  const BUFFER_MS = 5 * 60 * 1000;
 
-    if (earliestMatch !== Infinity && now > (earliestMatch - BUFFER_MS)) {
+  // Allow predictions if a match already started (LIVE) or before kickoff with a small buffer
+  const hasPastKickoff = availableMatches.some((m: any) => new Date(m.kickoff).getTime() <= now);
+  if (earliestMatch !== Infinity) {
+    const lockTime = earliestMatch - BUFFER_MS;
+    if (now < lockTime) {
+      // still pre-kickoff window - allow
+    } else if (hasPastKickoff) {
+      // a match already started - allow live predictions
+    } else {
       return NextResponse.json({ 
         success: false, 
         error: 'LOCKED: Entry closed before kickoff.' 
       }, { status: 403 });
     }
+  }
 
     const savedPredictions = await prisma.$transaction(async (tx: any) => {
       let userEntry = await tx.userContestEntry.findUnique({
@@ -166,4 +175,3 @@ const contest = await prisma.contest.findUnique({
     }, { status: 500 });
   }
 }
-

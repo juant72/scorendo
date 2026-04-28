@@ -35,6 +35,7 @@ interface PredictionData {
   predictedHome: number | null;
   predictedAway: number | null;
   predictedWinner: string;
+  predictedConfidence?: number;
 }
 
 interface PredictionFormProps {
@@ -50,10 +51,12 @@ interface PredictionFormProps {
 export function PredictionForm({ contestId, matches, existingPredictions, isLive, isEntered, entryFeeSOL = 0, onPredictionsChange }: PredictionFormProps) {
   const [mounted, setMounted] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [predictions, setPredictions] = useState<Record<string, { home: string, away: string }>>(
+  type PredictionEntry = { home: string; away: string; confidence?: number };
+  const [predictions, setPredictions] = useState<Record<string, PredictionEntry>>(
     existingPredictions.reduce((acc, pred) => {
       if (pred.predictedHome !== null && pred.predictedAway !== null) {
-        acc[pred.matchId] = { home: pred.predictedHome.toString(), away: pred.predictedAway.toString() };
+        const conf = (pred as any).predictedConfidence ?? 5;
+        acc[pred.matchId] = { home: pred.predictedHome.toString(), away: pred.predictedAway.toString(), confidence: conf };
       }
       return acc;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -242,17 +245,37 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
 {/* Input Core - Touch optimized */}
                   <div className="flex flex-row items-center justify-center p-2 sm:p-4 gap-2 sm:gap-6 bg-black/20 shrink-0">
                      <div className="flex items-center gap-1 sm:gap-2">
-                        <input 
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          maxLength={1}
-                          value={pred.home}
-                          onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                          disabled={isLive || saving || isValidating}
-                          placeholder="-"
-                          className="w-14 h-14 sm:w-12 sm:h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl sm:text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15 touch-manipulation"
-                        />
+                <input 
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={pred.home}
+                  onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                  disabled={isLive || saving || isValidating}
+                  placeholder="-"
+                  className="w-14 h-14 sm:w-12 sm:h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl sm:text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15 touch-manipulation"
+                />
+                {/* Confidence selector for MVP */}
+                <div className="flex items-center gap-2 pl-2 pr-2 pt-1 pb-1 rounded bg-white/5 border border-white/10 text-xs">
+                  <span className="text-white/70">Conf</span>
+                  <input 
+                    type="number" 
+                    min={1} max={10} step={1}
+                    value={predictions[match.id]?.confidence ?? 5}
+                    onChange={(e) => {
+                      const v = Number(e.target.value) || 5;
+                      setPredictions(prev => ({
+                        ...prev,
+                        [match.id]: {
+                          ...(prev[match.id] || { home: '', away: '' }),
+                          confidence: v
+                        }
+                      }));
+                    }}
+                    className="w-12 h-6 border rounded px-1 text-center text-[10px]"
+                  />
+                </div>
                         <span className="text-lg font-bold text-white/10 hidden sm:inline">:</span>
                         <input 
                           type="text"
