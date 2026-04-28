@@ -152,6 +152,12 @@ export function simulateTotalPoints(matches: any[], predictions: Record<string, 
     const pred = predictions[match.id];
     if (!pred || pred.home === '' || pred.away === '') return;
     
+    const predictedScore = { home: parseInt(pred.home), away: parseInt(pred.away) };
+    const actualScore = { home: match.homeScore ?? 0, away: match.awayScore ?? 0 };
+    
+    if (!isNaN(predictedScore.home) && !isNaN(predictedScore.away)) {
+      total += calculateSimplePoints(predictedScore, actualScore);
+    }
   });
   return total;
 }

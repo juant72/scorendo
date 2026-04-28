@@ -214,7 +214,7 @@ export default function AdminDashboard() {
               </div>
 
               <button className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 text-white/50 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2">
-                 Diagnostic Run <LineChart size={14} className="opacity-40" />
+                 Diagnostic Run <DiagnosticIcon size={14} className="opacity-40" />
               </button>
            </div>
         </div>
@@ -261,6 +261,6 @@ function HealthBar({ label, status, value }: { label: string, status: string, va
   );
 }
 
-function LineChart({ size, className }: { size: number, className: string }) {
+function DiagnosticIcon({ size, className }: { size: number, className?: string }) {
   return <Activity size={size} className={className} />;
 }

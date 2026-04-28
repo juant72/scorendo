@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, Trophy, User, Target, Flame, Swords } from 'lucide-react';
+import { LayoutGrid, Trophy, User, Target, Flame, Swords, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function BottomNav() {
@@ -14,6 +14,7 @@ export function BottomNav() {
     { name: 'Arena', icon: <Swords size={20} />, href: '/contests' },
     { name: 'Global', icon: <Flame size={20} />, href: '/ranking' },
     { name: 'Profile', icon: <User size={20} />, href: '/settings' },
+    { name: 'Wallet', icon: <Wallet size={20} />, href: '/wallet' },
   ];
 
   return (

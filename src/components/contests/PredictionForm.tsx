@@ -16,6 +16,7 @@ import { calculateSimplePoints } from '@/lib/scoring';
 import { MatchTicket } from './MatchTicket';
 import { exportMatchTicket } from '@/lib/ticket-exporter';
 import { CommunityTrends } from './CommunityTrends';
+import { SharePredictionButton } from './SharePrediction';
 import { ConfettiCelebration } from './ConfettiCelebration';
 
 interface TeamProps { name: string; code: string; }
@@ -64,6 +65,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error', msg: string, lastSaved?: string, xpEarned?: number } | null>(null);
   const [sharingMatchId, setSharingMatchId] = useState<string | null>(null);
+  const [offlineSaved, setOfflineSaved] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
@@ -111,6 +113,18 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
     } else {
       setHasUnsavedChanges(false);
     }
+  };
+
+  const saveOffline = () => {
+    // Persist current partial predictions to localStorage for offline work
+    const payload = {
+      contestId,
+      predictions,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem('scorendo_offline_predictions', JSON.stringify(payload));
+    setOfflineSaved(true);
+    setTimeout(() => setOfflineSaved(false), 2000);
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

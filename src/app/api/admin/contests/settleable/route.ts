@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifySessionToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
-/**
- * API to list contests ready for settlement.
- * Matches belong to Phases, not directly to Contests.
- * A Contest links to matches through its phase or tournament.phases.
- */
 export async function GET() {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session')?.value;
+    const session = token ? await verifySessionToken(token) : null;
+    
+    if (!session?.isAdmin) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
+    }
+    
     const contests = await prisma.contest.findMany({
       where: {
         status: { in: ['ACTIVE', 'SCORING'] }

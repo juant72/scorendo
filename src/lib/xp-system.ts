@@ -132,17 +132,29 @@ export async function awardXpForPrediction(
     throw new Error('User not found');
   }
 
-  let xpGained = 0;
+  // New robust streak model: compute streak based on last prediction date (live check)
+  const lastPrediction = await prisma.prediction.findFirst({
+    where: { userWallet: walletAddress },
+    orderBy: { createdAt: 'desc' }
+  });
 
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const lastDate = lastPrediction?.createdAt ? new Date(lastPrediction.createdAt) : null;
+  const isContinuingStreak = !!lastDate && lastDate.toDateString() === yesterday.toDateString();
+  const newStreak = isContinuingStreak ? user.currentStreak + 1 : 1;
+
+  let xpGained = 0;
   if (isCorrect) {
     xpGained += points;
   }
-
   if (isExact) {
     xpGained += XP_CONFIG.PERFECT_CONTEST_BONUS;
   }
 
-  const streakBonus = calculateStreakBonus(user.currentStreak, points);
+  // Streak bonus uses the new streak value
+  const streakBonus = calculateStreakBonus(newStreak, points);
   xpGained += streakBonus;
 
   const result = getNewLevelAfterXpGain(user.xp, xpGained);
@@ -153,8 +165,8 @@ export async function awardXpForPrediction(
       data: {
         xp: result.xpRemaining,
         level: result.newLevel,
-        currentStreak: isCorrect ? user.currentStreak + 1 : 0,
-        bestStreak: Math.max(user.bestStreak, user.currentStreak + (isCorrect ? 1 : 0)),
+        currentStreak: newStreak,
+        bestStreak: Math.max(user.bestStreak, newStreak),
       },
     });
   } else {
@@ -162,8 +174,8 @@ export async function awardXpForPrediction(
       where: { walletAddress },
       data: {
         xp: user.xp + xpGained,
-        currentStreak: isCorrect ? user.currentStreak + 1 : 0,
-        bestStreak: Math.max(user.bestStreak, user.currentStreak + (isCorrect ? 1 : 0)),
+        currentStreak: newStreak,
+        bestStreak: Math.max(user.bestStreak, newStreak),
       },
     });
   }
