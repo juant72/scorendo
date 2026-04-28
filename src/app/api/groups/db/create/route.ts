@@ -5,7 +5,13 @@ import { generateInviteCode } from '@/lib/groups';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { ownerWallet, name } = body;
+    const { name } = body;
+    // Authenticate user and derive owner from session
+    const cookieStore = await (await import('next/headers')).cookies();
+    const token = cookieStore.get('scorendo_session')?.value;
+    const { verifySessionToken } = await import('@/lib/auth');
+    const session = token ? await verifySessionToken(token) : null;
+    const ownerWallet = session?.wallet as string | undefined;
     if (!ownerWallet || !name) {
       return NextResponse.json({ success: false, error: 'Missing fields' }, { status: 400 });
     }
