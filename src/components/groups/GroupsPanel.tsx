@@ -11,7 +11,7 @@ export function GroupsPanel() {
   const [created, setCreated] = useState<Group | null>(null);
 
   useEffect(() => {
-    fetch('/api/groups/list')
+    fetch('/api/groups/db/list')
       .then(r => r.json())
       .then((data) => {
         if (data?.groups) setGroups(data.groups);
@@ -23,7 +23,7 @@ export function GroupsPanel() {
     if (!name || !owner) return;
     setCreating(true);
     try {
-      const res = await fetch('/api/groups/create', {
+      const res = await fetch('/api/groups/db/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ownerWallet: owner, name }),
