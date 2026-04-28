@@ -8,6 +8,7 @@ async function alphaTestDrive() {
   const WALLET = 'C8zmudQmvhSvDwx5yGkRwVg4NRZESG69TJpq7vKNb3Mz'; // Test User
   const CONTEST_ID = 'cmnhaao7j000jt83jjtm8in1a';
   const MATCH_ID = 'afa-md14-1';
+  const MARKET = 'MATCH_RESULT';
 
   // 1. PHASE 1: PRE-FLIGHT CHECK
   const userBefore = await prisma.user.findUnique({ where: { walletAddress: WALLET } }) as any;
@@ -16,9 +17,9 @@ async function alphaTestDrive() {
   // 2. PHASE 2: SUBMIT PREDICTION (SIMULATION)
   console.log('[ACTION] Submitting Prediction (2-1 for RIV)...');
   await prisma.prediction.upsert({
-    where: { userWallet_matchId_contestId: { userWallet: WALLET, matchId: MATCH_ID, contestId: CONTEST_ID } },
+    where: { userWallet_matchId_contestId_market: { userWallet: WALLET, matchId: MATCH_ID, contestId: CONTEST_ID, market: MARKET } },
     update: { predictedHome: 2, predictedAway: 1, predictedWinner: 'HOME' },
-    create: { userWallet: WALLET, matchId: MATCH_ID, contestId: CONTEST_ID, predictedHome: 2, predictedAway: 1, predictedWinner: 'HOME' }
+    create: { userWallet: WALLET, matchId: MATCH_ID, contestId: CONTEST_ID, market: MARKET, predictedHome: 2, predictedAway: 1, predictedWinner: 'HOME' }
   });
   console.log('[SUCCESS] Prediction Locked.');
 

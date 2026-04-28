@@ -70,6 +70,10 @@ enum SportType {
   RACING
   BRACKET
   POINTS_BASED
+  TENNIS_MATCH
+  NBA_MATCH
+  NFL_MATCH
+  NHL_MATCH
 }
 
 
@@ -124,6 +128,21 @@ model Team {
   awayMatches   Match[]          @relation("AwayTeam")
   homeMatches   Match[]          @relation("HomeTeam")
   tournaments   TournamentTeam[]
+  players      Player[]
+}
+
+model Player {
+  id          String     @id @default(cuid())
+  name        String
+  teamId      String
+  position   String?
+  number     Int?
+  nationality String?
+  goals      Int        @default(0)
+  assists    Int        @default(0)
+  team        Team       @relation(fields: [teamId], references: [id])
+  
+  @@unique([teamId, name])
 }
 
 model TournamentTeam {
@@ -162,6 +181,11 @@ model Match {
   awayScore   Int?
   extraTime   Boolean      @default(false)
   penalties   Boolean      @default(false)
+  overUnderLine Float?
+  handicapLine Float?
+  firstScorerId String?
+  lastScorerId String?
+  bothTeamsScore Boolean?
   updatedAt   DateTime     @updatedAt
   awayTeam    Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
   homeTeam    Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
@@ -179,9 +203,16 @@ model Prediction {
   userWallet      String
   matchId         String
   contestId       String
-  predictedWinner PredictionOutcome
+  market          PredictionMarket @default(MATCH_RESULT)
+  predictedWinner PredictionOutcome?
   predictedHome   Int?
   predictedAway   Int?
+  overUnderLine   Float?
+  overUnderPick   Boolean?         @default(true)
+  handicapLine    Float?
+  handicapPick   Int?
+  firstScorerId   String?
+  lastScorerId   String?
   pointsEarned    Int               @default(0)
   isCorrectWinner Boolean           @default(false)
   isExactScore    Boolean           @default(false)
@@ -192,7 +223,7 @@ model Prediction {
   match           Match             @relation(fields: [matchId], references: [id])
   user            User              @relation(fields: [userWallet], references: [walletAddress])
 
-  @@unique([userWallet, matchId, contestId])
+  @@unique([userWallet, matchId, contestId, market])
   @@index([matchId])
   @@index([userWallet])
   @@index([contestId])
@@ -336,6 +367,16 @@ enum PredictionOutcome {
   HOME
   AWAY
   DRAW
+}
+
+enum PredictionMarket {
+  MATCH_RESULT
+  OVER_UNDER
+  HANDICAP
+  FIRST_SCORER
+  LAST_SCORER
+  CORRECT_SCORE
+  BOTH_TEAMS_SCORE
 }
 
 enum ContestType {

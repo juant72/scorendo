@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { verifySessionToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { Target, Trophy, Flame, Percent, Clock, ChevronRight, Zap, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
+import { Target, Trophy, Flame, Percent, Clock, ChevronRight, Zap, ArrowRight, ShieldCheck, Activity, Sparkles } from 'lucide-react';
 import { XPProgressBar } from '@/components/contests/XPProgressBar';
 import { TeamBadge } from '@/components/contests/TeamBadge';
 import { getArenaImagery } from '@/lib/graphics';

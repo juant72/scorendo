@@ -1,0 +1,51 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#020814"/>
+      <stop offset="100%" style="stop-color:#01050a"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E676;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#00E676;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="200" fill="url(#glow)" y="430"/>
+  
+  <!-- Grid -->
+  <g opacity="0.05">
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="63" x2="1200" y2="63" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="126" x2="1200" y2="126" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="189" x2="1200" y2="189" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="252" x2="1200" y2="252" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="315" x2="1200" y2="315" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="378" x2="1200" y2="378" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="441" x2="1200" y2="441" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="504" x2="1200" y2="504" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="567" x2="1200" y2="567" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="630" x2="1200" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="0" y1="0" x2="0" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="120" y1="0" x2="120" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="240" y1="0" x2="240" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="360" y1="0" x2="360" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="480" y1="0" x2="480" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="600" y1="0" x2="600" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="720" y1="0" x2="720" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="840" y1="0" x2="840" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="960" y1="0" x2="960" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="1080" y1="0" x2="1080" y2="630" stroke="white" stroke-width="1"/>
+    <line x1="1200" y1="0" x2="1200" y2="630" stroke="white" stroke-width="1"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="280" font-family="Arial, sans-serif" font-size="120" font-weight="900" fill="white" font-style="italic">SCORE</text>
+  <text x="480" y="280" font-family="Arial, sans-serif" font-size="120" font-weight="900" fill="#00E676" font-style="italic">NDO</text>
+  <text x="100" y="380" font-family="Arial, sans-serif" font-size="36" fill="#00E676" font-weight="bold">PREDICTION ARENA</text>
+  <text x="100" y="430" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.5)">Skill-based predictions • Real-time scores • Instant rewards</text>
+  
+  <!-- Circle -->
+  <circle cx="1050" cy="315" r="120" fill="none" stroke="#00E676" stroke-width="4"/>
+  <circle cx="1050" cy="315" r="100" fill="#00E676" opacity="0.2"/>
+</svg>

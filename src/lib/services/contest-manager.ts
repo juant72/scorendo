@@ -1,5 +1,6 @@
 import { prisma } from '../prisma';
 import { SCORING } from '../constants';
+import { calculateMatchPoints, type PredictionData, type MatchData } from '../scoring';
 import { ContestStatus, TransactionType } from '@prisma/client';
 
 /**
@@ -22,7 +23,6 @@ export class ContestManagerService {
 
     if (!contest) return;
 
-    // Get all finished matches in this contest that haven't been scored for users yet
     const finishedMatches = await prisma.match.findMany({
       where: { 
         OR: [
@@ -39,11 +39,16 @@ export class ContestManagerService {
     for (const match of finishedMatches) {
       console.log(`[CONTEST_MANAGER] Scoring match: ${match.homeTeam.name} vs ${match.awayTeam.name}`);
       
-      const actualH = match.homeScore!;
-      const actualA = match.awayScore!;
-      const actualWinner = actualH > actualA ? 'HOME' : actualH < actualA ? 'AWAY' : 'DRAW';
+      const actual: MatchData = {
+        homeScore: match.homeScore!,
+        awayScore: match.awayScore!,
+        overUnderLine: match.overUnderLine ?? undefined,
+        handicapLine: match.handicapLine ?? undefined,
+        firstScorerId: match.firstScorerId ?? undefined,
+        lastScorerId: match.lastScorerId ?? undefined,
+        bothTeamsScore: match.bothTeamsScore ?? undefined,
+      };
 
-      // --- BATCHING PREDICTIONS (Memory Safe) ---
       let skip = 0;
       const batchSize = 5000;
       let hasMore = true;
@@ -60,27 +65,32 @@ export class ContestManagerService {
           break;
         }
 
-        // Process this batch in a single atomic update cluster
         await prisma.$transaction(
           predictions.map(pred => {
-            if (pred.predictedHome === null || pred.predictedAway === null) {
-              return prisma.prediction.update({
-                where: { id: pred.id },
-                data: { scored: true, pointsEarned: 0 }
-              });
-            }
+            const prediction: PredictionData = {
+              market: pred.market as any,
+              predictedWinner: pred.predictedWinner as any,
+              predictedHome: pred.predictedHome ?? undefined,
+              predictedAway: pred.predictedAway ?? undefined,
+              overUnderPick: pred.overUnderPick ?? undefined,
+              handicapPick: pred.handicapPick ?? undefined,
+              firstScorerId: pred.firstScorerId ?? undefined,
+              lastScorerId: pred.lastScorerId ?? undefined,
+            };
 
-            let pts = 0;
-            const predHome = pred.predictedHome;
-            const predAway = pred.predictedAway;
-            const predWinner = predHome > predAway ? 'HOME' : predHome < predAway ? 'AWAY' : 'DRAW';
+            const pts = calculateMatchPoints(actual, prediction);
 
-            if (actualWinner === predWinner) {
-              pts += SCORING.CORRECT_WINNER;
-              if (actualWinner === 'DRAW') pts += SCORING.DRAW_CORRECT_BONUS;
+            const market = pred.market;
+            let isExact = false;
+            let isCorrectWinner = false;
+
+            if (market === 'CORRECT_SCORE' && actual.homeScore === prediction.predictedHome && actual.awayScore === prediction.predictedAway) {
+              isExact = true;
             }
-            if (actualH === predHome && actualA === predAway) {
-              pts += SCORING.EXACT_SCORE_BONUS;
+            if (market === 'MATCH_RESULT' && prediction.predictedWinner) {
+              if (actual.homeScore! > actual.awayScore! && prediction.predictedWinner === 'HOME') isCorrectWinner = true;
+              if (actual.homeScore! < actual.awayScore! && prediction.predictedWinner === 'AWAY') isCorrectWinner = true;
+              if (actual.homeScore! === actual.awayScore! && prediction.predictedWinner === 'DRAW') isCorrectWinner = true;
             }
 
             return prisma.prediction.update({
@@ -88,8 +98,8 @@ export class ContestManagerService {
               data: { 
                 pointsEarned: pts, 
                 scored: true,
-                isExactScore: pts >= SCORING.EXACT_SCORE_BONUS,
-                isCorrectWinner: actualWinner === predWinner
+                isExactScore: isExact,
+                isCorrectWinner: isCorrectWinner
               }
             });
           })
@@ -104,7 +114,6 @@ export class ContestManagerService {
       }
     }
 
-    // Update Contest Status to SCORING
     await prisma.contest.update({
       where: { id: contestId },
       data: { status: 'SCORING' }

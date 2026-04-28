@@ -23,12 +23,11 @@ export async function POST(req: NextRequest) {
 
     const userWallet = session.wallet as string;
 
-    // 1. INTEGRITY CHECK: Ensure every matchId in the payload belongs to the contestId
-    const contest = await prisma.contest.findUnique({ 
+const contest = await prisma.contest.findUnique({ 
       where: { id: contestId },
       include: {
         phase: { include: { matches: { select: { id: true, kickoff: true } } } },
-        tournament: { include: { phases: { include: { matches: { select: { id: true, kickoff: true } } } } } }
+        tournament: { include: { phases: { include: { matches: { select: { id: true, kickoff: true } } } } } } 
       }
     });
     if (!contest) {
@@ -38,26 +37,23 @@ export async function POST(req: NextRequest) {
     const availableMatches = contest.phase?.matches || (contest.tournament?.phases?.flatMap((p: any) => p.matches) || []);
     const availableMatchIds = new Set(availableMatches.map((m: any) => m.id));
 
-    // Limit payload size to actual contest matches + 10 items padding maximum
     if (predictions.length > availableMatches.length + 10) {
       return NextResponse.json({ success: false, error: 'PAYLOAD_OVERFLOW' }, { status: 400 });
     }
 
-    // Verify each prediction matchId
     for (const p of predictions) {
        if (!availableMatchIds.has(p.matchId)) {
           return NextResponse.json({ success: false, error: `Match ID ${p.matchId} not in contest` }, { status: 403 });
        }
     }
 
-    // 2. TIMELOCK CHECK
     const earliestMatch = availableMatches.reduce((min: any, m: any) => {
         const time = new Date(m.kickoff).getTime();
         return time < min ? time : min;
     }, Infinity);
 
     const now = Date.now();
-    const BUFFER_MS = 5 * 60 * 1000; // 5 minute hard-lock
+    const BUFFER_MS = 5 * 60 * 1000;
 
     if (earliestMatch !== Infinity && now > (earliestMatch - BUFFER_MS)) {
       return NextResponse.json({ 
@@ -66,21 +62,17 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // 3. We use a Prisma transaction to ensure all predictions are saved atomically
     const savedPredictions = await prisma.$transaction(async (tx: any) => {
-      // Check if user already has an entry
       let userEntry = await tx.userContestEntry.findUnique({
         where: { userWallet_contestId: { userWallet, contestId } }
       });
 
-      // If it's a PAID contest, they must have a pre-existing paid entry
       if (contest.entryFeeSOL > 0 && !session.isAdmin) {
         if (!userEntry || !userEntry.entryPaid) {
           throw new Error('PAYMENT_REQUIRED');
         }
       }
 
-      // If it's a FREE contest, and they don't have an entry, create a Free Entry seamlessly
       if (!userEntry) {
         userEntry = await tx.userContestEntry.create({
           data: { 
@@ -93,23 +85,37 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // 3. Upsert predictions (sequentially to avoid race conditions in Prisma transactions)
       const results = [];
       for (const p of (predictions as any[])) {
+        const market = p.market || 'MATCH_RESULT';
+        
+        const predData: any = {
+          market,
+          predictedHome: p.predictedHome,
+          predictedAway: p.predictedAway,
+          predictedWinner: p.predictedWinner as PredictionOutcome,
+        };
+
+        if (market === 'OVER_UNDER') {
+          predData.overUnderLine = p.overUnderLine;
+          predData.overUnderPick = p.overUnderPick;
+        } else if (market === 'HANDICAP') {
+          predData.handicapLine = p.handicapLine;
+          predData.handicapPick = p.handicapPick;
+        } else if (market === 'FIRST_SCORER') {
+          predData.firstScorerId = p.firstScorerId;
+        } else if (market === 'LAST_SCORER') {
+          predData.lastScorerId = p.lastScorerId;
+        }
+
         const res = await tx.prediction.upsert({
-          where: { userWallet_matchId_contestId: { userWallet, matchId: p.matchId, contestId } },
-          update: {
-            predictedHome: p.predictedHome,
-            predictedAway: p.predictedAway,
-            predictedWinner: p.predictedWinner as PredictionOutcome,
-          },
+          where: { userWallet_matchId_contestId_market: { userWallet, matchId: p.matchId, contestId, market } },
+          update: predData,
           create: {
             userWallet,
             contestId,
             matchId: p.matchId,
-            predictedHome: p.predictedHome,
-            predictedAway: p.predictedAway,
-            predictedWinner: p.predictedWinner as PredictionOutcome,
+            ...predData,
           }
         });
         results.push(res);
@@ -118,12 +124,10 @@ export async function POST(req: NextRequest) {
       return results;
     }, { timeout: 15000 });
 
-    // 4. Update entry count and Award Submission XP
     const count = await prisma.userContestEntry.count({ where: { contestId } });
     const xpPerPrediction = 10;
     const totalXpEarned = savedPredictions.length * xpPerPrediction;
 
-    // Update User XP and check for Level Up
     const currentUser = await prisma.user.findUnique({ where: { walletAddress: userWallet } }) as any;
     if (currentUser) {
        const newXp = (currentUser.xp || 0) + totalXpEarned;
@@ -134,7 +138,7 @@ export async function POST(req: NextRequest) {
        
        if (newXp >= nextLevelThreshold) {
           newLevel += 1;
-          finalXp = newXp - nextLevelThreshold; // Reset progress for next level
+          finalXp = newXp - nextLevelThreshold;
        }
 
        await prisma.user.update({

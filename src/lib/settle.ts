@@ -1,34 +1,56 @@
 import { prisma } from './prisma';
-import { calculateMatchPoints } from './scoring';
+import { calculateMatchPoints, type PredictionData, type MatchData } from './scoring';
 
-/**
- * Settles all predictions for a specific match.
- * Compares actual scores with predicted scores and awards points.
- */
-export async function settleMatchScores(matchId: string, actualHome: number, actualAway: number) {
+export async function settleMatchScores(
+  matchId: string, 
+  actualHome: number, 
+  actualAway: number,
+  options?: {
+    overUnderLine?: number;
+    handicapLine?: number;
+    firstScorerId?: string;
+    lastScorerId?: string;
+    bothTeamsScore?: boolean;
+  }
+) {
   return await prisma.$transaction(async (tx) => {
-    // 1. Fetch all predictions for this match
+    const actual: MatchData = {
+      homeScore: actualHome,
+      awayScore: actualAway,
+      overUnderLine: options?.overUnderLine,
+      handicapLine: options?.handicapLine,
+      firstScorerId: options?.firstScorerId,
+      lastScorerId: options?.lastScorerId,
+      bothTeamsScore: options?.bothTeamsScore,
+    };
+
     const predictions = await tx.prediction.findMany({
       where: { matchId },
       include: { user: true }
     });
 
-    const actual = { home: actualHome, away: actualAway };
-
     for (const pred of predictions) {
-      if (pred.predictedHome === null || pred.predictedAway === null) continue;
+      if (pred.predictedHome === null && pred.market === 'MATCH_RESULT') continue;
 
-      const prediction = { 
-        home: pred.predictedHome, 
-        away: pred.predictedAway 
+      const prediction: PredictionData = {
+        market: pred.market as any,
+        predictedWinner: pred.predictedWinner as any,
+        predictedHome: pred.predictedHome ?? undefined,
+        predictedAway: pred.predictedAway ?? undefined,
+        overUnderPick: pred.overUnderPick ?? undefined,
+        handicapPick: pred.handicapPick ?? undefined,
+        firstScorerId: pred.firstScorerId ?? undefined,
+        lastScorerId: pred.lastScorerId ?? undefined,
       };
 
-      // 2. Calculate points using our standard engine
-      const points = calculateMatchPoints(prediction, actual);
-      const isExact = points >= 5; // 5 pts for Exact, 3 for Winner, 1 for Outcome Trend
-      const isCorrectWinner = points >= 3;
+      const points = calculateMatchPoints(actual, prediction);
+      const isExact = pred.market === 'CORRECT_SCORE' && actualHome === pred.predictedHome && actualAway === pred.predictedAway;
+      const isCorrectWinner = pred.market === 'MATCH_RESULT' && (
+        (actualHome > actualAway && pred.predictedWinner === 'HOME') ||
+        (actualHome < actualAway && pred.predictedWinner === 'AWAY') ||
+        (actualHome === actualAway && pred.predictedWinner === 'DRAW')
+      );
 
-      // 3. Update Prediction record
       await tx.prediction.update({
         where: { id: pred.id },
         data: {
@@ -39,7 +61,6 @@ export async function settleMatchScores(matchId: string, actualHome: number, act
         }
       });
 
-      // 4. Update Global User Stats
       await tx.user.update({
         where: { walletAddress: pred.userWallet },
         data: {
@@ -51,13 +72,17 @@ export async function settleMatchScores(matchId: string, actualHome: number, act
       });
     }
 
-    // 5. Mark Match as Finished
     await tx.match.update({
       where: { id: matchId },
       data: { 
         status: 'FINISHED',
         homeScore: actualHome,
-        awayScore: actualAway
+        awayScore: actualAway,
+        overUnderLine: options?.overUnderLine,
+        handicapLine: options?.handicapLine,
+        firstScorerId: options?.firstScorerId,
+        lastScorerId: options?.lastScorerId,
+        bothTeamsScore: options?.bothTeamsScore,
       }
     });
 

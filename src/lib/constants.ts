@@ -7,7 +7,63 @@ export const SCORING = {
   EXACT_SCORE_BONUS: 5,
   STREAK_BONUS_PER: 1,      // +1 per consecutive correct
   DRAW_CORRECT_BONUS: 1,    // draws are harder to predict
+  OVER_UNDER_CORRECT: 4,
+  HANDICAP_CORRECT: 4,
+  FIRST_SCORER_CORRECT: 6,
+  LAST_SCORER_CORRECT: 4,
+  BOTH_TEAMS_SCORE_CORRECT: 3,
 } as const;
+
+// ═══════════════════════════════════════
+// Prediction Markets Config
+// ═══════════════════════════════════════
+
+export const MARKET_CONFIG = {
+  MATCH_RESULT: {
+    label: '1X2',
+    description: 'Predict winner or draw',
+    icon: '⚽',
+    requiresScore: true,
+  },
+  OVER_UNDER: {
+    label: 'Over/Under',
+    description: 'Total goals over/under line',
+    icon: '📊',
+    requiresScore: true,
+  },
+  HANDICAP: {
+    label: 'Handicap',
+    description: 'Asian handicap',
+    icon: '🎯',
+    requiresScore: true,
+  },
+  FIRST_SCORER: {
+    label: 'First Scorer',
+    description: 'Who scores first',
+    icon: '🥅',
+    requiresScore: false,
+  },
+  LAST_SCORER: {
+    label: 'Last Scorer',
+    description: 'Who scores last',
+    icon: '🔚',
+    requiresScore: false,
+  },
+  CORRECT_SCORE: {
+    label: 'Correct Score',
+    description: 'Exact final score',
+    icon: '✅',
+    requiresScore: true,
+  },
+  BOTH_TEAMS_SCORE: {
+    label: 'BTTS',
+    description: 'Both teams to score',
+    icon: '⚠️',
+    requiresScore: true,
+  },
+} as const;
+
+export type MarketType = keyof typeof MARKET_CONFIG;
 
 export const PHASE_MULTIPLIERS: Record<string, number> = {
   'group-stage': 1.0,
@@ -173,6 +229,30 @@ export const SPORT_META = {
     color: 'from-amber-700/20 to-amber-900/40',
     accent: 'text-amber-500',
     border: 'border-amber-700/20',
+  },
+  tennis: {
+    name: 'Tenis',
+    slug: 'tennis',
+    stats: 'Grand Slams & ATP',
+    color: 'from-green-500/20 to-green-900/40',
+    accent: 'text-green-400',
+    border: 'border-green-500/20',
+  },
+  nfl: {
+    name: 'NFL',
+    slug: 'nfl',
+    stats: 'Season & Playoffs',
+    color: 'from-yellow-500/20 to-yellow-900/40',
+    accent: 'text-yellow-400',
+    border: 'border-yellow-500/20',
+  },
+  nhl: {
+    name: 'NHL',
+    slug: 'nhl',
+    stats: 'Season & Playoffs',
+    color: 'from-blue-500/20 to-blue-900/40',
+    accent: 'text-blue-400',
+    border: 'border-blue-500/20',
   },
 } as const;
 

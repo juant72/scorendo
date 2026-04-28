@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Fuel, Target, ShieldCheck, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Activity, Fuel, Target, ShieldCheck, ArrowUpRight, Globe, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const SPORTS = [
@@ -13,7 +13,7 @@ const SPORTS = [
     slug: 'football',
     icon: Activity,
     accent: '#00E676',
-    bg: '/arenas/afa_lpf.png'
+    pattern: 'match'
   },
   {
     id: 'motorsports',
@@ -21,8 +21,8 @@ const SPORTS = [
     tagline: 'World Championship',
     slug: 'motorsports',
     icon: Fuel,
-    accent: '#FF4444',
-    bg: '/arenas/f1_championship.png'
+    accent: '#E10600',
+    pattern: 'flag'
   },
   {
     id: 'nba',
@@ -30,17 +30,17 @@ const SPORTS = [
     tagline: 'Pro Basketball',
     slug: 'nba',
     icon: Target,
-    accent: '#FF7700',
-    bg: 'https://images.unsplash.com/photo-1541339905195-03f4770d4071?q=80&w=2000&auto=format&fit=crop'
+    accent: '#FF6B00',
+    pattern: 'court'
   },
   {
-    id: 'rugby',
-    name: 'Rugby',
-    tagline: 'International Mix',
-    slug: 'rugby',
-    icon: ShieldCheck,
-    accent: '#C8A240',
-    bg: '/stadium_hero.png'
+    id: 'tennis',
+    name: 'Tennis',
+    tagline: 'Grand Slams',
+    slug: 'tennis',
+    icon: Zap,
+    accent: '#CCFF00',
+    pattern: 'net'
   },
 ];
 
@@ -48,81 +48,104 @@ export function SportSelector() {
   const router = useRouter();
 
   return (
-    <section className="relative py-24 px-4">
+    <section className="py-24 px-6 relative">
+      {/* Section fade in */}
+      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#020814] to-transparent" />
+      
       <div className="max-w-7xl mx-auto">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-           <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                 <div className="h-px w-10 bg-primary" />
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Arena Gate</span>
-              </div>
-              <h2 className="text-5xl font-black uppercase italic tracking-tighter text-white leading-none">
-                 Select Your <span className="text-primary">Discipline</span>
-              </h2>
-           </div>
-           {/* Pragmatic Fast-Pass */}
-           <div className="hidden sm:flex items-center gap-3">
-              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest mr-2">Quick Access:</span>
-              {SPORTS.map(s => (
-                <button 
-                  key={s.id}
-                  onClick={() => router.push(`/contests?sport=${s.slug}`)}
-                  className="h-10 px-5 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all flex items-center gap-2"
+        {/* Section Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-16 text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full mb-6">
+            <Globe size={14} className="text-primary" />
+            <span className="text-xs font-bold uppercase tracking-widest text-white/60">Select Your Arena</span>
+          </div>
+          <h2 className="text-4xl sm:text-5xl font-black uppercase italic tracking-tighter text-white">
+            Choose Your <span className="text-primary">Sport</span>
+          </h2>
+        </motion.div>
+
+        {/* Sport Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {SPORTS.map((sport, index) => (
+            <motion.button
+              key={sport.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              onClick={() => router.push(`/contests?sport=${sport.slug}`)}
+              className="group relative p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-white/20 transition-all text-left overflow-hidden"
+            >
+              {/* Card glow on hover */}
+              <div 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{ 
+                  background: `radial-gradient(circle at 50% 0%, ${sport.accent}15 0%, transparent 70%)` 
+                }}
+              />
+              
+              {/* Content */}
+              <div className="relative z-10">
+                {/* Icon */}
+                <div 
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+                  style={{ 
+                    backgroundColor: `${sport.accent}15`,
+                    border: `1px solid ${sport.accent}30`
+                  }}
                 >
-                   <s.icon size={12} />
-                   {s.name}
-                </button>
-              ))}
-           </div>
+                  <sport.icon size={22} style={{ color: sport.accent }} />
+                </div>
+                
+                {/* Name */}
+                <h3 className="text-xl font-black uppercase italic text-white mb-1">
+                  {sport.name}
+                </h3>
+                
+                {/* Tagline */}
+                <p className="text-xs font-medium uppercase tracking-wider text-white/40 mb-4">
+                  {sport.tagline}
+                </p>
+                
+                {/* Arrow */}
+                <div className="flex items-center justify-between">
+                  <span 
+                    className="text-xs font-bold uppercase tracking-widest transition-all group-hover:tracking-widest"
+                    style={{ color: sport.accent }}
+                  >
+                    Enter
+                  </span>
+                  <ArrowUpRight size={16} className="text-white/20 group-hover:text-white transition-colors" />
+                </div>
+              </div>
+            </motion.button>
+          ))}
         </div>
 
-        {/* High-Fidelity Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-           {SPORTS.map((sport, idx) => (
-             <motion.div
-               key={sport.id}
-               initial={{ opacity: 0, y: 20 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true }}
-               transition={{ delay: idx * 0.1 }}
-               onClick={() => router.push(`/contests?sport=${sport.slug}`)}
-               className="group relative h-96 rounded-[3rem] overflow-hidden cursor-pointer border border-white/5 hover:border-primary/40 transition-all shadow-2xl"
-             >
-                {/* Visual Backdrop */}
-                <div className="absolute inset-0">
-                   <img src={sport.bg} className="w-full h-full object-cover opacity-40 group-hover:scale-110 transition-transform duration-1000" alt={sport.name} />
-                   <div className="absolute inset-0 bg-gradient-to-t from-[#020814] via-transparent to-transparent" />
-                </div>
-
-                {/* Card Content */}
-                <div className="relative z-10 h-full p-10 flex flex-col justify-between">
-                   <div className="flex justify-between items-start">
-                      <div className="w-14 h-14 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 flex items-center justify-center transition-all group-hover:bg-primary group-hover:text-midnight">
-                         <sport.icon size={24} />
-                      </div>
-                      <ArrowUpRight className="text-white/20 group-hover:text-white transition-colors" size={24} />
-                   </div>
-
-                   <div className="space-y-2">
-                      <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] group-hover:text-primary transition-colors">{sport.tagline}</div>
-                      <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none">{sport.name}</h3>
-                      <div className="pt-4 flex items-center gap-3">
-                         <div className="w-8 h-px bg-white/10 group-hover:bg-primary transition-colors group-hover:w-16 duration-500" />
-                         <span className="text-[9px] font-black text-white/10 uppercase tracking-widest group-hover:text-white transition-colors">Enter Segment</span>
-                      </div>
-                   </div>
-                </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-5 transition-opacity">
-                   <Sparkles size={120} />
-                </div>
-             </motion.div>
-           ))}
-        </div>
+        {/* View All Link */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="mt-12 text-center"
+        >
+          <button 
+            onClick={() => router.push('/contests')}
+            className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-white/40 hover:text-primary transition-colors"
+          >
+            View All Competitions
+            <ArrowUpRight size={16} />
+          </button>
+        </motion.div>
       </div>
+      
+      {/* Section fade out */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#020814] to-transparent" />
     </section>
   );
 }

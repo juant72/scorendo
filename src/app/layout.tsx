@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://scorendo.com'),
   title: {
     default: "Scorendo — Dominate The Leaderboards",
     template: "%s | Scorendo",
@@ -37,6 +38,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Scorendo",
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Scorendo',
+      }
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -47,6 +56,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/layout/PageTransition';
-import { calculateMatchPoints } from '@/lib/scoring';
+import { calculateSimplePoints } from '@/lib/scoring';
 import { MatchTicket } from './MatchTicket';
 import { exportMatchTicket } from '@/lib/ticket-exporter';
 import { CommunityTrends } from './CommunityTrends';
@@ -80,7 +80,7 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
           if (!scores || scores.home === '' || scores.away === '') return;
           const pred = { home: parseInt(scores.home), away: parseInt(scores.away) };
           if (!isNaN(pred.home) && !isNaN(pred.away)) {
-            total += calculateMatchPoints(pred, pred); 
+            total += calculateSimplePoints(pred, pred); 
           }
        });
        onPredictionsChange(total);
@@ -201,22 +201,23 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
           {matches.map((match) => {
             const pred = predictions[match.id] || { home: '', away: '' };
             return (
-              <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border-2 border-white/5 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(0,230,118,0.1)] transition-all flex flex-col md:flex-row shadow-md overflow-hidden">
-                 {/* Match Info Side */}
-                 <div className="flex-1 flex flex-col md:flex-row p-4 gap-4 items-center border-b md:border-b-0 md:border-r border-white/5">
-                    {/* Time / Status (Left corner) */}
-                    <div className="w-full md:w-16 flex md:flex-col justify-between md:justify-center items-center md:items-start text-[10px] font-bold text-white/30 tracking-wider">
-                       <span>{match.kickoff ? new Date(match.kickoff).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBA'}</span>
-                       <span className="font-medium">{match.kickoff ? new Date(match.kickoff).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}</span>
-                    </div>
+               <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border-2 border-white/5 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(0,230,118,0.1)] transition-all flex flex-col sm:flex-row shadow-md overflow-hidden touch-manipulation">
+                  {/* Match Info Side */}
+                  <div className="flex-1 flex flex-col sm:flex-row p-3 sm:p-4 gap-2 sm:gap-4 items-center border-b sm:border-b-0 sm:border-r border-white/5">
+                     {/* Time / Status */}
+                     <div className="w-full sm:w-16 flex sm:flex-col justify-between sm:justify-center items-center sm:items-start text-[10px] font-bold text-white/30 tracking-wider">
+                        <span>{match.kickoff ? new Date(match.kickoff).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBA'}</span>
+                        <span className="font-medium">{match.kickoff ? new Date(match.kickoff).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}</span>
+                     </div>
 
-                    {/* Team Names */}
-                    <div className="flex-1 flex items-center justify-between w-full space-x-4">
-                       <div className="flex items-center gap-3 flex-1 justify-end">
-                          <span className="text-sm md:text-base font-bold text-white tracking-wide truncate">{match.homeTeam.name}</span>
-                          <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.homeTeam.code} size="sm" hideName /></div>
-                       </div>
-                       <span className="text-xs font-bold text-white/20 italic">VS</span>
+                     {/* Team Names - Stack on mobile */}
+                     <div className="flex-1 flex items-center justify-between w-full gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
+                           <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hidden sm:block">{match.homeTeam.name}</span>
+                           <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate sm:hidden">{match.homeTeam.code}</span>
+                           <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.homeTeam.code} size="sm" hideName /></div>
+                        </div>
+                        <span className="text-xs font-bold text-white/20 italic shrink-0">VS</span>
                        <div className="flex items-center gap-3 flex-1 justify-start">
                           <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.awayTeam.code} size="sm" hideName /></div>
                           <span className="text-sm md:text-base font-bold text-white tracking-wide truncate">{match.awayTeam.name}</span>
@@ -224,29 +225,33 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                     </div>
                  </div>
 
-                 {/* Input Core (Right side) */}
-                 <div className="flex flex-row items-center justify-center p-4 gap-6 bg-black/20 shrink-0">
-                    <div className="flex items-center gap-2">
-                       <input 
-                         type="text"
-                         inputMode="numeric"
-                         value={pred.home}
-                         onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                         disabled={isLive || saving || isValidating}
-                         placeholder="-"
-                         className="w-12 h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15"
-                       />
-                       <span className="text-lg font-bold text-white/10">:</span>
-                       <input 
-                         type="text"
-                         inputMode="numeric"
-                         value={pred.away}
-                         onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                         disabled={isLive || saving || isValidating}
-                         placeholder="-"
-                         className="w-12 h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15"
-                       />
-                    </div>
+{/* Input Core - Touch optimized */}
+                  <div className="flex flex-row items-center justify-center p-2 sm:p-4 gap-2 sm:gap-6 bg-black/20 shrink-0">
+                     <div className="flex items-center gap-1 sm:gap-2">
+                        <input 
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={1}
+                          value={pred.home}
+                          onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                          disabled={isLive || saving || isValidating}
+                          placeholder="-"
+                          className="w-14 h-14 sm:w-12 sm:h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl sm:text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15 touch-manipulation"
+                        />
+                        <span className="text-lg font-bold text-white/10 hidden sm:inline">:</span>
+                        <input 
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={1}
+                          value={pred.away}
+                          onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                          disabled={isLive || saving || isValidating}
+                          placeholder="-"
+                          className="w-14 h-14 sm:w-12 sm:h-14 bg-black/80 border-2 border-white/10 rounded-lg text-center text-xl sm:text-xl font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none placeholder:text-white/15 touch-manipulation"
+                        />
+                     </div>
                     
                     {/* Share Action */}
                     <button 

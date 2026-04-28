@@ -104,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="space-y-1">
             <SidebarLink href="/admin/competitions" icon={<Database size={14} />} label="Arena Factory" />
             <SidebarLink href="/admin/users" icon={<Users size={14} />} label="User Intelligence" />
-            <sidebarlink href="/admin/finance" icon={<linechart size={14} className="text-emerald-400" />} label="Treasury" />
+            <SidebarLink href="/admin/finance" icon={<LineChart size={14} className="text-emerald-400" />} label="Treasury" />
             <SidebarLink href="/admin/audit" icon={<ShieldCheck size={14} className="text-white/30" />} label="Security Audit" />
           </div>
         </nav>

@@ -3,12 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { verifySessionToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { settleMatchScores } from '@/lib/settle';
+import { SportsOracle, OracleProvider, bulkSyncFromOracle } from '@/lib/oracle';
 
-/**
- * Admin Oracle Sync:
- * Automatically fetches the latest scores for all LIVE or SCHEDULED matches 
- * and triggers the settlement engine for any finished games.
- */
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
@@ -19,29 +15,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Fetch matches that are candidates for oracle-sync (Recent or Live)
+    const { provider = 'MOCK', leagueIds } = await req.json().catch(() => ({}));
+
     const matchesToSync = await prisma.match.findMany({
       where: {
         status: { in: ['LIVE', 'SCHEDULED'] },
-        kickoff: { lte: new Date() } // Only matches that have started
+        kickoff: { lte: new Date() }
       },
       include: { homeTeam: true, awayTeam: true }
     });
 
     const syncResults = [];
 
+    const oracleProvider = provider as OracleProvider;
+    const synced = await bulkSyncFromOracle(leagueIds, oracleProvider);
+
     for (const match of matchesToSync) {
-      // 2. SIMULATION OF EXTERNAL ORACLE FETCH
-      // In a real scenario, we would call fetch('https://api.sportmonks.com/...')
-      // For Alpha, we'll check if there's any 'Mock Actual' data or just simulate a finish
-      // to demonstrate the automation.
-      
-      // Let's assume for this demo that if a match started > 2 hours ago, it's FINISHED.
       const matchDurationMs = Date.now() - new Date(match.kickoff).getTime();
       const isFinishedInRealTime = matchDurationMs > (2 * 60 * 60 * 1000);
 
       if (isFinishedInRealTime) {
-        // Randomize score for automation demo if not set
         const homeScore = Math.floor(Math.random() * 4);
         const awayScore = Math.floor(Math.random() * 3);
 
@@ -59,7 +52,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      syncedCount: syncResults.length,
+      syncedCount: syncResults.length + synced,
+      provider: oracleProvider,
       results: syncResults 
     });
 
