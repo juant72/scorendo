@@ -10,7 +10,7 @@ export type Group = {
 
 const groups: Group[] = [];
 
-function generateInviteCode(): string {
+export function generateInviteCode(): string {
   // 6-char alphanumeric
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }

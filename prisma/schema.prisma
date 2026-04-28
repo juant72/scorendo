@@ -32,6 +32,44 @@ model User {
   contestEntries   UserContestEntry[]
 }
 
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  inviteCode  String        @unique
+  ownerWallet String
+  createdAt   DateTime      @default(now())
+  members     GroupMember[]
+  invites     GroupInvite[]
+}
+
+model GroupMember {
+  id        String @id @default(cuid())
+  group     Group  @relation(fields: [groupId], references: [id])
+  groupId   String
+  userWallet String
+  joinedAt  DateTime @default(now())
+}
+
+model GroupInvite {
+  id        String   @id @default(cuid())
+  group     Group    @relation(fields: [groupId], references: [id])
+  groupId   String
+  code      String   @unique
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Prediction1v1 {
+  id              String  @id @default(cuid())
+  challengerWallet String
+  opponentWallet  String
+  matchId          String?
+  contestId        String?
+  status           String  @default("PENDING")
+  createdAt        DateTime @default(now())
+  resolvedAt       DateTime?
+}
+
 model Session {
   id         String   @id @default(cuid())
   userWallet String
