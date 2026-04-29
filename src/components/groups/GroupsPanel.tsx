@@ -9,6 +9,8 @@ export function GroupsPanel() {
   const [owner, setOwner] = useState('');
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState<Group | null>(null);
+  const [joinCode, setJoinCode] = useState('');
+  const [joinStatus, setJoinStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/groups/list')
@@ -39,6 +41,29 @@ export function GroupsPanel() {
     }
   };
 
+  const join = async () => {
+    if (!joinCode) return;
+    setJoinStatus(null);
+    try {
+      const res = await fetch('/api/groups/db/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteCode: joinCode }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setJoinStatus('Joined group');
+        const r = await fetch('/api/groups/db/list');
+        const list = await r.json();
+        if (list?.groups) setGroups(list.groups);
+      } else {
+        setJoinStatus(data.error || 'Join failed');
+      }
+    } catch {
+      setJoinStatus('Join failed (network)');
+    }
+  };
+
   return (
     <div className="glass-premium p-6 rounded-2xl border border-white/5">
       <h3 className="text-sm font-black uppercase tracking-widest">Groups</h3>
@@ -56,6 +81,14 @@ export function GroupsPanel() {
             <span className="font-mono">{g.name}</span> - Invite: {g.inviteCode} - Members: {g.members.length}
           </div>
         ))}
+      </div>
+      <div className="mt-4 p-4 border-t border-white/10 flex flex-col gap-2">
+        <div className="text-xs uppercase tracking-widest text-white/70">Join by Invite Code</div>
+        <div className="flex items-center gap-2">
+          <input className="border rounded px-3 py-2 text-sm" placeholder="Invite Code" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} />
+          <button className="px-4 py-2 rounded bg-primary text-midnight font-black" onClick={join}>Join</button>
+        </div>
+        {joinStatus && <div className="text-xs text-white/80">{joinStatus}</div>}
       </div>
     </div>
   );
