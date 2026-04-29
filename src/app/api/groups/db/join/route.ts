@@ -12,9 +12,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
     const { inviteCode, wallet } = await req.json();
-    const g = await prisma.group.findFirst({ where: { inviteCode }, include: { invites: true } });
+    const g: any = await (prisma as any).group.findFirst({ where: { inviteCode }, include: { invites: true } });
     if (!g) return NextResponse.json({ success: false, error: 'Group not found' }, { status: 404 });
-    await prisma.groupMember.create({ data: { groupId: g.id, userWallet: wallet } }).catch(() => {});
+    await (prisma as any).groupMember.create({ data: { groupId: g.id, userWallet: wallet } }).catch(() => {});
     return NextResponse.json({ success: true, groupId: g.id });
   } catch {
     return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
