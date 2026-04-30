@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const groups = await (prisma as any).group.findMany({
+    const groups = await prisma.socialGroup.findMany({
       orderBy: [{ createdAt: 'desc' }],
       include: {
         members: { select: { userWallet: true } },
@@ -12,6 +12,7 @@ export async function GET() {
     });
     return NextResponse.json({ success: true, groups });
   } catch (e) {
+    console.error('List groups error:', e);
     return NextResponse.json({ success: false, error: 'DB error' }, { status: 500 });
   }
 }

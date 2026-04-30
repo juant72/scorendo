@@ -32,19 +32,19 @@ model User {
   contestEntries   UserContestEntry[]
 }
 
-model Group {
+model SocialGroup {
   id          String        @id @default(cuid())
   name        String
-  inviteCode  String        @unique
+  inviteCode String        @unique
   ownerWallet String
   createdAt   DateTime      @default(now())
   members     GroupMember[]
-  invites     GroupInvite[]
+  invites    GroupInvite[]
 }
 
 model GroupMember {
-  id        String @id @default(cuid())
-  group     Group  @relation(fields: [groupId], references: [id])
+  id        String   @id @default(cuid())
+  group     SocialGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId   String
   userWallet String
   joinedAt  DateTime @default(now())
@@ -52,7 +52,7 @@ model GroupMember {
 
 model GroupInvite {
   id        String   @id @default(cuid())
-  group     Group    @relation(fields: [groupId], references: [id])
+  group     SocialGroup   @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId   String
   code      String   @unique
   expiresAt DateTime?
@@ -60,13 +60,17 @@ model GroupInvite {
 }
 
 model Prediction1v1 {
-  id              String  @id @default(cuid())
+  id               String   @id @default(cuid())
   challengerWallet String
-  opponentWallet  String
+  opponentWallet   String
   matchId          String?
   contestId        String?
-  status           String  @default("PENDING")
-  createdAt        DateTime @default(now())
+  challengerPred   String?
+  opponentPred     String?
+  challengerPoints Int      @default(0)
+  opponentPoints   Int      @default(0)
+  status           String   @default("PENDING")
+  createdAt        DateTime  @default(now())
   resolvedAt       DateTime?
 }
 
@@ -140,21 +144,22 @@ model Phase {
   endDate      DateTime
   multiplier   Float      @default(1.0)
   contests     Contest[]
-  groups       Group[]
+  groups       Group[] @relation("PhaseToGroup")
   matches      Match[]
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
 
   @@unique([tournamentId, slug])
 }
 
+// Original Group model for tournament/phase groups (teams in group stages)
 model Group {
   id      String           @id @default(cuid())
   phaseId String
   name    String
-  phase   Phase            @relation(fields: [phaseId], references: [id])
+  phase   Phase            @relation("PhaseToGroup", fields: [phaseId], references: [id])
   teams   TournamentTeam[]
 
-  @@unique([phaseId, name])
+  @@unique([phaseId, name], name: "phaseId_name")
 }
 
 model Team {

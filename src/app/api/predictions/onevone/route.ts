@@ -1,30 +1,71 @@
 import { NextResponse } from 'next/server';
-import { verifySessionToken } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { prisma } from '@/lib/prisma';
 
-// Minimal skeleton for 1v1 prediction challenges between two users.
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session')?.value;
-    const session = token ? await verifySessionToken(token) : null;
-    if (!session) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
+    const body = await req.json();
+    const { challengeId, opponentWallet, matchId, contestId, prediction, wallet, action } = body;
+    
+    if (action === 'accept') {
+      const challenge = await prisma.prediction1v1.findUnique({ where: { id: challengeId } });
+      if (!challenge) {
+        return NextResponse.json({ success: false, error: 'Challenge not found' }, { status: 404 });
+      }
+      if (challenge.opponentWallet !== opponentWallet) {
+        return NextResponse.json({ success: false, error: 'Not your challenge' }, { status: 403 });
+      }
+      const updated = await prisma.prediction1v1.update({
+        where: { id: challengeId },
+        data: { status: 'ACCEPTED' }
+      });
+      return NextResponse.json({ success: true, challenge: updated });
     }
 
-    const body = await req.json();
-    // Expected fields (simplified): challengerWallet, opponentWallet, matchId, contestId, home/away predictions
-    const { challengerWallet, opponentWallet, matchId, contestId, predictedHome, predictedAway, market } = body;
-    // This is a placeholder implementation. In a full implementation you would create a dedicated 1v1 contest or group,
-    // assign participants, and track mutually agreed wagers or points.
+    const challengerWallet = wallet || undefined;
+
     if (!challengerWallet || !opponentWallet || !matchId) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Return a not-implemented status to signal planning phase.
-    return NextResponse.json({ success: true, message: '1v1 challenge created (skeleton only)', data: { matchId, contestId, challengerWallet, opponentWallet } });
+    const challenge = await prisma.prediction1v1.create({
+      data: {
+        challengerWallet,
+        opponentWallet,
+        matchId,
+        contestId,
+        status: 'PENDING'
+      }
+    });
+
+    return NextResponse.json({ success: true, challengeId: challenge.id });
   } catch (err) {
     console.error('1v1 route error', err);
+    return NextResponse.json({ success: false, error: String(err) }, { status: 500 });
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const wallet = searchParams.get('wallet');
+    const matchId = searchParams.get('matchId');
+
+    const where: any = {
+      OR: [
+        { challengerWallet: wallet },
+        { opponentWallet: wallet }
+      ]
+    };
+    if (matchId) where.matchId = matchId;
+
+    const challenges = await prisma.prediction1v1.findMany({
+      where,
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return NextResponse.json({ success: true, challenges });
+  } catch (err) {
+    console.error('1v1 GET error', err);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

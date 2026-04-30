@@ -1,19 +1,19 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 
-type Group = { id: string; name: string; inviteCode: string; ownerWallet: string; members: string[] };
+type Group = { id: string; name: string; inviteCode: string; ownerWallet: string; members: { userWallet: string }[] };
 
 export function GroupsPanel() {
   const [groups, setGroups] = useState<Group[]>([]);
-  const [name, setName] = useState('New Group');
-  const [owner, setOwner] = useState('');
+  const [name, setName] = useState('My Group');
+  const [owner, setOwner] = useState('DemoWallet123');
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState<Group | null>(null);
   const [joinCode, setJoinCode] = useState('');
   const [joinStatus, setJoinStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/groups/list')
+    fetch('/api/groups/db/list')
       .then(r => r.json())
       .then((data) => {
         if (data?.groups) setGroups(data.groups);
@@ -21,18 +21,18 @@ export function GroupsPanel() {
       .catch(() => {});
   }, []);
 
-  const create = async () => {
+const create = async () => {
     if (!name || !owner) return;
     setCreating(true);
     try {
-      const res = await fetch('/api/groups/create', {
+      const res = await fetch('/api/groups/db/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ownerWallet: owner, name }),
+        body: JSON.stringify({ name, wallet: owner }),
       });
       const data = await res.json();
       if (data.success) {
-        const g = { id: data.groupId, name, inviteCode: data.inviteCode, ownerWallet: owner, members: [owner] } as Group;
+        const g = { id: data.groupId, name, inviteCode: data.inviteCode, ownerWallet: owner, members: [{ userWallet: owner }] } as Group;
         setCreated(g);
         setGroups(prev => [...prev, g]);
       }
@@ -41,14 +41,14 @@ export function GroupsPanel() {
     }
   };
 
-  const join = async () => {
-    if (!joinCode) return;
+const join = async () => {
+    if (!joinCode || !owner) return;
     setJoinStatus(null);
     try {
       const res = await fetch('/api/groups/db/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inviteCode: joinCode }),
+        body: JSON.stringify({ inviteCode: joinCode, wallet: owner }),
       });
       const data = await res.json();
       if (data.success) {
@@ -75,10 +75,10 @@ export function GroupsPanel() {
       {created && (
         <div className="mt-2 text-xs text-green-400">Group created: {created.name} (Invite: {created.inviteCode})</div>
       )}
-      <div className="mt-4 max-h-40 overflow-auto border-t pt-2">
+<div className="mt-4 max-h-40 overflow-auto border-t pt-2">
         {groups.map(g => (
           <div key={g.id} className="py-1 text-xs">
-            <span className="font-mono">{g.name}</span> - Invite: {g.inviteCode} - Members: {g.members.length}
+            <span className="font-mono">{g.name}</span> - Invite: {g.inviteCode} - Members: {g.members?.length || 0}
           </div>
         ))}
       </div>
