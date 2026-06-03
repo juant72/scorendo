@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface Transaction {
   id: string;
@@ -17,6 +19,9 @@ interface Transaction {
 }
 
 export default function WalletPage() {
+  const { locale } = useAuthStore();
+  const t = locales[locale].wallet;
+
   const [data, setData] = useState<{ balance: number, transactions: Transaction[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState<string | null>(null);
@@ -47,11 +52,11 @@ export default function WalletPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert('Funds successfully transferred to your main balance!');
+        alert(t.claimSuccess);
         fetchWallet();
       }
     } catch (err) {
-      alert('Claim Error.');
+      alert(t.claimError);
     } finally {
       setClaiming(null);
     }
@@ -66,6 +71,26 @@ export default function WalletPage() {
   const pendingPrizes = data?.transactions.filter(tx => tx.type === 'PRIZE' && tx.status === 'PENDING') || [];
   const history = data?.transactions.filter(tx => tx.status !== 'PENDING' || tx.type !== 'PRIZE') || [];
 
+  const getTxTypeLabel = (type: string) => {
+    if (locale === 'es') {
+      switch (type) {
+        case 'DEPOSIT': return 'DEPÓSITO';
+        case 'WITHDRAW': return 'RETIRO';
+        case 'PRIZE': return 'PREMIO';
+        case 'ENTRY_FEE': return 'COSTO ENTRADA';
+        default: return type.replace('_', ' ');
+      }
+    } else {
+      switch (type) {
+        case 'DEPOSIT': return 'DEPOSIT';
+        case 'WITHDRAW': return 'WITHDRAW';
+        case 'PRIZE': return 'PRIZE';
+        case 'ENTRY_FEE': return 'ENTRY FEE';
+        default: return type.replace('_', ' ');
+      }
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-12 px-6 space-y-10">
       {/* 💳 Balance Hero Card */}
@@ -76,23 +101,23 @@ export default function WalletPage() {
          
          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
             <div className="space-y-4 text-center md:text-left">
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Available Balance</span>
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">{t.balanceTitle}</span>
                <div className="flex items-baseline gap-3">
                   <h1 className="text-6xl font-black tracking-tighter text-white">{(data?.balance || 0).toFixed(4)}</h1>
                   <span className="text-2xl font-bold text-primary italic">SOL</span>
                </div>
                <div className="flex gap-2 justify-center md:justify-start">
-                  <Badge className="bg-emerald-500/10 text-emerald-400 border-none text-[9px] font-black uppercase tracking-widest px-3">Insured</Badge>
-                  <Badge className="bg-blue-500/10 text-blue-400 border-none text-[9px] font-black uppercase tracking-widest px-3">Layer-1 Ready</Badge>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-none text-[9px] font-black uppercase tracking-widest px-3">{t.insured}</Badge>
+                  <Badge className="bg-blue-500/10 text-blue-400 border-none text-[9px] font-black uppercase tracking-widest px-3">{t.l1Ready}</Badge>
                </div>
             </div>
             
             <div className="flex gap-4 w-full md:w-auto">
                <Button className="flex-1 md:flex-none h-16 px-10 bg-primary text-midnight font-black uppercase text-xs tracking-widest rounded-2xl hover:scale-105 transition-all shadow-xl shadow-primary/20">
-                  <ArrowDownRight size={18} className="mr-2" /> Top Up
+                  <ArrowDownRight size={18} className="mr-2" /> {t.topUp}
                </Button>
                <Button variant="outline" className="flex-1 md:flex-none h-16 px-10 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black uppercase text-xs tracking-widest rounded-2xl">
-                  <ArrowUpRight size={18} className="mr-2" /> Withdraw
+                  <ArrowUpRight size={18} className="mr-2" /> {t.withdraw}
                </Button>
             </div>
          </div>
@@ -103,9 +128,9 @@ export default function WalletPage() {
          <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between px-2">
                <h2 className="text-xl font-bold flex items-center gap-3">
-                  <Gift className="text-primary" size={20} /> Collect Prize
+                  <Gift className="text-primary" size={20} /> {t.collectPrize}
                </h2>
-               <span className="text-[10px] font-mono text-muted-foreground uppercase">{pendingPrizes.length} Pending</span>
+               <span className="text-[10px] font-mono text-muted-foreground uppercase">{pendingPrizes.length} {t.pendingCount}</span>
             </div>
             
             {pendingPrizes.length === 0 ? (
@@ -113,7 +138,7 @@ export default function WalletPage() {
                   <div className="p-4 rounded-full bg-white/5 opacity-20">
                      <History size={40} />
                   </div>
-                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-40">No pending prizes found</p>
+                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-40">{t.noPending}</p>
                </div>
             ) : (
                <div className="grid gap-4">
@@ -126,7 +151,7 @@ export default function WalletPage() {
                               </div>
                               <div className="flex flex-col">
                                  <span className="text-lg font-black text-white">{parseFloat(tx.amount).toFixed(4)} SOL</span>
-                                 <span className="text-[10px] font-mono text-muted-foreground uppercase">{tx.meta?.contestName || 'Contest Reward'}</span>
+                                 <span className="text-[10px] font-mono text-muted-foreground uppercase">{tx.meta?.contestName || t.contestReward}</span>
                               </div>
                            </div>
                            <Button 
@@ -134,7 +159,7 @@ export default function WalletPage() {
                              disabled={claiming === tx.id}
                              className="h-12 px-6 bg-primary text-midnight font-black uppercase text-[10px] tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all"
                            >
-                              {claiming === tx.id ? <Loader2 className="animate-spin" /> : 'Claim Now'}
+                              {claiming === tx.id ? <Loader2 className="animate-spin" /> : t.claimNow}
                            </Button>
                         </CardContent>
                      </Card>
@@ -146,7 +171,7 @@ export default function WalletPage() {
          {/* 📜 Ledger */}
          <div className="space-y-6">
             <h2 className="text-xl font-bold flex items-center gap-3 px-2">
-               <History size={20} /> Registry
+               <History size={20} /> {t.registry}
             </h2>
             <div className="bg-card/40 border border-border/40 rounded-[2rem] p-6 space-y-6 overflow-hidden relative">
                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none opacity-40" />
@@ -159,7 +184,7 @@ export default function WalletPage() {
                               {tx.type === 'PRIZE' || tx.type === 'DEPOSIT' ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
                            </div>
                            <div className="flex flex-col">
-                              <span className="text-xs font-bold text-white uppercase tracking-tight">{tx.type.replace('_', ' ')}</span>
+                              <span className="text-xs font-bold text-white uppercase tracking-tight">{getTxTypeLabel(tx.type)}</span>
                               <span className="text-[10px] text-muted-foreground uppercase">{new Date(tx.createdAt).toLocaleDateString()}</span>
                            </div>
                         </div>
@@ -172,7 +197,7 @@ export default function WalletPage() {
                ))}
                
                {history.length === 0 && (
-                  <div className="p-10 text-center text-[10px] uppercase font-bold text-muted-foreground opacity-30">Empty Registry</div>
+                  <div className="p-10 text-center text-[10px] uppercase font-bold text-muted-foreground opacity-30">{t.emptyRegistry}</div>
                )}
             </div>
          </div>

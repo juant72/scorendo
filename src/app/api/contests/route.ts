@@ -7,16 +7,15 @@ export async function GET(req: NextRequest) {
     const sportSlug = searchParams.get('sport');
 
     const competitions = await prisma.competition.findMany({
-      where: sportSlug ? {
-        sport: {
-          slug: sportSlug
-        }
-      } : undefined,
+      where: {
+        slug: 'fifa-world-cup-2026'
+      },
       include: {
         sport: true,
         tournaments: {
           where: {
-            status: { in: ['UPCOMING', 'GROUP_STAGE', 'KNOCKOUT'] }
+            status: { in: ['UPCOMING', 'GROUP_STAGE', 'KNOCKOUT'] },
+            slug: 'fifa-world-cup-2026'
           },
           include: {
             contests: {

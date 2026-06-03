@@ -3,13 +3,13 @@
 import { motion } from 'framer-motion';
 import { Wallet, Target, Trophy, Shield, ChevronRight, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
-const steps = [
+const stepsData = [
   {
     number: '01',
     icon: Wallet,
-    title: 'Connect Your Wallet',
-    description: 'Connect your Solana wallet in one click. Your wallet is your identity — no accounts, no passwords, no personal data required.',
     color: 'text-primary',
     bgColor: 'bg-primary/10',
     borderColor: 'border-primary/20',
@@ -19,8 +19,6 @@ const steps = [
   {
     number: '02',
     icon: Target,
-    title: 'Pick Your Arena',
-    description: 'Choose from Football, F1, NBA, Rugby & more. Browse upcoming contests — from free daily predictions to premium tournaments.',
     color: 'text-gold',
     bgColor: 'bg-gold/10',
     borderColor: 'border-gold/20',
@@ -30,8 +28,6 @@ const steps = [
   {
     number: '03',
     icon: Trophy,
-    title: 'Make Your Predictions',
-    description: 'Use your sports expertise to predict outcomes. Score points for accuracy. The smartest analysts rise to the top of the leaderboard.',
     color: 'text-match',
     bgColor: 'bg-match/10',
     borderColor: 'border-match/20',
@@ -41,8 +37,6 @@ const steps = [
   {
     number: '04',
     icon: Shield,
-    title: 'Win & Withdraw Instantly',
-    description: 'Top predictors share the prize pool. Winnings go directly to your wallet via Solana smart contracts — instant, verifiable, yours.',
     color: 'text-sky-400',
     bgColor: 'bg-sky-400/10',
     borderColor: 'border-sky-400/20',
@@ -51,16 +45,42 @@ const steps = [
   },
 ];
 
-const contestTypes = [
-  { emoji: '📅', label: 'Match Day', desc: 'Single matchday' },
-  { emoji: '⚔️', label: 'Group Battle', desc: 'Group stage' },
-  { emoji: '📊', label: 'Phase', desc: 'Multi-round' },
-  { emoji: '🔥', label: 'Bracket', desc: 'Knockout' },
-  { emoji: '🏆', label: 'Grand Tournament', desc: 'Full season' },
-  { emoji: '🛡️', label: 'Zone', desc: 'Regional' },
-];
-
 export function HowItWorks() {
+  const { locale } = useAuthStore();
+  const t = locales[locale].landing.howItWorks;
+
+  const steps = [
+    {
+      ...stepsData[0],
+      title: t.step1Title,
+      description: t.step1Desc,
+    },
+    {
+      ...stepsData[1],
+      title: t.step2Title,
+      description: t.step2Desc,
+    },
+    {
+      ...stepsData[2],
+      title: t.step3Title,
+      description: t.step3Desc,
+    },
+    {
+      ...stepsData[3],
+      title: t.step4Title,
+      description: t.step4Desc,
+    },
+  ];
+
+  const contestTypes = [
+    { emoji: '📅', label: t.formats.matchday, desc: t.formats.matchdayDesc },
+    { emoji: '⚔️', label: t.formats.group, desc: t.formats.groupDesc },
+    { emoji: '📊', label: t.formats.phase, desc: t.formats.phaseDesc },
+    { emoji: '🔥', label: t.formats.bracket, desc: t.formats.bracketDesc },
+    { emoji: '🏆', label: t.formats.grand, desc: t.formats.grandDesc },
+    { emoji: '🛡️', label: t.formats.zone, desc: t.formats.zoneDesc },
+  ];
+
   return (
     <section id="how-it-works" className="py-32 px-4 relative overflow-hidden">
 
@@ -81,17 +101,17 @@ export function HowItWorks() {
         >
           <div className="flex items-center justify-center gap-2 mb-5">
             <div className="h-px w-10 bg-primary/50" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">How It Works</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{t.title}</span>
             <div className="h-px w-10 bg-primary/50" />
           </div>
           <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black italic uppercase tracking-tighter text-white leading-none mb-6">
-            Your Path to{' '}
+            {t.pathTitle}{' '}
             <span className="text-gold" style={{ textShadow: '0 0 40px rgba(255,215,0,0.3)' }}>
-              Victory
+              {t.pathTitleHighlight}
             </span>
           </h2>
           <p className="text-white/40 text-lg max-w-xl mx-auto font-light leading-relaxed">
-            Four steps from wallet connection to winning prizes. Pure sport intelligence, zero luck.
+            {t.pathDesc}
           </p>
         </motion.div>
 
@@ -159,11 +179,11 @@ export function HowItWorks() {
 
           <div className="text-center mb-10">
             <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white mb-3">
-              Multiple Ways to{' '}
-              <span className="text-primary">Compete</span>
+              {t.competeTitle}{' '}
+              <span className="text-primary">{t.competeHighlight}</span>
             </h3>
             <p className="text-white/30 text-sm max-w-md mx-auto">
-              From daily challenges to full tournaments — every format serves a different champion.
+              {t.competeSubtitle}
             </p>
           </div>
 
@@ -195,7 +215,7 @@ export function HowItWorks() {
               href="/contests"
               className="group inline-flex items-center gap-2 px-8 h-12 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary hover:border-primary text-primary hover:text-midnight font-black uppercase tracking-widest text-xs transition-all duration-300"
             >
-              Explore All Arenas
+              {t.btnExplore}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -210,10 +230,10 @@ export function HowItWorks() {
           className="mt-16 pt-10 border-t border-white/5 flex flex-wrap items-center justify-center gap-8"
         >
           {[
-            { icon: '🔒', text: 'Non-custodial wallets' },
-            { icon: '⚡', text: 'Instant Solana payouts' },
-            { icon: '🧠', text: '100% skill-based' },
-            { icon: '🌍', text: '8 sports & counting' },
+            { icon: '🔒', text: t.trust.nonCustodial },
+            { icon: '⚡', text: t.trust.instantSol },
+            { icon: '🧠', text: t.trust.skillBased },
+            { icon: '🌍', text: t.trust.sportsCount },
           ].map((item) => (
             <div key={item.text} className="flex items-center gap-2 text-white/30 hover:text-white/50 transition-colors">
               <span>{item.icon}</span>

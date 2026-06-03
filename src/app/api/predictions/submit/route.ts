@@ -4,6 +4,7 @@ import { verifySessionToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import type { PredictionOutcome } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { awardXpForPrediction } from '@/lib/xp-system';
 
 export async function POST(req: NextRequest) {
   try {
@@ -137,23 +138,12 @@ const contest = await prisma.contest.findUnique({
     const xpPerPrediction = 10;
     const totalXpEarned = savedPredictions.length * xpPerPrediction;
 
-    const currentUser = await prisma.user.findUnique({ where: { walletAddress: userWallet } }) as any;
-    if (currentUser) {
-       const newXp = (currentUser.xp || 0) + totalXpEarned;
-       const nextLevelThreshold = currentUser.level * 100;
-       
-       let newLevel = currentUser.level;
-       let finalXp = newXp;
-       
-       if (newXp >= nextLevelThreshold) {
-          newLevel += 1;
-          finalXp = newXp - nextLevelThreshold;
-       }
-
-       await prisma.user.update({
-         where: { walletAddress: userWallet },
-         data: { xp: finalXp, level: newLevel } as any
-       });
+    // Call dynamic awardXpForPrediction leveling engine
+    let levelUpResult = null;
+    try {
+      levelUpResult = await awardXpForPrediction(userWallet, totalXpEarned, true, false);
+    } catch (xpError) {
+      console.error('Error awarding XP:', xpError);
     }
 
     await prisma.contest.update({
@@ -164,7 +154,9 @@ const contest = await prisma.contest.findUnique({
     return NextResponse.json({ 
       success: true, 
       count: savedPredictions.length,
-      xpEarned: totalXpEarned
+      xpEarned: totalXpEarned,
+      levelUp: levelUpResult ? levelUpResult.newLevel > levelUpResult.oldLevel : false,
+      newLevel: levelUpResult ? levelUpResult.newLevel : undefined
     });
 
   } catch (error: any) {

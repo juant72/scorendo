@@ -2,10 +2,7 @@ import Link from 'next/link';
 import { Trophy, Bird, GitBranch, Flame, Zap, ShieldCheck } from 'lucide-react';
 
 const SPORTS_LINKS = [
-  { slug: 'football', emoji: '⚽', name: 'Football' },
-  { slug: 'motorsports', emoji: '🏎️', name: 'Formula 1' },
-  { slug: 'nba', emoji: '🏀', name: 'NBA' },
-  { slug: 'rugby', emoji: '🏉', name: 'Rugby' },
+  { slug: 'football', emoji: '🏆', name: 'World Cup 2026' },
 ];
 
 const PLATFORM_LINKS = [

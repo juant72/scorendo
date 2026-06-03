@@ -4,8 +4,13 @@ import { motion } from 'framer-motion';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { ArrowRight, ShieldCheck, Zap, Trophy, Users, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export function Hero() {
+  const { locale } = useAuthStore();
+  const t = locales[locale].landing;
+
   return (
     <section className="relative min-h-[95vh] flex flex-col justify-center overflow-hidden">
       
@@ -53,10 +58,10 @@ export function Hero() {
         >
           <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Live Arena</span>
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">{t.liveArena}</span>
           </div>
           <div className="h-px flex-1 bg-white/10" />
-          <span className="text-[10px] font-medium uppercase tracking-widest text-white/30">2,847 Predictors Active</span>
+          <span className="text-[10px] font-medium uppercase tracking-widest text-white/30">2,847 {t.predictorsActive}</span>
         </motion.div>
 
         {/* Headline */}
@@ -67,15 +72,14 @@ export function Hero() {
           className="mb-10"
         >
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black uppercase italic tracking-tighter text-white leading-[0.9]">
-            Predict <br/>
+            {t.predict} <br/>
             <span className="bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent">
-              Dominate
+              {t.dominate}
             </span>
           </h1>
           
           <p className="text-lg sm:text-xl text-white/50 mt-6 max-w-xl font-medium leading-relaxed">
-            Compete in skill-based predictions. Track real-time scores. 
-            Earn instant rewards. The arena for true football tacticians.
+            {t.heroDesc}
           </p>
         </motion.div>
 
@@ -93,7 +97,7 @@ export function Hero() {
             className="group flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-sm font-bold uppercase tracking-widest border border-white/10 hover:border-white/30 hover:bg-white/5 transition-all"
           >
             <Zap size={16} className="text-purple-400" />
-            Enter Arena
+            {t.enterArena}
             <ArrowRight size={16} className="opacity-30 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
@@ -106,10 +110,10 @@ export function Hero() {
           className="flex flex-wrap gap-8 sm:gap-12 pt-8 border-t border-white/5"
         >
           {[
-            { icon: Users, label: 'Active', value: '2,847' },
-            { icon: Trophy, label: 'Prize Pool', value: '14.2 SOL' },
-            { icon: TrendingUp, label: 'Accuracy', value: '94.2%' },
-            { icon: Zap, label: 'Settled', value: '12.4K' }
+            { icon: Users, label: t.active, value: '2,847' },
+            { icon: Trophy, label: t.prizePool, value: '14.2 SOL' },
+            { icon: TrendingUp, label: t.accuracy, value: '94.2%' },
+            { icon: Zap, label: t.settled, value: '12.4K' }
           ].map((stat, i) => (
             <div key={i} className="flex items-center gap-3">
               <stat.icon size={18} className="text-primary/60" />

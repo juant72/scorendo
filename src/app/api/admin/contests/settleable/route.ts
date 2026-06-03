@@ -15,7 +15,11 @@ export async function GET() {
     
     const contests = await prisma.contest.findMany({
       where: {
-        status: { in: ['ACTIVE', 'SCORING'] }
+        status: { in: ['ACTIVE', 'SCORING'] },
+        OR: [
+          { tournament: { slug: 'fifa-world-cup-2026' } },
+          { phase: { tournament: { slug: 'fifa-world-cup-2026' } } }
+        ]
       },
       include: {
         _count: {

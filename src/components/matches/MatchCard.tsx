@@ -3,6 +3,8 @@ import { TeamBadge } from '@/components/contests/TeamBadge';
 import { formatDateShort, getStatusColor } from '@/lib/utils';
 import { Clock, MapPin, Trophy, Users } from 'lucide-react';
 import { CommunityTrends } from '@/components/contests/CommunityTrends';
+import { useAuthStore } from '@/store/useAuthStore';
+import { translateTeamName, translatePhaseName } from '@/lib/locales';
 
 interface TeamProps {
   name: string;
@@ -43,6 +45,7 @@ export function MatchCard({
   renderCenter,
   matchId,
 }: MatchCardProps) {
+  const { locale } = useAuthStore();
   const isFinished = status === MatchStatus.FINISHED;
   const isLive = status === MatchStatus.LIVE;
   
@@ -69,7 +72,7 @@ export function MatchCard({
             Match {matchNumber}
           </span>
           <span className="text-[10px] sm:text-xs font-semibold text-primary uppercase tracking-wide">
-            {phaseName}
+            {translatePhaseName(phaseName, locale)}
           </span>
         </div>
         
@@ -88,10 +91,10 @@ export function MatchCard({
                 kickoff ? (
                   <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1 text-primary opacity-80">
-                       <Clock className="h-3 w-3" /> {new Date(kickoff).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })}
+                       <Clock className="h-3 w-3" /> {new Date(kickoff).toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US', { day: '2-digit', month: '2-digit' })}
                     </div>
                     <div className="text-[9px] text-muted-foreground font-mono leading-none">
-                       {new Date(kickoff).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
+                       {new Date(kickoff).toLocaleTimeString(locale === 'es' ? 'es-AR' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </div>
                   </div>
                 ) : (
@@ -110,9 +113,9 @@ export function MatchCard({
         
         {/* Home Team */}
         <div className={`flex flex-col items-center sm:flex-row sm:gap-4 w-[40%] ${predictedWinner === PredictionOutcome.HOME ? 'scale-105 transition-transform' : ''}`}>
-           <TeamBadge name={homeTeam.name} code={homeTeam.code} size="sm" />
+           <TeamBadge name={homeTeam.name} code={homeTeam.code} size="sm" isAway={false} />
            <div className="mt-2 sm:mt-0 text-center sm:text-left">
-             <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{homeTeam.name}</div>
+             <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{translateTeamName(homeTeam.name, locale)}</div>
              <div className="text-[10px] font-bold tracking-widest text-muted-foreground italic">{homeTeam.code}</div>
            </div>
         </div>
@@ -134,9 +137,9 @@ export function MatchCard({
 
         {/* Away Team */}
         <div className={`flex flex-col items-center sm:flex-row-reverse sm:gap-4 w-[40%] ${predictedWinner === PredictionOutcome.AWAY ? 'scale-105 transition-transform' : ''}`}>
-           <TeamBadge name={awayTeam.name} code={awayTeam.code} size="sm" />
+           <TeamBadge name={awayTeam.name} code={awayTeam.code} size="sm" isAway={true} homeCode={homeTeam.code} />
            <div className="mt-2 sm:mt-0 text-center sm:text-right">
-             <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{awayTeam.name}</div>
+             <div className="text-sm sm:text-base font-bold text-foreground font-sans line-clamp-1">{translateTeamName(awayTeam.name, locale)}</div>
              <div className="text-[10px] font-bold tracking-widest text-muted-foreground italic">{awayTeam.code}</div>
            </div>
         </div>

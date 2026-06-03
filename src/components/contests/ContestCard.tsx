@@ -5,6 +5,8 @@ import { formatDateShort } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { DataFlowPulse } from './LivePulse';
 import { getArenaImagery } from '@/lib/graphics';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface ContestCardProps {
   id: string;
@@ -31,6 +33,8 @@ export default function ContestCard({
   maxParticipants,
   startDate,
 }: ContestCardProps & { prizePoolPoolAmount?: number }) {
+  const { locale } = useAuthStore();
+  const t = locales[locale].contestCard;
 
   const isFree = entryFeeSOL === 0;
   const isLive = status === ContestStatus.ACTIVE;
@@ -63,7 +67,7 @@ export default function ContestCard({
             <div className="w-2.5 h-2.5 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
               <div className="w-1 h-1 rounded-full bg-primary shadow-[0_0_8px_#00E676]" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Sector Arena · Entry Alpha</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">{t.sectorArena} · {t.entryAlpha}</span>
           </div>
           <DataFlowPulse />
         </div>
@@ -73,8 +77,8 @@ export default function ContestCard({
             <div className={`flex items-center gap-3 px-3 py-1.5 rounded-xl w-fit bg-white/5 border border-white/10 backdrop-blur-xl shadow-inner`}>
                <img src={imagery.badge} alt="Arena Badge" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
                <div className="flex flex-col">
-                  <span className="text-[8px] font-black uppercase tracking-[0.25em] text-white/40 leading-none mb-1">Sector Match</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#00E676] leading-none">Verified</span>
+                  <span className="text-[8px] font-black uppercase tracking-[0.25em] text-white/40 leading-none mb-1">{locale === 'es' ? 'Partido de Sector' : 'Sector Match'}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#00E676] leading-none">{t.verified}</span>
                </div>
             </div>
             <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-tight group-hover:text-primary transition-colors pr-4 drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
@@ -86,7 +90,7 @@ export default function ContestCard({
             {isFree ? (
               <div className="flex flex-col items-end">
                 <div className="inline-flex items-center gap-1.5 rounded-lg bg-primary/20 px-3 py-1.5 border border-primary/40 text-[9px] font-black text-primary uppercase tracking-widest shadow-[0_0_15px_rgba(0,230,118,0.2)]">
-                  <Zap size={10} fill="currentColor" /> Open Access
+                  <Zap size={10} fill="currentColor" /> {t.openAccess}
                 </div>
               </div>
             ) : (
@@ -97,7 +101,7 @@ export default function ContestCard({
             
             {isLive ? (
               <div className="flex items-center gap-1.5 text-[9px] font-black text-primary tracking-widest uppercase mt-1 animate-pulse">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Deployed
+                <div className="w-1.5 h-1.5 rounded-full bg-primary" /> {t.deployed}
               </div>
             ) : (
               <div className="text-[9px] font-black text-white/30 tracking-widest uppercase flex items-center gap-1.5 mt-1">
@@ -114,13 +118,13 @@ export default function ContestCard({
              <div className="flex items-center gap-2 opacity-30">
                <ShieldAlert size={10} className={isPremium ? 'text-gold' : 'text-primary'} />
                <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white">
-                 Arena Stakes
+                 {t.arenaStakes}
                </span>
              </div>
              <div className="flex items-center gap-2.5">
                <Trophy className={`h-6 w-6 ${isPremium ? 'text-gold drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]' : 'text-primary'}`} />
                <span className={`text-2xl font-black italic tracking-tighter ${isPremium ? 'text-gold' : 'text-white'}`}>
-                 {(prizePoolPoolAmount > 0 || (prizePool && Number(prizePool) > 0)) ? `${prizePoolPoolAmount || (Number(prizePool) / 1e9)} SOL` : 'TBA'}
+                 {(prizePoolPoolAmount > 0 || (prizePool && Number(prizePool) > 0)) ? `${prizePoolPoolAmount || (Number(prizePool) / 1e9)} SOL` : t.tba}
                </span>
              </div>
            </div>
@@ -130,7 +134,7 @@ export default function ContestCard({
              <div className="flex items-center gap-2 opacity-30">
                <Users size={10} className="text-white" />
                <span className="text-[9px] uppercase font-black tracking-[0.2em] text-white">
-                 Rivals Deployed
+                 {t.rivalsDeployed}
                </span>
              </div>
              <div className="flex items-center gap-2.5">

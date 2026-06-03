@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, Medal, Crown, Loader2, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { FadeInRow } from '@/components/layout/PageTransition';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface RankUser {
   walletAddress: string;
@@ -23,6 +25,8 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
   const [ranks, setRanks] = useState<RankUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [displayRanks, setDisplayRanks] = useState<RankUser[]>([]);
+  const { locale } = useAuthStore();
+  const t = locales[locale].tournamentRankings;
 
   useEffect(() => {
     fetch(`/api/contests/${contestId}/rankings`)
@@ -42,7 +46,7 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
        } else {
           updatedRanks.push({ 
             walletAddress: userWallet, 
-            displayName: userName || 'Me (Simulated)', 
+            displayName: userName || (locale === 'es' ? 'Yo (Simulado)' : 'Me (Simulated)'), 
             points: simulatedPoints, 
             isSimulated: true 
           });
@@ -50,14 +54,14 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
        updatedRanks.sort((a, b) => b.points - a.points);
     }
     setDisplayRanks(updatedRanks);
-  }, [ranks, simulatedPoints, userWallet, userName]);
+  }, [ranks, simulatedPoints, userWallet, userName, locale]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center p-20 space-y-4">
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
         <Loader2 className="w-8 h-8 text-primary" />
       </motion.div>
-      <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.4em]">Synchronizing Elite Standings</span>
+      <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.4em]">{t.syncing}</span>
     </div>
   );
 
@@ -68,9 +72,9 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
       <table className="w-full text-sm text-left relative z-10">
         <thead className="bg-white/[0.03] text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-primary/60 border-b border-white/[0.05]">
           <tr>
-            <th className="px-6 sm:px-10 py-6">Pos</th>
-            <th className="px-6 sm:px-10 py-6">Elite Tactician</th>
-            <th className="px-6 sm:px-10 py-6 text-right">XP / Score</th>
+            <th className="px-6 sm:px-10 py-6">{t.pos}</th>
+            <th className="px-6 sm:px-10 py-6">{t.tactician}</th>
+            <th className="px-6 sm:px-10 py-6 text-right">{t.score}</th>
           </tr>
         </thead>
         
@@ -117,10 +121,10 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
                          {row.displayName || `${row.walletAddress.slice(0, 6)}...${row.walletAddress.slice(-4)}`}
                       </span>
                       {index < 3 && (
-                        <span className="text-[8px] font-black text-primary/40 uppercase tracking-widest leading-none mt-1">Podium Qualifier</span>
+                        <span className="text-[8px] font-black text-primary/40 uppercase tracking-widest leading-none mt-1">{t.podium}</span>
                       )}
                       {row.isSimulated && (
-                        <span className="text-[8px] font-black text-gold uppercase tracking-widest leading-none mt-1 italic animate-pulse">Simulation Active</span>
+                        <span className="text-[8px] font-black text-gold uppercase tracking-widest leading-none mt-1 italic animate-pulse">{t.simActive}</span>
                       )}
                    </div>
                 </div>
@@ -132,7 +136,7 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
                    }`}>
                       {row.points}
                    </span>
-                   <span className="text-[8px] font-black text-white/10 uppercase tracking-widest mt-1">Total Pts</span>
+                   <span className="text-[8px] font-black text-white/10 uppercase tracking-widest mt-1">{t.totalPts}</span>
                 </div>
               </td>
             </FadeInRow>
@@ -143,7 +147,7 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
               <td colSpan={3} className="px-10 py-24 text-center">
                  <div className="flex flex-col items-center opacity-30">
                     <Trophy className="w-12 h-12 mb-4 text-primary/40" />
-                    <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">Standings Encrypting...</p>
+                    <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] italic">{t.encrypting}</p>
                  </div>
               </td>
             </tr>
@@ -155,9 +159,9 @@ export function TournamentRankings({ contestId, simulatedPoints, userName, userW
       <div className="bg-white/[0.02] border-t border-white/[0.05] px-6 py-4 flex items-center justify-between gap-4">
          <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_5px_#00E676]" />
-            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Official Results Protocol Active</span>
+            <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">{t.protocolActive}</span>
          </div>
-         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] italic">Verification courtesy of official league indices</span>
+         <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] italic">{t.verificationCourtesy}</span>
       </div>
     </div>
   );

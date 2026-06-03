@@ -8,19 +8,19 @@ import ContestCard from '@/components/contests/ContestCard';
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { getArenaImagery } from '@/lib/graphics';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const QUICK_FILTERS = [
-  { id: 'all', name: 'Command Center', icon: Sparkles },
-  { id: 'football', name: 'Football', icon: Activity },
-  { id: 'motorsports', name: 'Formula 1', icon: Fuel },
-  { id: 'nba', name: 'NBA', icon: Target },
-  { id: 'rugby', name: 'Rugby', icon: ShieldCheck },
+  { id: 'football', name: 'FIFA World Cup 2026', icon: Trophy },
 ];
 
 function ContestsLobbyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const sportSlug = searchParams.get('sport') || 'all';
+  const sportSlug = searchParams.get('sport') || 'football';
+  const { locale } = useAuthStore();
+  const t = locales[locale].lobbyPage;
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -55,7 +55,7 @@ function ContestsLobbyContent() {
                        <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
                           <Trophy className="text-primary w-7 h-7 filter drop-shadow-[0_0_10px_rgba(0,230,118,0.5)]" />
                        </div>
-                       {activeSport.name} <span className="text-primary">Sectors</span>
+                       {locale === 'es' ? `Sectores de ${activeSport.name}` : `${activeSport.name} Sectors`}
                     </h1>
                  </div>
 
@@ -68,9 +68,9 @@ function ContestsLobbyContent() {
                             key={f.id}
                             onClick={() => router.push(f.id === 'all' ? '/contests' : `/contests?sport=${f.id}`)}
                             className={`whitespace-nowrap h-12 px-6 rounded-xl flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group/btn ${
-                               isActive 
-                               ? 'bg-primary text-midnight shadow-[0_0_20px_rgba(0,230,118,0.3)]' 
-                               : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white'
+                                isActive 
+                                ? 'bg-primary text-midnight shadow-[0_0_20px_rgba(0,230,118,0.3)]' 
+                                : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white'
                             }`}
                           >
                              <f.icon size={12} className={isActive ? 'animate-pulse' : ''} />
@@ -98,7 +98,7 @@ function ContestsLobbyContent() {
                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                        <input 
                          type="text" 
-                         placeholder="Search Active Combat Sectors..." 
+                         placeholder={t.searchPlaceholder} 
                          className="w-full h-12 bg-transparent pl-12 pr-4 text-[10px] font-black uppercase tracking-widest text-white placeholder:text-white/10 outline-none"
                        />
                     </div>
@@ -117,8 +117,8 @@ function ContestsLobbyContent() {
                           <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/10">
                              <Target className="text-white/10" size={40} />
                           </div>
-                          <h3 className="text-xl font-black text-white uppercase italic tracking-[0.2em] mb-3">No Arenas Detected</h3>
-                          <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">Scanning system for available deployment zones...</p>
+                          <h3 className="text-xl font-black text-white uppercase italic tracking-[0.2em] mb-3">{t.noArenasTitle}</h3>
+                          <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">{t.noArenasDesc}</p>
                        </div>
                     )}
                  </div>
@@ -132,14 +132,14 @@ function ContestsLobbyContent() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl group-hover:bg-primary/10 transition-colors" />
                     <div className="flex items-center gap-3 text-primary mb-8 border-b border-white/5 pb-5">
                        <Key size={16} className="animate-pulse" />
-                       <span className="text-[11px] font-black uppercase tracking-[0.4em]">Encrypted Access</span>
+                       <span className="text-[11px] font-black uppercase tracking-[0.4em]">{t.encryptedAccess}</span>
                     </div>
                     
                     <div className="space-y-5">
                        <div className="flex gap-2 relative">
                           <input 
                             type="text" 
-                            placeholder="Enter Signature" 
+                            placeholder={t.enterSignature} 
                             className="flex-1 h-14 bg-black/40 border border-white/10 rounded-2xl px-6 font-black text-[11px] uppercase tracking-[0.2em] focus:border-primary/50 outline-none text-white placeholder:text-white/10 transition-all"
                           />
                           <button className="w-14 h-14 bg-primary/10 text-primary border border-primary/20 rounded-2xl flex items-center justify-center hover:bg-primary hover:text-midnight transition-all shadow-xl hover:shadow-primary/20">
@@ -150,7 +150,7 @@ function ContestsLobbyContent() {
                          onClick={() => setIsModalOpen(true)}
                          className="w-full h-14 border-2 border-dashed border-white/10 hover:border-primary/40 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 hover:text-primary transition-all rounded-2xl flex items-center justify-center gap-3 bg-white/[0.01]"
                        >
-                          <PlusCircle size={16} /> Initialize Node
+                          <PlusCircle size={16} /> {t.initializeNode}
                        </button>
                     </div>
                  </div>
@@ -165,11 +165,11 @@ function ContestsLobbyContent() {
                           <Trophy className="text-gold" size={32} />
                        </div>
                        <div className="space-y-2">
-                          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter drop-shadow-md">Elite <span className="text-gold">Sectors</span></h2>
-                          <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] max-w-[220px] leading-relaxed mx-auto">High stakes arenas with confirmed liquidity pools for top-tier tacticians.</p>
+                          <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter drop-shadow-md">{t.eliteSectors.split(' ')[0]} <span className="text-gold">{t.eliteSectors.split(' ')[1] || 'Sectors'}</span></h2>
+                          <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] max-w-[220px] leading-relaxed mx-auto">{t.eliteSectorsDesc}</p>
                        </div>
                        <button className="w-full h-12 bg-gold/10 hover:bg-gold text-gold hover:text-midnight border border-gold/20 font-black text-[10px] uppercase tracking-[0.3em] transition-all rounded-2xl shadow-[0_0_20px_rgba(255,215,0,0.1)]">
-                          Request Deployment
+                          {t.requestDeployment}
                        </button>
                     </div>
                  </div>
@@ -179,7 +179,7 @@ function ContestsLobbyContent() {
         </div>
 
         {isModalOpen && <CreatePrivateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />}
-      </div>
+     </div>
     </PageTransition>
   );
 }

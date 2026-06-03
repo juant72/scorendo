@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: NextRequest) {
   try {
     const competitions = await prisma.competition.findMany({
+      where: { slug: 'fifa-world-cup-2026' },
       orderBy: { name: 'asc' },
       select: { id: true, name: true, slug: true }
     });

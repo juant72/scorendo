@@ -6,12 +6,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDateShort(date: Date | string): string {
+export function formatDateShort(date: Date | string, locale: string = 'en'): string {
   try {
     const d = new Date(date)
     if (isNaN(d.getTime())) return 'TBD';
     
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(locale === 'es' ? 'es-AR' : 'en-US', {
       month: 'short',
       day: 'numeric',
       hour: 'numeric',

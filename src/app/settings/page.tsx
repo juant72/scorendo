@@ -3,8 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { User, Shield, Bell, CreditCard, Save, Loader2, CheckCircle2 } from 'lucide-react';
 import { PageTransition, FadeInItem } from '@/components/layout/PageTransition';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function SettingsPage() {
+  const { locale } = useAuthStore();
+  const t = locales[locale].settings;
+
   const [user, setUser] = useState<{ walletAddress: string; displayName?: string; email?: string } | null>(null);
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
@@ -30,10 +35,10 @@ export default function SettingsPage() {
       })
       .catch(err => {
         console.error('Settings Profile Error:', err);
-        setStatus({ type: 'error', msg: 'Session expired or profile unavailable.' });
+        setStatus({ type: 'error', msg: locale === 'es' ? 'Sesión expirada o perfil no disponible.' : 'Session expired or profile unavailable.' });
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [locale]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,12 +54,12 @@ export default function SettingsPage() {
       const data = await res.json();
       
       if (data.success) {
-        setStatus({ type: 'success', msg: 'Profile updated successfully!' });
+        setStatus({ type: 'success', msg: t.updateSuccess });
       } else {
-        setStatus({ type: 'error', msg: data.error || 'Failed to update profile.' });
+        setStatus({ type: 'error', msg: data.error || t.updateFailed });
       }
     } catch (error) {
-      setStatus({ type: 'error', msg: 'Sync error. Please try again.' });
+      setStatus({ type: 'error', msg: t.syncError });
     } finally {
       setSaving(false);
     }
@@ -66,17 +71,17 @@ export default function SettingsPage() {
     <PageTransition>
       <div className="max-w-4xl mx-auto px-4 py-12 lg:py-20 mb-20 lg:mb-0">
         <div className="flex flex-col gap-2 mb-12 text-center sm:text-left">
-           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight italic">Heritage Settings</h1>
-           <p className="text-muted-foreground">Customize your global identity and preferences.</p>
+           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight italic uppercase">{t.title}</h1>
+           <p className="text-muted-foreground uppercase tracking-widest text-[10px] font-black">{t.subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
            {/* Sidebar Links */}
            <div className="flex lg:flex-col gap-2 overflow-x-auto pb-4 lg:pb-0 scroll-hide">
-              <SettingTab icon={<User size={18}/>} label="Identity" active />
-              <SettingTab icon={<Shield size={18}/>} label="Privacy" disabled />
-              <SettingTab icon={<Bell size={18}/>} label="Alerts" disabled />
-              <SettingTab icon={<CreditCard size={18}/>} label="Wallet" disabled />
+              <SettingTab icon={<User size={18}/>} label={t.tabs.identity} active soonLabel={t.soon} />
+              <SettingTab icon={<Shield size={18}/>} label={t.tabs.privacy} disabled soonLabel={t.soon} />
+              <SettingTab icon={<Bell size={18}/>} label={t.tabs.alerts} disabled soonLabel={t.soon} />
+              <SettingTab icon={<CreditCard size={18}/>} label={t.tabs.wallet} disabled soonLabel={t.soon} />
            </div>
 
            {/* Main Content */}
@@ -86,18 +91,18 @@ export default function SettingsPage() {
                     <div className="space-y-6">
                        <h2 className="text-xl font-bold flex items-center gap-2 text-white">
                           <User className="text-primary" size={20} />
-                          Global Nickname
+                          {t.nicknameTitle}
                        </h2>
                        <div className="space-y-2">
                           <input 
                              type="text" 
                              value={nickname}
                              onChange={(e) => setNickname(e.target.value)}
-                             placeholder="Enter your hero name..."
+                             placeholder={t.nicknamePlaceholder}
                              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-primary outline-none transition-all placeholder:text-white/20"
                           />
                           <p className="text-[10px] text-muted-foreground uppercase tracking-widest px-2 italic">
-                             This name will appear on the global rankings.
+                             {t.nicknameDesc}
                           </p>
                        </div>
                     </div>
@@ -105,18 +110,18 @@ export default function SettingsPage() {
                     <div className="space-y-6">
                        <h2 className="text-xl font-bold flex items-center gap-2 text-white">
                           <Bell className="text-primary" size={20} />
-                          Private Email
+                          {t.emailTitle}
                        </h2>
                        <div className="space-y-2">
                           <input 
                              type="email" 
                              value={email}
                              onChange={(e) => setEmail(e.target.value)}
-                             placeholder="notifications@arena.tech"
+                             placeholder={t.emailPlaceholder}
                              className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-primary outline-none transition-all placeholder:text-white/20"
                           />
                           <p className="text-[10px] text-muted-foreground uppercase tracking-widest px-2 italic">
-                             Used for important prize pool notifications.
+                             {t.emailDesc}
                           </p>
                        </div>
                     </div>
@@ -135,7 +140,7 @@ export default function SettingsPage() {
                           className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-primary text-black font-black uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-2"
                        >
                           {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                          Save Changes
+                          {t.btnSave}
                        </button>
                     </div>
                  </form>
@@ -144,11 +149,11 @@ export default function SettingsPage() {
               <FadeInItem delay={0.2}>
                  <div className="p-8 bg-black/20 border border-white/5 rounded-3xl flex items-center justify-between">
                     <div className="space-y-1">
-                       <h3 className="text-sm font-bold text-white uppercase italic">Wallet Connection</h3>
+                       <h3 className="text-sm font-bold text-white uppercase italic">{t.walletTitle}</h3>
                        <p className="text-xs text-muted-foreground font-mono">{user?.walletAddress}</p>
                     </div>
                     <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase">
-                       Authenticated
+                       {t.authenticated}
                     </div>
                  </div>
               </FadeInItem>
@@ -159,7 +164,7 @@ export default function SettingsPage() {
   );
 }
 
-function SettingTab({ icon, label, active, disabled }: { icon: React.ReactNode, label: string, active?: boolean, disabled?: boolean }) {
+function SettingTab({ icon, label, active, disabled, soonLabel }: { icon: React.ReactNode, label: string, active?: boolean, disabled?: boolean, soonLabel: string }) {
   return (
     <button 
       disabled={disabled}
@@ -171,7 +176,7 @@ function SettingTab({ icon, label, active, disabled }: { icon: React.ReactNode, 
     >
       {icon}
       <span className="text-sm uppercase tracking-wider">{label}</span>
-      {disabled && <span className="text-[8px] bg-white/5 px-1.5 py-0.5 rounded ml-auto">SOON</span>}
+      {disabled && <span className="text-[8px] bg-white/5 px-1.5 py-0.5 rounded ml-auto">{soonLabel}</span>}
     </button>
   );
 }

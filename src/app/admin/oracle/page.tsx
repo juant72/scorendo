@@ -99,14 +99,12 @@ export default function OracleHub() {
 
           <div className="flex bg-midnight/60 p-2 rounded-3xl border border-white/10 relative z-10 shadow-inner">
              {[
-               { id: 'football', label: 'Football', icon: Activity },
-               { id: 'motorsports', label: 'F1', icon: Fuel },
-               { id: 'nba', label: 'NBA', icon: Target }
+               { id: 'football', label: 'Football', icon: Activity }
              ].map((s) => (
                <button
                  key={s.id}
                  onClick={() => setActiveSport(s.id)}
-                 className={`rounded-2xl px-6 h-14 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all ${activeSport === s.id ? 'bg-primary text-midnight shadow-xl' : 'text-white/30 hover:text-white hover:bg-white/5'}`}
+                 className="rounded-2xl px-6 h-14 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all bg-primary text-midnight shadow-xl"
                >
                  <s.icon size={16} />
                  {s.label}
@@ -159,6 +157,7 @@ export default function OracleHub() {
                                  code={m.homeTeam.code} 
                                  hideName 
                                  sport={m.phase.tournament.competition.sport.slug}
+                                 isAway={false}
                                />
                              </div>
                           </div>
@@ -174,6 +173,8 @@ export default function OracleHub() {
                                  code={m.awayTeam.code} 
                                  hideName 
                                  sport={m.phase.tournament.competition.sport.slug}
+                                 isAway={true}
+                                 homeCode={m.homeTeam.code}
                                />
                              </div>
                           </div>

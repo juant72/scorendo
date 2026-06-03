@@ -80,7 +80,7 @@ export function Header() {
                href="/dashboard"
                className="group flex items-center justify-center h-10 px-4 bg-primary text-midnight hover:bg-primary/90 font-black text-xs uppercase tracking-widest transition-all rounded-xl shadow-[0_0_15px_rgba(0,230,118,0.3)] hover:shadow-[0_0_25px_rgba(0,230,118,0.6)]"
             >
-               Locker Room
+               {t.lockerRoom || 'Locker Room'}
             </Link>
           ) : (
              <div className="hover:scale-105 transition-transform"><AuthButton /></div>
@@ -101,10 +101,10 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Nav */}
+        {/* Mobile Nav (Holographic Overlay) */}
         {mobileOpen && (
-          <nav className="md:hidden pb-4 border-t border-border/50 mt-2 pt-4 space-y-1">
-            <div className="px-3 pb-3 sm:hidden">
+          <nav className="absolute top-[4.5rem] left-0 right-0 lg:hidden pb-6 pt-4 px-6 bg-[#020814]/95 border-b border-white/5 space-y-3 z-50 flex flex-col shadow-2xl backdrop-blur-xl">
+            <div className="pb-3 border-b border-white/5 sm:hidden">
               <LanguageSelector />
             </div>
             {navLinks.map((link) => (
@@ -112,7 +112,7 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5"
+                className="block py-2 text-xs font-black uppercase tracking-wider text-white/50 hover:text-white transition-all"
               >
                 {link.label}
               </Link>
@@ -121,7 +121,7 @@ export function Header() {
               <Link
                 href="/dashboard"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-medium text-primary rounded-md hover:bg-primary/5"
+                className="block py-2 text-xs font-black uppercase tracking-wider text-primary hover:text-primary/80 transition-all"
               >
                 {t.dashboard}
               </Link>

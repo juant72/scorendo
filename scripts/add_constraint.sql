@@ -1,0 +1,1 @@
+ALTER TABLE "Group" ADD CONSTRAINT "phaseId_name" UNIQUE ("phaseId", "name");

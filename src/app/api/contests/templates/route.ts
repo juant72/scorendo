@@ -17,7 +17,11 @@ export async function GET(req: NextRequest) {
       where: {
         isPrivate: false,
         status: { in: ['UPCOMING', 'REGISTRATION', 'ACTIVE'] },
-        startDate: { gt: oneHourFromNow } // Must have at least 1 hour safety buffer
+        startDate: { gt: oneHourFromNow }, // Must have at least 1 hour safety buffer
+        OR: [
+          { tournament: { slug: 'fifa-world-cup-2026' } },
+          { phase: { tournament: { slug: 'fifa-world-cup-2026' } } }
+        ]
       },
       select: {
         id: true,

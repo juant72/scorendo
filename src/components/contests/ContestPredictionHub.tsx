@@ -5,6 +5,8 @@ import { PredictionForm } from './PredictionForm';
 import { TournamentRankings } from './TournamentRankings';
 import { LayoutGrid, ListOrdered, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface Props {
   contestId: string;
@@ -29,6 +31,8 @@ export function ContestPredictionHub({
 }: Props) {
   const [activeTab, setActiveTab] = useState<'matches' | 'rankings'>('matches');
   const [simulatedPoints, setSimulatedPoints] = useState<number | undefined>(undefined);
+  const { locale } = useAuthStore();
+  const t = locales[locale].contestPredictionHub;
 
   return (
     <div className="space-y-8">
@@ -38,13 +42,13 @@ export function ContestPredictionHub({
           onClick={() => setActiveTab('matches')}
           className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'matches' ? 'bg-primary text-midnight shadow-[0_0_20px_#00E67644]' : 'text-muted-foreground hover:text-white'}`}
         >
-          <LayoutGrid className="w-3.5 h-3.5" /> Loadout
+          <LayoutGrid className="w-3.5 h-3.5" /> {t.loadout}
         </button>
         <button 
           onClick={() => setActiveTab('rankings')}
           className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'rankings' ? 'bg-primary text-midnight shadow-[0_0_20px_#00E67644]' : 'text-muted-foreground hover:text-white'}`}
         >
-          <ListOrdered className="w-3.5 h-3.5" /> Global Standing
+          <ListOrdered className="w-3.5 h-3.5" /> {t.globalStanding}
           {simulatedPoints !== undefined && (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 bg-gold rounded-full" />
           )}
@@ -71,14 +75,14 @@ export function ContestPredictionHub({
                       className="fixed bottom-10 right-10 z-[100] h-14 pl-6 pr-2 rounded-2xl bg-gold/90 backdrop-blur-xl border border-gold text-midnight flex items-center gap-6 shadow-2xl stadium-shadow"
                     >
                        <div className="flex flex-col">
-                          <span className="text-[8px] font-black uppercase tracking-widest opacity-60">Tactical Projection</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest opacity-60">{t.tacticalProjection}</span>
                           <span className="text-xl font-black italic tabular-nums">+{simulatedPoints} XP</span>
                        </div>
                        <button 
                          onClick={() => setActiveTab('rankings')}
                          className="h-10 px-4 rounded-xl bg-midnight text-gold text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all"
                        >
-                         Preview Rank
+                         {t.previewRank}
                        </button>
                     </motion.div>
                   )}
@@ -105,7 +109,7 @@ export function ContestPredictionHub({
               <div className="space-y-6">
                 <div className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-gold/10 border border-gold/20 w-fit">
                    <Sparkles className="w-4 h-4 text-gold" />
-                   <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">Live Simulation Mode Active</span>
+                   <span className="text-[10px] font-black text-gold uppercase tracking-[0.2em]">{t.liveSimActive}</span>
                 </div>
                 <TournamentRankings 
                   contestId={contestId} 

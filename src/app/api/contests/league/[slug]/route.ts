@@ -8,6 +8,10 @@ export async function GET(
   try {
     const { slug } = await params;
 
+    if (slug !== 'fifa-world-cup-2026') {
+      return NextResponse.json({ success: false, error: 'Competition not found or offline' }, { status: 404 });
+    }
+
     const competition = await prisma.competition.findUnique({
       where: { slug },
       include: {

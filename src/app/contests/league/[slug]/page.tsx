@@ -16,11 +16,13 @@ import { getArenaImagery } from '@/lib/graphics';
 import { DataFlowPulse } from '@/components/contests/LivePulse';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { locales, translateTeamName, translatePhaseName } from '@/lib/locales';
 
 export default function LeagueDashboardPage() {
   const router = useRouter();
   const { slug } = useParams();
-  const { user } = useAuthStore();
+  const { user, locale } = useAuthStore();
+  const t = locales[locale].leaguePage;
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'matches' | 'rankings'>('matches');
@@ -44,7 +46,7 @@ export default function LeagueDashboardPage() {
               <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
            </div>
         </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 animate-pulse">Syncing Arena Data...</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 animate-pulse">{t.syncingData}</span>
       </div>
     );
   }
@@ -54,12 +56,12 @@ export default function LeagueDashboardPage() {
         <div className="min-h-screen bg-[#020814] flex items-center justify-center">
            <div className="text-center">
               <Target size={60} className="text-white/10 mx-auto mb-6" />
-              <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">Arena Link Offline</h2>
+              <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4">{t.arenaOffline}</h2>
               <button 
                 onClick={() => router.push('/contests')}
                 className="px-8 h-12 bg-white text-midnight font-black rounded-xl text-[10px] uppercase tracking-widest hover:bg-primary transition-all"
               >
-                 Return to Sectors
+                 {t.returnSectors}
               </button>
            </div>
         </div>
@@ -81,21 +83,21 @@ export default function LeagueDashboardPage() {
           {/* Navigation & Operational Info */}
           <div className="flex items-center justify-between mb-10 pb-6 border-b border-white/5">
              <Breadcrumbs 
-               items={[
-                  { label: 'Sectors', href: '/contests' },
-                  { label: data.sport?.name || 'Protocol', href: `/contests?sport=${data.sport?.slug}` },
-                  { label: data.name }
-               ]} 
+                items={[
+                   { label: t.breadcrumbs.sectors, href: '/contests' },
+                   { label: data.sport?.name || t.breadcrumbs.protocol, href: `/contests?sport=${data.sport?.slug}` },
+                   { label: data.name }
+                ]} 
              />
              <div className="hidden md:flex items-center gap-6">
                 <div className="flex flex-col items-end">
-                   <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Protocol Version</span>
+                   <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">{t.protocolVersion}</span>
                    <span className="text-[11px] font-black text-primary tracking-tighter">v4.2.0-STADIUM</span>
                 </div>
                 <div className="h-8 w-px bg-white/10" />
                 <div className="flex items-center gap-3">
                    <div className="w-2 h-2 bg-[#00E676] rounded-full animate-pulse" />
-                   <span className="text-[10px] font-black text-white uppercase tracking-widest">Node Verified</span>
+                   <span className="text-[10px] font-black text-white uppercase tracking-widest">{t.nodeVerified}</span>
                    <DataFlowPulse />
                 </div>
              </div>
@@ -116,7 +118,7 @@ export default function LeagueDashboardPage() {
                      <div className="flex items-center gap-4 mb-8">
                         <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-2xl">
                            <img src={imagery.badge || '/badge_worldcup.png'} alt="League Logo" className="w-6 h-6 object-contain opacity-80" />
-                           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">{data.category || 'Professional Division'}</span>
+                           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">{data.category || t.professionalDivision}</span>
                         </div>
                         {user?.isAdmin && (
                            <Link href={`/admin/competitions/${data.id}`} className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-midnight transition-all">
@@ -129,13 +131,13 @@ export default function LeagueDashboardPage() {
                      </h1>
                      <div className="flex flex-wrap items-center gap-8 mt-10">
                         <div className="flex flex-col">
-                           <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-1">Status</span>
-                           <span className="text-xl font-black text-white uppercase italic tracking-tighter">Active Arena</span>
+                           <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-1">{t.status}</span>
+                           <span className="text-xl font-black text-white uppercase italic tracking-tighter">{t.activeArena}</span>
                         </div>
                         <div className="w-px h-10 bg-white/10" />
                         <div className="flex flex-col">
-                           <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mb-1">Operational Area</span>
-                           <span className="text-xl font-black text-white uppercase italic tracking-tighter">{data.country || 'Global'}</span>
+                           <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mb-1">{t.operationalArea}</span>
+                           <span className="text-xl font-black text-white uppercase italic tracking-tighter">{data.country || t.global}</span>
                         </div>
                      </div>
                   </div>
@@ -148,7 +150,7 @@ export default function LeagueDashboardPage() {
             <div className="lg:col-span-4 space-y-12">
                <div>
                   <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 flex items-center gap-4">
-                     <span className="w-8 h-px bg-white/10" /> High Stakes Hub
+                     <span className="w-8 h-px bg-white/10" /> {t.highStakesHub}
                   </h2>
                   <div className="space-y-4">
                      {seasonContests.length > 0 ? seasonContests.map((contest: any) => (
@@ -160,7 +162,7 @@ export default function LeagueDashboardPage() {
                         >
                            <div className="flex items-center justify-between mb-4">
                               <div className={`px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${contest.tier === 'PREMIUM' ? 'bg-gold text-midnight' : 'bg-white/5 text-white/40'}`}>
-                                 {contest.tier} TIER
+                                 {locale === 'es' ? `${t.tier} ${contest.tier === 'FREE' ? 'Gratis' : contest.tier === 'STANDARD' ? 'Estándar' : 'Premium'}` : `${contest.tier} ${t.tier}`}
                               </div>
                               <Trophy size={16} className={contest.tier === 'PREMIUM' ? 'text-gold' : 'text-white/10'} />
                            </div>
@@ -168,17 +170,17 @@ export default function LeagueDashboardPage() {
                            <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                  <Users size={12} className="text-white/20" />
-                                 <span className="text-[10px] font-black text-white/40">{contest._count?.entries || 0} DEPLOYED</span>
+                                 <span className="text-[10px] font-black text-white/40">{contest._count?.entries || 0} {t.deployedCount}</span>
                               </div>
                               <div className="text-primary font-black text-[12px] uppercase">
-                                 {contest.entryFeeSOL > 0 ? `${contest.entryFeeSOL} SOL` : 'FREE'}
+                                 {contest.entryFeeSOL > 0 ? `${contest.entryFeeSOL} SOL` : t.free}
                               </div>
                            </div>
                         </motion.div>
                      )) : (
                        <div className="bg-[#060D1A]/50 rounded-3xl p-10 text-center border-2 border-dashed border-white/5">
                           <Activity className="mx-auto text-white/5 mb-4" size={32} />
-                          <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">Awaiting Grand Tournaments...</p>
+                          <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">{t.awaitingGrand}</p>
                        </div>
                      )}
                   </div>
@@ -188,10 +190,10 @@ export default function LeagueDashboardPage() {
                <div className="bg-primary/5 rounded-[2.5rem] border border-primary/10 p-8 space-y-6">
                   <div className="flex items-center gap-3 text-primary">
                      <ShieldCheck size={18} />
-                     <span className="text-[11px] font-black uppercase tracking-[0.3em]">Command Recon</span>
+                     <span className="text-[11px] font-black uppercase tracking-[0.3em]">{t.commandRecon}</span>
                   </div>
                   <p className="text-[11px] text-white/40 leading-relaxed font-black uppercase tracking-widest">
-                     The following matchdays represent high-velocity deployment zones. Predict outcome with precision to dominate the {data.name} leaderboard.
+                     {t.commandReconDesc}
                   </p>
                </div>
             </div>
@@ -204,18 +206,18 @@ export default function LeagueDashboardPage() {
                        onClick={() => setActiveTab('matches')}
                        className={`flex items-center gap-3 px-8 h-12 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'matches' ? 'bg-primary text-midnight shadow-[0_0_15px_rgba(0,230,118,0.3)]' : 'text-white/30 hover:text-white'}`}
                      >
-                        <Activity size={12} /> Strategic Ops
+                        <Activity size={12} /> {t.strategicOps}
                      </button>
                      <button 
                        onClick={() => setActiveTab('rankings')}
                        className={`flex items-center gap-3 px-8 h-12 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'rankings' ? 'bg-primary text-midnight shadow-[0_0_15px_rgba(0,230,118,0.3)]' : 'text-white/30 hover:text-white'}`}
                      >
-                        <ListOrdered size={12} /> Leaderboard
+                        <ListOrdered size={12} /> {t.leaderboard}
                      </button>
                   </div>
                   <div className="hidden sm:flex items-center gap-3">
                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                     <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">Live Data Stream</span>
+                     <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">{t.liveDataStream}</span>
                   </div>
                </div>
 
@@ -234,9 +236,9 @@ export default function LeagueDashboardPage() {
                                  <div className="space-y-3">
                                     <div className="inline-flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.4em]">
                                        <Calendar size={12} />
-                                       {new Date(phase.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                       {new Date(phase.startDate).toLocaleDateString(locale === 'es' ? 'es-AR' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                     </div>
-                                    <h4 className="text-3xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-none">{phase.name}</h4>
+                                    <h4 className="text-3xl md:text-4xl font-black text-white uppercase italic tracking-tighter leading-none">{translatePhaseName(phase.name, locale)}</h4>
                                  </div>
 
                                  <div className="flex flex-wrap gap-3">
@@ -246,7 +248,7 @@ export default function LeagueDashboardPage() {
                                           onClick={() => router.push(`/contests/${c.slug}`)}
                                           className={`group/btn relative h-14 px-10 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] transition-all border-2 shadow-xl ${c.entryFeeSOL > 0 ? 'bg-primary text-midnight border-primary shadow-primary/20 hover:bg-white hover:border-white' : 'bg-transparent text-white border-white/10 hover:border-primary/50'}`}
                                        >
-                                          {c.entryFeeSOL > 0 ? 'Deploy High Stakes' : 'Join Training'}
+                                          {c.entryFeeSOL > 0 ? t.deployHighStakes : t.joinTraining}
                                        </button>
                                     ))}
                                  </div>
@@ -259,22 +261,21 @@ export default function LeagueDashboardPage() {
                                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-wc-blue/10 blur-[80px] rounded-full pointer-events-none" />
                                        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-wc-pink/10 blur-[80px] rounded-full pointer-events-none" />
                                        
-                                       <div className="relative z-10">
-                                          {/* Match Header: Date & Status */}
+                                       <div className="relative z-10">                                          {/* Match Header: Date & Status */}
                                           <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
                                              <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-1">Operational Window</span>
+                                                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-1">{t.operationalWindow}</span>
                                                 <span className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter">
-                                                   {new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(m.kickoff))}
+                                                   {new Intl.DateTimeFormat(locale === 'es' ? 'es-AR' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(m.kickoff))}
                                                 </span>
                                              </div>
                                              <div className="text-right">
                                                 <div className="flex items-center gap-2 mb-1 justify-end">
                                                    <div className="w-2 h-2 rounded-full bg-wc-green animate-pulse shadow-[0_0_10px_#00E676]" />
-                                                   <span className="text-[10px] font-black text-wc-green uppercase tracking-widest">Oracle Live</span>
+                                                   <span className="text-[10px] font-black text-wc-green uppercase tracking-widest">{t.oracleLive}</span>
                                                 </div>
                                                 <span className="text-lg md:text-xl font-mono text-white/60 tabular-nums">
-                                                   {m.kickoff ? new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(m.kickoff)) : 'TBD'}
+                                                   {m.kickoff ? new Intl.DateTimeFormat(locale === 'es' ? 'es-AR' : 'en-US', { hour: '2-digit', minute: '2-digit' }).format(new Date(m.kickoff)) : 'TBD'}
                                                 </span>
                                              </div>
                                           </div>
@@ -284,13 +285,13 @@ export default function LeagueDashboardPage() {
                                              <div className="flex flex-col items-center gap-4 w-[42%] text-center">
                                                 <div className="relative group/badge">
                                                    <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl opacity-0 group-hover/badge:opacity-100 transition-opacity" />
-                                                   <TeamBadge name={m.homeTeam.name} code={m.homeTeam.code} size="md" sport={data.sport?.slug} hideName />
+                                                   <TeamBadge name={translateTeamName(m.homeTeam.name, locale)} code={m.homeTeam.code} size="md" sport={data.sport?.slug} hideName isAway={false} />
                                                 </div>
                                                 <div className="space-y-1">
-                                                   <span className="block text-lg md:text-xl font-black text-white uppercase italic tracking-tighter truncate w-full">{m.homeTeam.name}</span>
+                                                   <span className="block text-lg md:text-xl font-black text-white uppercase italic tracking-tighter truncate w-full">{translateTeamName(m.homeTeam.name, locale)}</span>
                                                    <span className="block text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">{m.homeTeam.code}</span>
                                                 </div>
-                                             </div>
+                                                </div>
 
                                              <div className="flex flex-col items-center justify-center w-[16%]">
                                                 <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
@@ -302,25 +303,25 @@ export default function LeagueDashboardPage() {
                                              <div className="flex flex-col items-center gap-4 w-[42%] text-center">
                                                 <div className="relative group/badge">
                                                    <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl opacity-0 group-hover/badge:opacity-100 transition-opacity" />
-                                                   <TeamBadge name={m.awayTeam.name} code={m.awayTeam.code} size="md" sport={data.sport?.slug} hideName />
+                                                   <TeamBadge name={translateTeamName(m.awayTeam.name, locale)} code={m.awayTeam.code} size="md" sport={data.sport?.slug} hideName isAway={true} homeCode={m.homeTeam.code} />
                                                 </div>
                                                 <div className="space-y-1">
-                                                   <span className="block text-lg md:text-xl font-black text-white uppercase italic tracking-tighter truncate w-full">{m.awayTeam.name}</span>
+                                                   <span className="block text-lg md:text-xl font-black text-white uppercase italic tracking-tighter truncate w-full">{translateTeamName(m.awayTeam.name, locale)}</span>
                                                    <span className="block text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">{m.awayTeam.code}</span>
                                                 </div>
                                              </div>
                                           </div>
-
+                                          
                                           {/* Match Footer: Action */}
                                           <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
                                              <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-lg bg-wc-blue/10 border border-wc-blue/20 flex items-center justify-center text-wc-blue">
                                                    <Target size={14} />
                                                 </div>
-                                                <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Sector: Intel Squad</span>
+                                                <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">{t.sectorIntel}</span>
                                              </div>
                                              <button className="flex items-center gap-2 text-[10px] font-black text-primary hover:text-white transition-colors uppercase tracking-widest">
-                                                Predict Match <ChevronRight size={14} />
+                                                {t.predictMatch} <ChevronRight size={14} />
                                              </button>
                                           </div>
                                        </div>
@@ -331,7 +332,7 @@ export default function LeagueDashboardPage() {
                               {phase.matches?.length === 0 && (
                                  <div className="py-16 text-center relative z-10 border-2 border-dashed border-white/5 rounded-3xl mt-8">
                                     <Target className="mx-auto text-white/5 mb-4" size={40} />
-                                    <h5 className="text-[11px] font-black text-white/20 uppercase tracking-[0.5em]">Sector Empty</h5>
+                                    <h5 className="text-[11px] font-black text-white/20 uppercase tracking-[0.5em]">{t.sectorEmpty}</h5>
                                  </div>
                               )}
                            </div>
@@ -342,12 +343,12 @@ export default function LeagueDashboardPage() {
                               <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-10 border border-white/10 shadow-2xl">
                                  <Sparkles className="text-white/10 animate-pulse" size={40} />
                               </div>
-                              <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4 opacity-40">Scan Complete: No Matches Found</h3>
-                              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-12">System is waiting for next season initialization...</p>
+                              <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-4 opacity-40">{t.scanCompleteNoMatches}</h3>
+                              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-12">{t.waitingSeasonInit}</p>
                               
                               {user?.isAdmin && (
                                  <button className="inline-flex items-center gap-4 px-10 h-16 bg-primary text-midnight rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-white transition-all shadow-xl shadow-primary/20">
-                                    <PlusCircle size={18} /> Initialise Sector Alpha
+                                    <PlusCircle size={18} /> {t.initializeSectorAlpha}
                                  </button>
                               )}
                            </div>

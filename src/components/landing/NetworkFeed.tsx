@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Trophy, Flame, Crosshair, Shield } from 'lucide-react';
+import { locales } from '@/lib/locales';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const LIVE_ACTIVITY = [
   { id: 1, player: 'PhantomX_92', action: 'locked in', target: 'Argentina vs Brazil', reward: '+25 XP', type: 'predict' },
@@ -13,35 +15,47 @@ const LIVE_ACTIVITY = [
   { id: 6, player: 'PitchViper', action: 'hit 5-win streak', target: '🔥 On Fire!', reward: 'Badge!', type: 'streak' },
 ];
 
-const HOW_IT_WORKS = [
+const howItWorksData = [
   { 
     step: '01', 
     icon: Crosshair, 
-    title: 'Choose Your Arena', 
-    desc: 'Pick a live tournament from football, F1, NBA, tennis and more. Each arena has its own prize pool and competitive tier.',
     color: 'text-primary',
     glow: 'shadow-[0_0_20px_rgba(0,230,118,0.2)]'
   },
   { 
     step: '02', 
     icon: Flame, 
-    title: 'Lock In Predictions', 
-    desc: 'Predict exact match scores. The closer you predict, the higher you climb. No luck involved — pure tactical intelligence.',
     color: 'text-match',
     glow: 'shadow-[0_0_20px_rgba(255,107,53,0.2)]'
   },
   { 
     step: '03', 
     icon: Trophy, 
-    title: 'Claim Your Rewards', 
-    desc: 'Top predictors earn SOL payouts instantly. Every prediction earns XP toward your player rank, win or lose.',
     color: 'text-gold',
     glow: 'shadow-[0_0_20px_rgba(255,215,0,0.2)]'
   },
 ];
 
 export function NetworkFeed() {
+  const { locale } = useAuthStore();
+  const t = locales[locale].landing.networkFeed;
+  const tHow = locales[locale].landing.howItWorks;
   const [feed, setFeed] = useState(LIVE_ACTIVITY);
+
+  const localizedActivityAction = (action: string) => {
+    if (locale === 'es') {
+      switch(action) {
+        case 'locked in': return 'confirmó predicción en';
+        case 'climbed to': return 'subió a';
+        case 'claimed': return 'reclamó';
+        case 'entered arena': return 'entró a la arena';
+        case 'predicted upset': return 'predijo sorpresa en';
+        case 'hit 5-win streak': return 'racha de 5 victorias';
+        default: return action;
+      }
+    }
+    return action;
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -63,6 +77,24 @@ export function NetworkFeed() {
     }
   };
 
+  const steps = [
+    {
+      ...howItWorksData[0],
+      title: t.chooseArena,
+      desc: t.chooseArenaDesc
+    },
+    {
+      ...howItWorksData[1],
+      title: t.lockIn,
+      desc: t.lockInDesc
+    },
+    {
+      ...howItWorksData[2],
+      title: t.claim,
+      desc: t.claimDesc
+    }
+  ];
+
   return (
     <section className="bg-[#020814] border-t border-white/5">
 
@@ -78,7 +110,7 @@ export function NetworkFeed() {
           {[...feed, ...feed].map((item, i) => (
             <div key={`${item.id}-${i}`} className="flex items-center gap-2 text-[10px] font-bold tracking-wide shrink-0">
               <span className={`${typeColor(item.type)} font-black`}>{item.player}</span>
-              <span className="text-white/30">{item.action}</span>
+              <span className="text-white/30">{localizedActivityAction(item.action)}</span>
               <span className="text-white/60">{item.target}</span>
               <span className="text-primary/60">{item.reward}</span>
               <span className="text-white/10 ml-2">•</span>
@@ -93,15 +125,15 @@ export function NetworkFeed() {
           
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-white drop-shadow-xl mb-4">
-              How The Arena Works
+              {t.title}
             </h2>
             <p className="text-sm text-white/40 max-w-xl mx-auto font-bold">
-              Three steps. Zero complexity. Maximum adrenaline.
+              {t.subtitle}
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {HOW_IT_WORKS.map((item, i) => (
+            {steps.map((item, i) => (
               <motion.div
                 key={item.step}
                 initial={{ opacity: 0, y: 30 }}
@@ -127,10 +159,10 @@ export function NetworkFeed() {
       <div className="border-t border-white/5 py-10 px-6 sm:px-12">
         <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-8">
           {[
-            { icon: Shield, text: 'Non-Custodial Wallets' },
-            { icon: Crosshair, text: 'Skill-Based Only' },
-            { icon: Flame, text: 'Free Entry Available' },
-            { icon: Trophy, text: 'Instant SOL Payouts' },
+            { icon: Shield, text: tHow.trust.nonCustodial },
+            { icon: Crosshair, text: tHow.trust.skillBased },
+            { icon: Flame, text: tHow.trust.sportsCount },
+            { icon: Trophy, text: tHow.trust.instantSol },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/25 hover:text-white/50 transition-colors">
               <item.icon size={12} className="text-primary/50" />

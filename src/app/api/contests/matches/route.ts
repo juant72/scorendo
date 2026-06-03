@@ -12,17 +12,11 @@ export async function GET(req: NextRequest) {
     const matches = await prisma.match.findMany({
       where: {
         status: { in: statusList },
-        ...(sportSlug ? {
-          phase: {
-            tournament: {
-              competition: {
-                sport: {
-                  slug: sportSlug
-                }
-              }
-            }
+        phase: {
+          tournament: {
+            slug: 'fifa-world-cup-2026'
           }
-        } : {})
+        }
       },
       include: {
         homeTeam: true,

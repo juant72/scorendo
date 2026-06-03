@@ -13,15 +13,10 @@ export async function TrendingContests({ sport }: { sport?: string }) {
         status: {
           in: [ContestStatus.UPCOMING, ContestStatus.REGISTRATION, ContestStatus.ACTIVE]
         },
-        ...(sport ? {
-          tournament: {
-            competition: {
-              sport: {
-                slug: sport
-              }
-            }
-          }
-        } : {})
+        OR: [
+          { tournament: { slug: 'fifa-world-cup-2026' } },
+          { phase: { tournament: { slug: 'fifa-world-cup-2026' } } }
+        ]
       },
       take: 6,
       orderBy: {

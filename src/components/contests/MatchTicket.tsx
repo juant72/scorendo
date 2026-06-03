@@ -3,6 +3,8 @@
 import React from 'react';
 import { TeamBadge } from './TeamBadge';
 import { Trophy, Share2, ShieldCheck, Sparkles } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { translateTeamName, translateContestName } from '@/lib/locales';
 
 interface MatchTicketProps {
   homeTeam: { name: string; code: string };
@@ -19,6 +21,7 @@ export function MatchTicket({
   contestName,
   userName = "Elite Predictor" 
 }: MatchTicketProps) {
+  const { locale } = useAuthStore();
   return (
     <div 
       id="match-ticket-capture"
@@ -42,7 +45,7 @@ export function MatchTicket({
         </div>
         <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         <h2 className="text-sm font-black text-primary/60 uppercase tracking-widest text-center mt-2">
-          {contestName}
+          {translateContestName(contestName, locale)}
         </h2>
       </div>
 
@@ -52,10 +55,10 @@ export function MatchTicket({
           {/* HOME */}
           <div className="flex-1 flex flex-col items-center gap-4">
              <div className="scale-125">
-               <TeamBadge name={homeTeam.name} code={homeTeam.code} size="lg" hideName />
+               <TeamBadge name={homeTeam.name} code={homeTeam.code} size="lg" hideName isAway={false} />
              </div>
              <h3 className="text-xl font-black text-white text-center uppercase italic tracking-tighter leading-none">
-               {homeTeam.name}
+               {translateTeamName(homeTeam.name, locale)}
              </h3>
           </div>
 
@@ -67,10 +70,10 @@ export function MatchTicket({
           {/* AWAY */}
           <div className="flex-1 flex flex-col items-center gap-4">
              <div className="scale-125">
-               <TeamBadge name={awayTeam.name} code={awayTeam.code} size="lg" hideName />
+               <TeamBadge name={awayTeam.name} code={awayTeam.code} size="lg" hideName isAway={true} homeCode={homeTeam.code} />
              </div>
              <h3 className="text-xl font-black text-white text-center uppercase italic tracking-tighter leading-none">
-               {awayTeam.name}
+               {translateTeamName(awayTeam.name, locale)}
              </h3>
           </div>
         </div>
