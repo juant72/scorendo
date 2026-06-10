@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     console.log('User synced in DB:', user.walletAddress);
 
     // 3. Generate Internal JWT Token for Scorendo
-    const token = await createSessionToken(user.walletAddress);
+    const token = await createSessionToken(user.walletAddress, user.isAdmin);
 
     // 4. Set HttpOnly Cookie for Global Application State
     const cookieStore = await cookies();
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       stack: error.stack
     });
     return NextResponse.json(
-      { error: 'Internal Server Error', details: error.message },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }

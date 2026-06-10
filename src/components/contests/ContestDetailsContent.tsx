@@ -8,6 +8,7 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { getArenaImagery } from '@/lib/graphics';
 import { locales } from '@/lib/locales';
 import { useAuthStore } from '@/store/useAuthStore';
+import { usePrivy } from '@privy-io/react-auth';
 
 interface StatItemProps {
   icon: React.ReactNode;
@@ -48,6 +49,7 @@ export function ContestDetailsContent({
   matches,
 }: ContestDetailsContentProps) {
   const { locale } = useAuthStore();
+  const { login } = usePrivy();
   const t = locales[locale].contestDetails;
   const imagery = getArenaImagery(contest);
 
@@ -130,9 +132,12 @@ export function ContestDetailsContent({
                    </div>
                    <h3 className="text-2xl font-black mb-4 text-white uppercase italic">{t.connectPlay}</h3>
                    <p className="text-sm text-white/40 mb-10 italic max-w-sm mx-auto leading-relaxed">{t.connectDesc}</p>
-                   <div className="h-14 px-10 bg-primary text-midnight font-black text-xs uppercase tracking-widest rounded-xl inline-flex items-center justify-center shadow-2xl shadow-primary/20">
-                      {t.btnConnect}
-                   </div>
+                   <button 
+                      onClick={() => login()}
+                      className="h-14 px-10 bg-primary text-midnight font-black text-xs uppercase tracking-widest rounded-xl inline-flex items-center justify-center shadow-2xl shadow-primary/20 hover:scale-[1.03] transition-transform active:scale-[0.98]"
+                    >
+                       {t.btnConnect}
+                    </button>
                  </div>
                ) : (
                  <ContestPredictionHub 

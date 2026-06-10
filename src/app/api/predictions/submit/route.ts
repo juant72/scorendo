@@ -48,26 +48,24 @@ const contest = await prisma.contest.findUnique({
        }
     }
 
-  const earliestMatch = availableMatches.reduce((min: any, m: any) => {
-      const time = new Date(m.kickoff).getTime();
-      return time < min ? time : min;
-  }, Infinity);
+  if (!['UPCOMING', 'REGISTRATION', 'ACTIVE'].includes(contest.status)) {
+    return NextResponse.json({ success: false, error: 'LOCKED: Contest is no longer active.' }, { status: 403 });
+  }
 
   const now = Date.now();
   const BUFFER_MS = 5 * 60 * 1000;
+  const matchesMap = new Map(availableMatches.map((m: any) => [m.id, m]));
 
-  // Allow predictions if a match already started (LIVE) or before kickoff with a small buffer
-  const hasPastKickoff = availableMatches.some((m: any) => new Date(m.kickoff).getTime() <= now);
-  if (earliestMatch !== Infinity) {
-    const lockTime = earliestMatch - BUFFER_MS;
-    if (now < lockTime) {
-      // still pre-kickoff window - allow
-    } else if (hasPastKickoff) {
-      // a match already started - allow live predictions
-    } else {
+  for (const p of predictions) {
+    const match = matchesMap.get(p.matchId);
+    if (!match) {
+      return NextResponse.json({ success: false, error: `Match ID ${p.matchId} not in contest` }, { status: 403 });
+    }
+    const kickoffTime = new Date(match.kickoff).getTime();
+    if (now >= kickoffTime - BUFFER_MS) {
       return NextResponse.json({ 
         success: false, 
-        error: 'LOCKED: Entry closed before kickoff.' 
+        error: `LOCKED: Match prediction is locked.` 
       }, { status: 403 });
     }
   }
@@ -161,6 +159,9 @@ const contest = await prisma.contest.findUnique({
 
   } catch (error: any) {
     console.error('CRITICAL: Prediction Submission Failed:', error);
+    if (error.message === 'PAYMENT_REQUIRED') {
+      return NextResponse.json({ success: false, error: 'PAYMENT_REQUIRED' }, { status: 402 });
+    }
     return NextResponse.json({ 
       success: false, 
       error: process.env.NODE_ENV === 'development' ? (error.message || String(error)) : 'Internal Server Error' 

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ChevronRight, Sparkles, PlusCircle, Target, Activity, Fuel, ShieldCheck, Search, Trophy, Key } from 'lucide-react';
+import { ChevronRight, Sparkles, PlusCircle, Target, Activity, Fuel, ShieldCheck, Search, Trophy, Key, Loader2 } from 'lucide-react';
 import ContestCard from '@/components/contests/ContestCard';
 import { CreatePrivateModal } from '@/components/contests/CreatePrivateModal';
 import { PageTransition } from '@/components/layout/PageTransition';
@@ -19,13 +19,16 @@ function ContestsLobbyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sportSlug = searchParams.get('sport') || 'football';
-  const { locale } = useAuthStore();
+  const { locale, isAuthenticated } = useAuthStore();
   const t = locales[locale].lobbyPage;
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [signatureCode, setSignatureCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -38,6 +41,43 @@ function ContestsLobbyContent() {
         setLoading(false);
       });
   }, [sportSlug]);
+
+  const handleJoinPrivateContest = async (code: string) => {
+    if (!code) return;
+    if (!isAuthenticated) {
+       alert(locale === 'es' ? 'Por favor ingresa para unirte a un grupo privado.' : 'Please sign in to join a private league.');
+       return;
+    }
+    
+    try {
+      setIsJoining(true);
+      const res = await fetch('/api/contests/join-private', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteCode: code })
+      });
+      
+      const data = await res.json();
+      if (res.ok && data.success) {
+         router.push(`/contests/${data.contestSlug}`);
+      } else {
+         alert(data.error || (locale === 'es' ? 'Error al unirse al grupo privado' : 'Failed to join private league'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert(locale === 'es' ? 'Error de red' : 'Network error');
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const joinParam = searchParams.get('join');
+  useEffect(() => {
+    if (joinParam && isAuthenticated) {
+       handleJoinPrivateContest(joinParam);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinParam, isAuthenticated]);
 
   const activeSport = QUICK_FILTERS.find(f => f.id === sportSlug) || QUICK_FILTERS[0];
 
@@ -139,12 +179,19 @@ function ContestsLobbyContent() {
                        <div className="flex gap-2 relative">
                           <input 
                             type="text" 
+                            value={signatureCode}
+                            onChange={(e) => setSignatureCode(e.target.value.toUpperCase())}
+                            disabled={isJoining}
                             placeholder={t.enterSignature} 
                             className="flex-1 h-14 bg-black/40 border border-white/10 rounded-2xl px-6 font-black text-[11px] uppercase tracking-[0.2em] focus:border-primary/50 outline-none text-white placeholder:text-white/10 transition-all"
                           />
-                          <button className="w-14 h-14 bg-primary/10 text-primary border border-primary/20 rounded-2xl flex items-center justify-center hover:bg-primary hover:text-midnight transition-all shadow-xl hover:shadow-primary/20">
-                             <ChevronRight size={20} />
-                          </button>
+                          <button 
+                             onClick={() => handleJoinPrivateContest(signatureCode)}
+                             disabled={isJoining || !signatureCode}
+                             className="w-14 h-14 bg-primary/10 text-primary border border-primary/20 rounded-2xl flex items-center justify-center hover:bg-primary hover:text-midnight transition-all shadow-xl hover:shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                           >
+                              {isJoining ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChevronRight size={20} />}
+                           </button>
                        </div>
                        <button 
                          onClick={() => setIsModalOpen(true)}

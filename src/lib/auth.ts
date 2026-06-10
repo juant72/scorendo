@@ -2,6 +2,10 @@ import { SignJWT, jwtVerify } from 'jose';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('FATAL: JWT_SECRET environment variable is required in production.');
+}
+
 const SECRET_KEY = new TextEncoder().encode(
   process.env.JWT_SECRET || 'fallback-dev-secret-1234'
 );

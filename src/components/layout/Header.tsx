@@ -18,6 +18,7 @@ export function Header() {
     { href: '/matches', label: t.matches },
     { href: '/contests', label: t.contests },
     { href: '/ranking', label: t.rankings },
+    { href: '/groups', label: locale === 'es' ? 'Grupos' : 'Groups' },
     { href: '/how-it-works', label: t.howItWorks },
   ];
 

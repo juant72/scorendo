@@ -320,7 +320,17 @@ export default function LeagueDashboardPage() {
                                                 </div>
                                                 <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">{t.sectorIntel}</span>
                                              </div>
-                                             <button className="flex items-center gap-2 text-[10px] font-black text-primary hover:text-white transition-colors uppercase tracking-widest">
+                                             <button 
+                                                onClick={() => {
+                                                   const defaultContest = seasonContests[0];
+                                                   if (defaultContest) {
+                                                      router.push(`/contests/${defaultContest.slug}`);
+                                                   } else {
+                                                      router.push('/contests');
+                                                   }
+                                                }}
+                                                className="flex items-center gap-2 text-[10px] font-black text-primary hover:text-white transition-colors uppercase tracking-widest"
+                                             >
                                                 {t.predictMatch} <ChevronRight size={14} />
                                              </button>
                                           </div>
