@@ -399,96 +399,157 @@ export function PredictionForm({ contestId, matches, existingPredictions, isLive
                 const matchKickoffTime = new Date(match.kickoff).getTime();
                 const isMatchLocked = isLive || (match.kickoff && Date.now() >= matchKickoffTime - 5 * 60 * 1000);
                 return (
-                   <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border-2 border-white/5 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(0,230,118,0.1)] transition-all flex flex-col sm:flex-row shadow-md overflow-hidden touch-manipulation">
-                      {/* Match Info Side */}
-                      <div className="flex-1 flex flex-col sm:flex-row p-3 sm:p-4 gap-2 sm:gap-4 items-center border-b sm:border-b-0 sm:border-r border-white/5">
-                         {/* Time / Status */}
-                         <div className="w-full sm:w-16 flex sm:flex-col justify-between sm:justify-center items-center sm:items-start text-[10px] font-bold text-white/30 tracking-wider">
-                            <span>{match.kickoff ? new Date(match.kickoff).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : 'TBA'}</span>
-                            <span className="font-medium">{match.kickoff ? new Date(match.kickoff).toLocaleDateString(locale, { month: 'short', day: 'numeric' }) : ''}</span>
-                         </div>
-    
-                         {/* Team Names - Stack on mobile */}
-                         <div className="flex-1 flex items-center justify-between w-full gap-2">
-                            <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
-                               <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hidden sm:block">{translateTeamName(match.homeTeam.name, locale)}</span>
-                               <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate sm:hidden">{match.homeTeam.code}</span>
-                               <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.homeTeam.code} size="sm" hideName isAway={false} /></div>
+                        <div key={match.id} className="relative group bg-[#060D1A] rounded-xl border-2 border-white/5 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(0,230,118,0.1)] transition-all flex flex-col shadow-md overflow-hidden touch-manipulation">
+                      {/* Main card row */}
+                      <div className="flex flex-col sm:flex-row">
+                         {/* Match Info Side */}
+                         <div className="flex-1 flex flex-col sm:flex-row p-3 sm:p-4 gap-2 sm:gap-4 items-center border-b sm:border-b-0 sm:border-r border-white/5">
+                            {/* Time / Status */}
+                            <div className="w-full sm:w-16 flex sm:flex-col justify-between sm:justify-center items-center sm:items-start text-[10px] font-bold text-white/30 tracking-wider">
+                               <span>{match.kickoff ? new Date(match.kickoff).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : 'TBA'}</span>
+                               <span className="font-medium">{match.kickoff ? new Date(match.kickoff).toLocaleDateString(locale, { month: 'short', day: 'numeric' }) : ''}</span>
                             </div>
-                            <span className="text-xs font-bold text-white/20 italic shrink-0">VS</span>
-                           <div className="flex items-center gap-3 flex-1 justify-start">
-                              <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.awayTeam.code} size="sm" hideName isAway={true} homeCode={match.homeTeam.code} /></div>
-                              <span className="text-sm md:text-base font-bold text-white tracking-wide truncate">{translateTeamName(match.awayTeam.name, locale)}</span>
+       
+                            {/* Team Names - Stack on mobile */}
+                            <div className="flex-1 flex items-center justify-between w-full gap-2">
+                               <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
+                                  <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate hidden sm:block">{translateTeamName(match.homeTeam.name, locale)}</span>
+                                  <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate sm:hidden">{match.homeTeam.code}</span>
+                                  <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.homeTeam.code} size="sm" hideName isAway={false} /></div>
+                               </div>
+                               <span className="text-xs font-bold text-white/20 italic shrink-0">VS</span>
+                              <div className="flex items-center gap-3 flex-1 justify-start">
+                                 <div className="w-8 h-8 shrink-0 bg-white/5 rounded-full p-1"><TeamBadge name="" code={match.awayTeam.code} size="sm" hideName isAway={true} homeCode={match.homeTeam.code} /></div>
+                                 <span className="text-sm md:text-base font-bold text-white tracking-wide truncate">{translateTeamName(match.awayTeam.name, locale)}</span>
+                              </div>
                            </div>
                         </div>
-                     </div>
-    
-                      {/* Input Core - Touch optimized */}
-                      <div className="flex flex-col sm:flex-row items-center justify-center p-3 sm:p-4 gap-3 sm:gap-4 bg-black/20 shrink-0">
-                        {isMatchLocked && (
-                          <span className="text-[9px] font-black text-red-500/80 uppercase tracking-widest bg-red-500/10 border border-red-500/20 px-2 py-1 rounded">
-                            {locale === 'es' ? 'Cerrado' : 'Locked'}
-                          </span>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <input 
-                            type="text"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            maxLength={1}
-                            value={pred.home}
-                            onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
-                            disabled={isMatchLocked || saving || isValidating}
-                            placeholder="-"
-                            className="w-12 h-12 bg-black/80 border-2 border-white/10 rounded-lg text-center text-lg font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-                          />
-                          <span className="text-sm font-bold text-white/20">:</span>
-                          <input 
-                            type="text"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            maxLength={1}
-                            value={pred.away}
-                            onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
-                            disabled={isMatchLocked || saving || isValidating}
-                            placeholder="-"
-                            className="w-12 h-12 bg-black/80 border-2 border-white/10 rounded-lg text-center text-lg font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all outline-none touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-                          />
-                        </div>
-    
-                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/60">
-                            <span>{t.confidence}</span>
-                            <select
-                              value={predictions[match.id]?.confidence ?? 5}
-                              onChange={(e) => {
-                                const v = Number(e.target.value) || 5;
-                                setPredictions(prev => ({
-                                  ...prev,
-                                  [match.id]: {
-                                    ...(prev[match.id] || { home: '', away: '' }),
-                                    confidence: v
-                                  }
-                                }));
-                              }}
-                              disabled={isMatchLocked || saving || isValidating}
-                              className="bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-primary outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(val => (
-                                <option key={val} value={val} className="bg-[#020814]">{val}</option>
-                              ))}
-                            </select>
+       
+                        {/* Input Core - Touch optimized */}
+                        <div className="flex flex-col sm:flex-row items-center justify-center p-3 sm:p-4 gap-3 sm:gap-4 bg-black/20 shrink-0">
+                          {isMatchLocked && (
+                            <span className="text-[9px] font-black text-red-500/80 uppercase tracking-widest bg-red-500/10 border border-red-500/20 px-2 py-1 rounded">
+                              {locale === 'es' ? 'Cerrado' : 'Locked'}
+                            </span>
+                          )}
+                          
+                          <div className="flex items-center gap-3">
+                            {/* Home Score Stepper */}
+                            <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const curr = parseInt(pred.home) || 0;
+                                  handleScoreChange(match.id, 'home', Math.max(0, curr - 1).toString());
+                                }}
+                                disabled={isMatchLocked || saving || isValidating}
+                                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black select-none"
+                              >
+                                -
+                              </button>
+                              <input 
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={1}
+                                value={pred.home}
+                                onChange={(e) => handleScoreChange(match.id, 'home', e.target.value)}
+                                disabled={isMatchLocked || saving || isValidating}
+                                placeholder="-"
+                                className="w-10 h-10 bg-black/60 border border-white/10 rounded-lg text-center text-base font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_10px_rgba(0,230,118,0.2)] transition-all outline-none touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const curr = parseInt(pred.home) || 0;
+                                  handleScoreChange(match.id, 'home', Math.min(9, curr + 1).toString());
+                                }}
+                                disabled={isMatchLocked || saving || isValidating}
+                                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black select-none"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            <span className="text-sm font-bold text-white/20 select-none">:</span>
+
+                            {/* Away Score Stepper */}
+                            <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const curr = parseInt(pred.away) || 0;
+                                  handleScoreChange(match.id, 'away', Math.max(0, curr - 1).toString());
+                                }}
+                                disabled={isMatchLocked || saving || isValidating}
+                                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black select-none"
+                              >
+                                -
+                              </button>
+                              <input 
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                maxLength={1}
+                                value={pred.away}
+                                onChange={(e) => handleScoreChange(match.id, 'away', e.target.value)}
+                                disabled={isMatchLocked || saving || isValidating}
+                                placeholder="-"
+                                className="w-10 h-10 bg-black/60 border border-white/10 rounded-lg text-center text-base font-black text-white tabular-nums focus:bg-primary/5 focus:border-primary focus:shadow-[0_0_10px_rgba(0,230,118,0.2)] transition-all outline-none touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const curr = parseInt(pred.away) || 0;
+                                  handleScoreChange(match.id, 'away', Math.min(9, curr + 1).toString());
+                                }}
+                                disabled={isMatchLocked || saving || isValidating}
+                                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-xs font-black select-none"
+                              >
+                                +
+                              </button>
+                            </div>
                           </div>
-    
-                          <button 
-                            onClick={() => handleShare(match.id)}
-                            disabled={sharingMatchId === match.id}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                            title={locale === 'es' ? 'Exportar Registro de Batalla' : 'Export Battle Record'}
-                          >
-                            {sharingMatchId === match.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-4 h-4" />}
-                          </button>
+      
+                          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/60">
+                              <span>{t.confidence}</span>
+                              <select
+                                value={predictions[match.id]?.confidence ?? 5}
+                                onChange={(e) => {
+                                  const v = Number(e.target.value) || 5;
+                                  setPredictions(prev => ({
+                                    ...prev,
+                                    [match.id]: {
+                                      ...(prev[match.id] || { home: '', away: '' }),
+                                      confidence: v
+                                    }
+                                  }));
+                                }}
+                                disabled={isMatchLocked || saving || isValidating}
+                                className="bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-[10px] text-white focus:border-primary outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(val => (
+                                  <option key={val} value={val} className="bg-[#020814]">{val}</option>
+                                ))}
+                              </select>
+                            </div>
+      
+                            <button 
+                              onClick={() => handleShare(match.id)}
+                              disabled={sharingMatchId === match.id}
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                              title={locale === 'es' ? 'Exportar Registro de Batalla' : 'Export Battle Record'}
+                            >
+                              {sharingMatchId === match.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                            </button>
+                          </div>
                         </div>
+                      </div>
+                      
+                      {/* Community Wisdom / Trends Row */}
+                      <div className="px-4 pb-4">
+                         <CommunityTrends matchId={match.id} />
                       </div>
                    </div>
                 );
