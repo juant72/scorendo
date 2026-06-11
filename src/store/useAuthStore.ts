@@ -7,6 +7,8 @@ interface User {
   totalPoints: number;
   isAdmin: boolean;
   language?: string;
+  xp?: number;
+  level?: number;
 }
 
 export type Locale = 'en' | 'es';

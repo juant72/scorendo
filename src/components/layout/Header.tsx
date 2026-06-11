@@ -11,8 +11,27 @@ import { SportDropdown } from './SportDropdown';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isAuthenticated, locale } = useAuthStore();
+  const { isAuthenticated, locale, user } = useAuthStore();
   const t = locales[locale].nav;
+
+  // Helper to compute progress bar
+  const getXpProgress = (xp: number) => {
+    let level = 1;
+    let xpRequired = 100; // BASE_XP_PER_LEVEL
+    let totalXpAccumulated = 0;
+
+    while (totalXpAccumulated + xpRequired <= xp) {
+      totalXpAccumulated += xpRequired;
+      level++;
+      xpRequired = Math.floor(100 * Math.pow(1.15, level - 1));
+    }
+
+    const xpInLevel = xp - totalXpAccumulated;
+    const progress = (xpInLevel / xpRequired) * 100;
+    return { level, progress: Math.min(100, Math.max(0, progress)), xpInLevel, xpRequired };
+  };
+
+  const xpInfo = user ? getXpProgress(user.xp || 0) : { level: 1, progress: 0, xpInLevel: 0, xpRequired: 100 };
 
   const navLinks = [
     { href: '/matches', label: t.matches },
@@ -63,16 +82,21 @@ export function Header() {
 
           <div className="h-8 w-px bg-white/10 hidden sm:block" />
 
-          {/* Player XP / Quick Status (Fake Gamification Block for AAA feel) */}
+          {/* Player XP / Quick Status (Dynamic Gamification Block for AAA feel) */}
           {isAuthenticated && (
-            <div className="hidden xl:flex items-center gap-3 bg-[#060D1A] border border-white/5 pl-3 pr-4 h-10 rounded-xl shadow-inner">
+            <div className="hidden xl:flex items-center gap-3 bg-[#060D1A] border border-white/5 pl-3 pr-4 h-10 rounded-xl shadow-inner" title={`${xpInfo.xpInLevel} / ${xpInfo.xpRequired} XP`}>
                <div className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-primary text-[10px] font-black">42</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded bg-primary/20 text-primary text-[10px] font-black">{xpInfo.level}</span>
                   <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                     <div className="h-full bg-primary shadow-[0_0_5px_rgba(0,230,118,0.8)] w-[65%]" />
+                     <div 
+                       className="h-full bg-primary shadow-[0_0_5px_rgba(0,230,118,0.8)] transition-all duration-500" 
+                       style={{ width: `${xpInfo.progress}%` }}
+                     />
                   </div>
                </div>
-               <span className="text-[10px] uppercase font-black tracking-widest text-white/40">Top 5%</span>
+               <span className="text-[10px] uppercase font-black tracking-widest text-white/40">
+                 {xpInfo.xpInLevel}/{xpInfo.xpRequired} XP
+               </span>
             </div>
           )}
 

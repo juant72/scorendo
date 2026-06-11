@@ -85,6 +85,8 @@ export async function POST(req: NextRequest) {
         walletAddress: user.walletAddress,
         displayName: user.displayName,
         totalPoints: user.totalPoints,
+        level: user.level,
+        xp: user.xp,
       },
     });
 

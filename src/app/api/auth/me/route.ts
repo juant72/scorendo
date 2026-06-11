@@ -27,6 +27,8 @@ export async function GET(req: NextRequest) {
         avatarSeed: true,
         totalPoints: true,
         isAdmin: true,
+        xp: true,
+        level: true,
       }
     });
 
